@@ -7,8 +7,8 @@
 package trajectory_gcs
 
 import (
-	spatial "github.com/trajectoryjp/trajectory_api_service/spatial"
 	trjx_api_service "github.com/trajectoryjp/trjx_api_service"
+	spatial "github.com/trajectoryjp/trjx_api_service/spatial"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/known/emptypb"

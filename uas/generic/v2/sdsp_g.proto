@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package generic.v2 ;
 
-option go_package = "github.com/trajectoryjp/trajectory_api_service/spatial" ;
+option go_package = "github.com/trajectoryjp/trjx_api_service/spatial" ;
 
 service GenericAPI {
     // サーバー接続（ログイン）
