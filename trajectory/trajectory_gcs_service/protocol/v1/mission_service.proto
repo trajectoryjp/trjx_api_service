@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+
+import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+import "trajectory/type/resource.proto";
+
+
+service MissionService {
+    // CreateMission: ミッションの生成
+    rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
+
+    // AddMission: ミッションをデータベースに追加する
+    rpc AddMission(AddMissionRequest) returns (MissionID) {}
+
+    // GetMission: ミッションの取得
+    rpc GetMission(MissionID) returns (Mission) {}
+
+    // DeleteMission: ミッションの削除
+    rpc DeleteMission(MissionID) returns (google.protobuf.Empty) {}
+
+    // UpdateMission: ミッションの更新
+    rpc UpdateMission(UpdateMissionRequest) returns (Mission) {}
+}
+
+message CreateMissionRequest { 
+    OragnizationID organization_id = 1;
+    ProjectID project_id = 7;
+    TransactionID transaction_id = 2 ; // WideArea切替。未指定はWide。
+    oneof Select {
+        WithUAV create_with_property = 4 ; // 機体情報に基づいた時刻計算。ルート設計のみ（機体位置取得なし）
+        WithUAV create_with_uav = 5; // 機体位置からのルート設計。機体への割付なし。
+        WithUAV create_and_assign = 6; // 従来のCreateMissionAndAssign（機体割付）
+        OnlyAssgin only_assign = 8; // ルート設計なし。機体割り付けのみ。ルートの安全性は保証されないことに注意（ローバー利用想定）。
+    }
+    message WithUAV {
+        UAVID uav_id = 1;
+        bool tie_straight = 13 ; // trueでWP優先（入力WPを真っ直ぐ結ぶ）。onlyAssignでは無効。
+    }
+    message OnlyAssgin {
+        UAVID uav_id = 1;
+    }
+    optional ScheduledTime start_time = 10; //　onlyAssignでは無効。
+    optional ScheduledTime arrival_time = 11; // 到着時間。onlyAssignでは無効。
+
+    Mission mission = 12; // ルート計算を行うMissionItemのリスト。
+}
+
+message CreateMissionResponse {
+    MissionControllerResult result = 1; // 処理結果
+    Mission mission = 2; // ルート計算を行った結果のミッションのリスト
+    repeated string reserved_route_ids = 3 ; // 予約ID
+}
+
+// AddMissionリクエスト
+message AddMissionRequest {
+    Mission mission = 1; // MissionItemのリスト
+    string name = 2; // 保存名
+    ProjectID project_id = 3; // 所有組織
+    TransactionID transaction_id = 4;
+    UAVID uav_id = 5;
+    ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
+}
+
+// UpdateMissionリクエスト
+message UpdateMissionRequest {
+    MissionID mission_id = 1; // データベースレコードキー。必須
+    Mission mission = 2; // 
+    string name = 3; // 保存名
+    ProjectID project_id = 4; // 所有組織
+    TransactionID transaction_id = 5; // トランザクションID
+    UAVID uav_id = 6;
+    ApplicationAttr app = 7; // Updateを要求したアプリケーション。subsetMission=trueの場合はbundleIDが一致していなければならない。
+}

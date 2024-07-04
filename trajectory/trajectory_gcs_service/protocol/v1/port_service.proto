@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+import "trajectory/type/resource.proto";
+
+
+service PortService {
+    // // 離陸申請
+    // rpc ApplyTakeoff(ApplyRequest) returns (ApplyResponse);
+
+    // // 着陸申請
+    // rpc ApplyLanding(ApplyRequest) returns (ApplyResponse);
+
+    // 離陸完了通知
+    rpc NotifyTakeoffCompleted(NotifyCompletedRequest) returns (google.protobuf.Empty);
+
+    // 着陸完了通知
+    rpc NotifyLandingCompleted(NotifyCompletedRequest) returns (google.protobuf.Empty);
+
+    // ポートの登録
+    rpc CreatePort(CreatePortRequest) returns (Port);
+
+    // ポートの取得
+    rpc GetPort(GetPortRequest) returns (Port);
+
+    // ポートのリスト取得
+    rpc ListPorts(ListPortsRequest) returns (stream ListPortsResponse);
+
+    // ポートの削除
+    rpc DeletePort(DeletePortRequest) returns (google.protobuf.Empty);
+
+    // ポートの更新
+    rpc UpdatePort(UpdatePortRequest) returns (Port);
+}
+
+// 離着陸申請リクエスト
+message ApplyRequest {
+    string flight_plan_id = 1;                          // 飛行計画ID
+    PortHeader port_header = 2;                              // リクエストヘッダー
+}
+
+// 離着陸申請レスポンス
+message ApplyResponse {
+    int64 apply_id = 2;                                 // 離着陸申請ID
+    PortLocation port_location = 3;                     // ポートロケーション情報(最近接点のWPが返る、時刻指定は離着陸許可を申請する時刻(範囲)を指定)
+}
+
+// 離着陸完了通知リクエスト
+message NotifyCompletedRequest {
+    int64 apply_id = 2;                                 // 離着陸申請ID
+}
+
+// ポート登録リクエスト
+message CreatePortRequest {
+    // 登録ポート
+    Port port = 1;
+}
+
+// ポート取得リクエスト
+message GetPortRequest {
+    // ポートID
+    int64 id = 1;
+
+    // クエリフィールド(指定されたカラムのみ取得)
+    google.protobuf.FieldMask fields = 2;
+}
+
+// TODO: UI再設計
+// ポート一覧取得・フィルタリング検索リクエスト
+message ListPortsRequest {
+    // 検索ボックス 検索範囲の制限を設ける　○km - km
+    SearchSpace box = 1;
+
+    // 組織ID(所有組織)
+    optional int64 organizations_id = 2;
+
+     // グループID
+    optional int64 group_id = 3;                       
+
+    // TODO: UI再設計
+    // ポートの種別 true:private false:public
+    optional bool is_private = 4;                       
+
+    // 緊急着陸ポート種別 true:緊急着陸ポート/ flase:通常ポート
+    optional bool is_emergency = 5;                     
+
+    // 名称
+    optional string name = 6;                           
+
+    // タグ
+    optional string tag = 7;                            
+
+    // ポート提供者
+    optional string provider = 8;                       
+
+    // クエリフィールド(指定されたカラムのみ取得)
+    google.protobuf.FieldMask fields = 9;               
+}
+
+// ポート一覧取得・フィルタリング検索レスポンス
+message ListPortsResponse {
+    // ポート
+    repeated Port ports = 1;
+
+    // // リスト全体の項目数
+    // int32 total_count = 2;
+
+    // // 次のページを取得するトークン
+    // string next_page_token = 3;
+}
+
+// ポート更新リクエスト
+message UpdatePortRequest{
+    // 更新マスク(指定されたフィールドのみ更新)
+    google.protobuf.FieldMask update_mask = 1;
+
+    // ポート(更新マスクで指定したもののみ更新)
+    Port port = 2;
+}
+
+// ポート削除リクエスト
+message DeletePortRequest {
+    int64 id = 1;                                       // ポートID
+    optional bool is_logical = 2;                       // 論理削除フラグ(true:論理削除 /  false:物理削除)
+}

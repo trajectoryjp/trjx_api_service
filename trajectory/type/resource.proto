@@ -1,0 +1,194 @@
+/***　Copyright © 2023-2024 Trajectory. All rights reserved. ***/
+
+syntax = "proto3";
+
+package trajectory.trjx_api_service;
+option go_package = "github.com/trajectoryjp/trjx_api_service";
+
+// 空間ID uasの定義を参照する
+//message SpatialIdentification {
+//    string id = 1 ; // z/f/x/y
+//}
+
+// ストリームステータス
+enum StreamStatus {
+    STREAM_STATUS_UNSPECIFIED = 0; // 未定義
+    STREAM_STATUS_CONTINUE = 1;    // 継続
+    STREAM_STATUS_DONE = 2;        // 完了
+    STREAM_STATUS_ABORT = 3;       // 中止
+}
+
+// テレメトリ機体基本情報メッセージ
+// リモートID、機体ID、表示名のうち最低１つの識別情報を通知する必要あり
+// Terminate時は、Initialize時と同じパラメタを指定する
+message UavBasic {
+    //int64 organization_id = 1;              // 組織ID(選択)    
+    string uav_id = 2;                      // 機体ID(選択)
+    string remote_id = 3;                   // リモートID(選択)    
+    string name = 4;                        // 表示名(選択)
+    bool enabled_port = 5;                  // 離発着ポート機能を持つか否か(true:有/false:無 default=false)
+    oneof flight_id {                       // 飛行ID
+        string flight_plan_id = 6;          // 飛行計画ID
+        string flight_space_id = 7;         // 飛行空間ID
+    }
+}
+
+// 機体位置情報
+message UavPosition {
+    optional double latitude = 1;           // 機体位置の緯度
+    optional double longitude = 2;          // 機体位置の経度
+    optional double altitude = 3;           // 機体位置の高度(m)
+    optional AltitudeAttribute altitude_attribute = 4; // 高度属性
+    optional float heading = 5;             // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
+    optional float error_distance = 6;      // 誤差距離（GPS誤差）
+    optional float velocity_x = 7;          // 東方向速度 (m/s)    
+    optional float velocity_y = 8;          // 北方向速度 (m/s)
+    optional float velocity_z = 9;          // 上昇速度 (m/s)
+    optional string next_wp_tag = 10;       // 機体が次に向かうWPのタグ名(UavBasicのenabled_port=true時は必ず指定)
+
+    // 高度属性(0:楕円球体高, 3:海抜高度(MSL)のみ指定可能)
+    enum AltitudeAttribute {
+        ALTITUDE_ATTRIBUTE_ELIPSOIDE = 0 ;  // 楕円球体高。default値
+        ALTITUDE_ATTRIBUTE_RELATIVE = 1;    // 離陸地点を基準とする相対高度(未対応)
+        ALTITUDE_ATTRIBUTE_AGL = 2 ;        // 地表面高度(未対応)
+        ALTITUDE_ATTRIBUTE_MSL = 3;         // 海抜高度（標高）
+    }
+}
+
+// 機体姿勢情報
+message UavAttitude{
+    optional float roll = 1 ;               // ロール(radian)
+    optional float pitch = 2 ;              // ピッチ(radian)
+    optional float yaw = 3 ;                // ヨー(radian) North=0 時計回り
+    optional float roll_speed = 4 ;         // ロール速度(rad/sec)
+    optional float pitch_speed = 5 ;        // ピッチ速度(rad/sec)
+    optional float yaw_speed = 6 ;          // ヨー速度(rad/sec)
+    optional float cog_speed = 7 ;          // 対地上速さ(m/sec)
+    optional float speed = 8 ;              // 機首方向スピード(m/sec)　※COG速度ではない
+    optional float slip_speed = 9 ;         // 機体横方向の移動速度(m/sec) 
+    optional float descent_speed = 10 ;     // 機体降下速度(m/sec)
+    optional float cog = 11 ;               // 対地上侵攻方向(degree) North=0 時計回り
+}
+
+// バッテリー情報
+message UavBattery {
+    optional float voltage_battery = 1;     // バッテリー電圧[V]
+    optional float current_battery = 2;     // 電流量[A]
+    optional float Remaining = 3;           // バッテリー残容量(0〜1) 1=100%%
+}
+
+// ステータス情報
+message UavStatus {
+    UavSignal signal = 1;                   // 機体総合情報
+    string message = 2;                     // メッセージ
+    oneof status_detail {
+        UavSystemStatus system = 3;         // 機体状態
+        UavFlightStatus flight = 4;         // 飛行状態
+        UavArmStatus status = 5;            // ARMステータス
+    }
+
+    // 機体複合状態
+    enum UavSignal {
+        SIGNAL_WHITE = 0;                   // 初期状態、未設定状態
+        SIGNAL_RED = 1;                     // 緊急状態（緊急対処を実施）
+	    SIGNAL_ORANGE = 2;                  // 危険状態（回復策を実施）
+        SIGNAL_YELLOW_BLINK = 3;            // 注意状態（運用に注意）。処理実行中。
+	    SIGNAL_YELLOW = 4;                  // 注意状態（運用に注意）
+        SIGNAL_GREEN_BLINK = 5;             // 正常状態処理実行中
+	    SIGNAL_GREEN = 6;                   // 正常状態
+        SIGNAL_NONE = 99;                   // Singnalパラメータ無効（変化なし）
+    }
+
+    // 機体状態
+    message UavSystemStatus {
+        enum STATUS {
+            STATUS_NON = 0;                 // 初期状態
+            STATUS_ERROR = 1;               // システムエラー
+            STATUS_NORMAL = 2;              // 正常
+            STATUS_LOW_BATTERY = 3 ;        // バッテリー低下
+            STATUS_SENSOR_ERROR = 4 ;       // センサーエラー
+            STATUS_CPU_OVERLOAD = 5 ;       // システムオーバーロード
+            STATUS_INCREASE_DROP_RATE = 6 ; // パケットロス増加
+            STATUS_WARN = 7;                // その他の警告
+            STATUS_EMERGENCY = 8;           // その他の緊急
+            STATUS_EMPTYBATTERY = 9 ;       // バッテリー切れ
+        }
+        STATUS status = 1; // 詳細状態
+    }
+
+    // 飛行状態
+    message UavFlightStatus {
+        STATUS status =1;                   // 飛行状態
+        MODE mode = 2;                      // 飛行モード
+        string message = 3;                 // メッセージ
+        int64 time = 4;                     // 状態取得時刻(UNIX時刻)(sec)
+        enum STATUS {
+            STATUS_UNSPECIFIED = 0;         // 未設定
+            STATUS_FLIGHT = 1;              // 飛行中
+            STATUS_TAKE_OFF = 2;            // 離陸
+            STATUS_LANDING = 3;             // 着陸
+            STATUS_UNKNOWN = 4;             // 未知
+            STATUS_LANDED = 5;              // 着陸状態
+            STATUS_UNREGIST = 6;            // 未登録
+        }
+        enum MODE {
+            MODE_UNSPECIFIED = 0;           // 未設定
+            MODE_GOTO = 1;                  // GOTO
+            MODE_PAUSE = 2;                 // PAUSE
+            MODE_MANUAL =3;                 // MANUAL
+            MODE_AUTO = 4;                  // AUTO
+            MODE_RTL = 5;                   // RTL
+        }
+    }
+
+    // ARMステータス
+    message UavArmStatus {
+        STATUS status =1;                   // 飛行状態
+        enum STATUS {
+            STATUS_UNSPECIFIED = 0;         // 未設定
+            STATUS_ARM = 1;                 // ARM
+            STATUS_DISARM = 2;              // DISARM
+        }
+    }
+}
+
+// パス情報
+message UavPath {
+    SOURCE source = 1;                      // データソース
+    enum SOURCE {
+        SOURCE_UNSPECIFIED = 0;             // 未設定
+        SOURCE_REMOTE_ID = 1;               // リモートID
+        SOURCE_TELEMETRY = 2;               // テレメトリ
+    }
+}
+
+message Position {
+    // 緯度
+    double latitude = 2;
+    // 経度
+    double longitude = 3;
+    // 高度
+    Altitude altitude = 4;
+}
+
+message Altitude {
+    Standard standard = 1;
+    float altitude = 2; // m
+
+    enum Standard {
+        ALTITUDE_ATTR_UNSPECIFIED = 0 ;
+        RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+        AGL = 2 ; // 地表面高度。
+        MSL = 3; // 海抜高度（標高）。
+        ELLIPSOIDE = 4 ;// 楕円球体高。default値。spank
+    }
+}
+
+// XY座標
+message Coordinate {
+    // 緯度
+    double latitude = 1;
+
+    // 経度
+    double longitude = 2;
+}

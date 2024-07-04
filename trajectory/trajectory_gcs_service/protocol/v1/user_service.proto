@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+
+// 403 [PERMISSION_DENIED]　権限が無い場合
+
+service UserAccountService {
+
+    // GetUserPermission
+    // アクセス権限: admin, operator
+    rpc GetUserPermission(google.protobuf.Empty) returns (UserPermission) {}
+
+    // ListUserPermissions
+    // アクセス権限: admin, operator
+    rpc ListUserPermissions(ListUserPermissionsRequest) returns (ListUserPermissionsResponse) {}
+
+    // UpdateUserPermission
+    // アクセス権限: admin
+    // Updateは全更新
+    rpc UpdateUserPermission(UserPermissionWithName) returns (UserPermissionWithName) {}
+}
+
+message UserPermission {
+    bool admin = 1;
+    bool operator = 2;
+    bool map_selectable = 3;
+    bool save_setting = 4;
+    bool movie = 5;
+    bool drone_auth = 6;
+    bool sitl_auth = 7;
+    bool ladder_auth = 8;
+    bool tile_auth = 9;
+    bool annotation_auth = 10;
+    bool video_auth = 11;
+    bool video_user = 12;
+    bool system_user = 13;
+    bool system_api_access = 14;
+}
+
+message UserPermissionWithName {
+    string user_id = 1;
+    UserPermission user_Permission = 2;
+}
+
+message ListUserPermissionsRequest {
+    int32 page_size = 1;
+    string page_token = 2;
+}
+
+message ListUserPermissionsResponse {
+    repeated UserPermission user_permission_with_name_list = 1;
+    string next_page_token = 2;
+}
