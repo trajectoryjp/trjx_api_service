@@ -676,10 +676,9 @@ message SearchSpace {
 
     //　TODO: 座標系に変更する
 
-    // z/f/x/y
     trajectory.trjx_api_service.Coordinate max_coordinate = 1; 
 
-    // z/f/x/y
+
     trajectory.trjx_api_service.Coordinate min_coordinate = 2;
 }
 

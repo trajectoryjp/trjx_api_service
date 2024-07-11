@@ -4052,9 +4052,7 @@ type SearchSpace struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// z/f/x/y
 	MaxCoordinate *trjx_api_service.Coordinate `protobuf:"bytes,1,opt,name=max_coordinate,json=maxCoordinate,proto3" json:"max_coordinate,omitempty"`
-	// z/f/x/y
 	MinCoordinate *trjx_api_service.Coordinate `protobuf:"bytes,2,opt,name=min_coordinate,json=minCoordinate,proto3" json:"min_coordinate,omitempty"`
 }
 
