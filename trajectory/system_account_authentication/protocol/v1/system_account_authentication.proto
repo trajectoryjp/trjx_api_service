@@ -1,0 +1,43 @@
+/***　Copyright © 2023-2024 Trajectory. All rights reserved. ***/
+
+/*
+ * <機能概要>
+ * SYSTEM Account Authentication(以降SAと記載)は、TRJXが外部関連システムに
+ * 提供するAPIを利用するための認証機能(トークン生成)機能を提供する。 
+ * 認証機能は、TRJXのシステムユーザのユーザIDとパスワードで認証を行い、
+ * 許可されたユーザであることが確認できたら、APIアクセスに必要なトークンを生成して
+ * 利用者に返す。 トークンは、利用者のセキュリティポリシーに則り、利用者側でupdate
+ * する必要がある。
+ *
+ * <アクセス方法>
+ * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
+ * "x-grpc-service": "SystemAccountAuthentication"
+ */
+
+syntax = "proto3";
+
+package trajectory.system_account_authentication.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/auth";
+
+// Trajectory API 認証サービス
+service SystemAccountAuthenticationService {
+    // アクセストークン取得
+    //  1)トークンが存在しない場合、新規にトークンを生成して返す。
+    //  2)トークンが存在する場合は、既存のトークンを返す。
+    //  3)updateフラグにtrueを指定した場合、既存トークンが存在する場合は
+    //    既存のトークンをリフレッシュし新たなトークンを生成して返す。
+    //    既存トークンが存在しない場合は、新規にトークンを生成して返す。
+    rpc GetToken(GetTokenRequest) returns (Token){}
+}
+
+// アクセストークン取得リクエスト
+message GetTokenRequest {
+    string user_id = 1;               // TRJXシステムユーザID
+    string password = 2;              // パスワード
+    bool update =3;                   // アップデートフラグ(true:アップデートあり/false:アップデートなし)
+}
+
+// アクセストークン
+message Token{
+    string token = 1;                 // アクセストークン
+}
