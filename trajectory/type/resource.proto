@@ -3,7 +3,7 @@
 syntax = "proto3";
 
 package trajectory.trjx_api_service;
-option go_package = "github.com/trajectoryjp/trjx_api_service";
+option go_package = "github.com/trajectoryjp/trjx_api_service/type";
 
 // 空間ID uasの定義を参照する
 //message SpatialIdentification {

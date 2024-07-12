@@ -7,7 +7,7 @@
 package trajectory_gcs
 
 import (
-	_ "github.com/trajectoryjp/trjx_api_service"
+	_ "github.com/trajectoryjp/trjx_api_service/type"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
