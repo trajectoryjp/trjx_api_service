@@ -7,8 +7,8 @@
 package trajectory_gcs
 
 import (
-	trjx_api_service "github.com/trajectoryjp/trjx_api_service"
 	spatial "github.com/trajectoryjp/trjx_api_service/spatial"
+	_type "github.com/trajectoryjp/trjx_api_service/type"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/known/emptypb"
@@ -30,7 +30,7 @@ type ListVoxelsAroundPathsRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 安全が保証されていない経路。タグはレスポンスにも引き継がれる
-	UnsafePositions []*trjx_api_service.Position `protobuf:"bytes,1,rep,name=unsafe_positions,json=unsafePositions,proto3" json:"unsafe_positions,omitempty"`
+	UnsafePositions []*_type.Position `protobuf:"bytes,1,rep,name=unsafe_positions,json=unsafePositions,proto3" json:"unsafe_positions,omitempty"`
 	// Types that are assignable to Select:
 	//
 	//	*ListVoxelsAroundPathsRequest_UavId
@@ -78,7 +78,7 @@ func (*ListVoxelsAroundPathsRequest) Descriptor() ([]byte, []int) {
 	return file_trajectory_trajectory_gcs_service_protocol_v1_route_service_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ListVoxelsAroundPathsRequest) GetUnsafePositions() []*trjx_api_service.Position {
+func (x *ListVoxelsAroundPathsRequest) GetUnsafePositions() []*_type.Position {
 	if x != nil {
 		return x.UnsafePositions
 	}
@@ -334,8 +334,8 @@ type ListVoxelsAroundPathsResponse_Result_Path struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Start *trjx_api_service.Position `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
-	End   *trjx_api_service.Position `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
+	Start *_type.Position `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
+	End   *_type.Position `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
 }
 
 func (x *ListVoxelsAroundPathsResponse_Result_Path) Reset() {
@@ -370,14 +370,14 @@ func (*ListVoxelsAroundPathsResponse_Result_Path) Descriptor() ([]byte, []int) {
 	return file_trajectory_trajectory_gcs_service_protocol_v1_route_service_proto_rawDescGZIP(), []int{1, 0, 0}
 }
 
-func (x *ListVoxelsAroundPathsResponse_Result_Path) GetStart() *trjx_api_service.Position {
+func (x *ListVoxelsAroundPathsResponse_Result_Path) GetStart() *_type.Position {
 	if x != nil {
 		return x.Start
 	}
 	return nil
 }
 
-func (x *ListVoxelsAroundPathsResponse_Result_Path) GetEnd() *trjx_api_service.Position {
+func (x *ListVoxelsAroundPathsResponse_Result_Path) GetEnd() *_type.Position {
 	if x != nil {
 		return x.End
 	}
@@ -393,7 +393,7 @@ type ListVoxelsAroundPathsResponse_Result_InBarrierError struct {
 	// 危険な経路
 	DangerPath *ListVoxelsAroundPathsResponse_Result_Path `protobuf:"bytes,3,opt,name=danger_path,json=dangerPath,proto3" json:"danger_path,omitempty"`
 	// 障害物に衝突してしまう位置
-	Position *trjx_api_service.Position `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
+	Position *_type.Position `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
 }
 
 func (x *ListVoxelsAroundPathsResponse_Result_InBarrierError) Reset() {
@@ -435,7 +435,7 @@ func (x *ListVoxelsAroundPathsResponse_Result_InBarrierError) GetDangerPath() *L
 	return nil
 }
 
-func (x *ListVoxelsAroundPathsResponse_Result_InBarrierError) GetPosition() *trjx_api_service.Position {
+func (x *ListVoxelsAroundPathsResponse_Result_InBarrierError) GetPosition() *_type.Position {
 	if x != nil {
 		return x.Position
 	}
@@ -844,7 +844,7 @@ var file_trajectory_trajectory_gcs_service_protocol_v1_route_service_proto_goTyp
 	(*ListVoxelsAroundPathsResponse_Result_NoPathError)(nil),    // 5: trajectory.trajectory_gcs_service.protocol.v1.ListVoxelsAroundPathsResponse.Result.NoPathError
 	(*ListVoxelsAroundPathsResponse_Result_GroundRisk)(nil),     // 6: trajectory.trajectory_gcs_service.protocol.v1.ListVoxelsAroundPathsResponse.Result.GroundRisk
 	(*ListVoxelsAroundPathsResponse_Result_AirRisk)(nil),        // 7: trajectory.trajectory_gcs_service.protocol.v1.ListVoxelsAroundPathsResponse.Result.AirRisk
-	(*trjx_api_service.Position)(nil),                           // 8: trajectory.trjx_api_service.Position
+	(*_type.Position)(nil),                                      // 8: trajectory.trjx_api_service.Position
 	(*UAVID)(nil),                                               // 9: trajectory.trajectory_gcs_service.protocol.v1.UAVID
 	(*ProjectID)(nil),                                           // 10: trajectory.trajectory_gcs_service.protocol.v1.ProjectID
 	(*OptionalTimeStamp)(nil),                                   // 11: trajectory.trajectory_gcs_service.protocol.v1.OptionalTimeStamp

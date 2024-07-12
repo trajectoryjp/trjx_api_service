@@ -7,8 +7,8 @@
 package trajectory_gcs
 
 import (
-	trjx_api_service "github.com/trajectoryjp/trjx_api_service"
 	spatial "github.com/trajectoryjp/trjx_api_service/spatial"
+	_type "github.com/trajectoryjp/trjx_api_service/type"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
@@ -1100,7 +1100,7 @@ type ItemParameter_Takeoff struct {
 	// ROIグループ名
 	TagOfGroup string `protobuf:"bytes,1,opt,name=tag_of_group,json=tagOfGroup,proto3" json:"tag_of_group,omitempty"`
 	// 垂直上昇高度
-	TakeoffAltitude *trjx_api_service.Altitude `protobuf:"bytes,6,opt,name=takeoff_altitude,json=takeoffAltitude,proto3,oneof" json:"takeoff_altitude,omitempty"`
+	TakeoffAltitude *_type.Altitude `protobuf:"bytes,6,opt,name=takeoff_altitude,json=takeoffAltitude,proto3,oneof" json:"takeoff_altitude,omitempty"`
 }
 
 func (x *ItemParameter_Takeoff) Reset() {
@@ -1142,7 +1142,7 @@ func (x *ItemParameter_Takeoff) GetTagOfGroup() string {
 	return ""
 }
 
-func (x *ItemParameter_Takeoff) GetTakeoffAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameter_Takeoff) GetTakeoffAltitude() *_type.Altitude {
 	if x != nil {
 		return x.TakeoffAltitude
 	}
@@ -1160,7 +1160,7 @@ type ItemParameter_ROI struct {
 	// ROIの経度
 	Longitude float64 `protobuf:"fixed64,4,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	// ROIの高度
-	Altitude *trjx_api_service.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
+	Altitude *_type.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
 }
 
 func (x *ItemParameter_ROI) Reset() {
@@ -1209,7 +1209,7 @@ func (x *ItemParameter_ROI) GetLongitude() float64 {
 	return 0
 }
 
-func (x *ItemParameter_ROI) GetAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameter_ROI) GetAltitude() *_type.Altitude {
 	if x != nil {
 		return x.Altitude
 	}
@@ -1229,7 +1229,7 @@ type ItemParameter_Waypoint struct {
 	// 経度
 	Longitude float64 `protobuf:"fixed64,4,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	// 高度
-	Altitude *trjx_api_service.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
+	Altitude *_type.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
 	// ETA 到着予定時刻
 	Eta int64 `protobuf:"varint,6,opt,name=eta,proto3" json:"eta,omitempty"`
 	// 次のWaypointへのルートの属性
@@ -1307,7 +1307,7 @@ func (x *ItemParameter_Waypoint) GetLongitude() float64 {
 	return 0
 }
 
-func (x *ItemParameter_Waypoint) GetAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameter_Waypoint) GetAltitude() *_type.Altitude {
 	if x != nil {
 		return x.Altitude
 	}
@@ -1437,7 +1437,7 @@ type ItemParameter_TakeoffPoint struct {
 	// ROIグループ名
 	TagOfGroup string `protobuf:"bytes,1,opt,name=tag_of_group,json=tagOfGroup,proto3" json:"tag_of_group,omitempty"`
 	// 高度
-	Altitude *trjx_api_service.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"` // （省略もしくは0の場合は離陸時と同じ高度）
+	Altitude *_type.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"` // （省略もしくは0の場合は離陸時と同じ高度）
 	// ETA 到着予定時刻
 	Eta int64 `protobuf:"varint,6,opt,name=eta,proto3" json:"eta,omitempty"`
 	// 次のWaypointへのルートの属性
@@ -1495,7 +1495,7 @@ func (x *ItemParameter_TakeoffPoint) GetTagOfGroup() string {
 	return ""
 }
 
-func (x *ItemParameter_TakeoffPoint) GetAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameter_TakeoffPoint) GetAltitude() *_type.Altitude {
 	if x != nil {
 		return x.Altitude
 	}
@@ -1612,9 +1612,9 @@ type ItemParameter_Land struct {
 
 	Mode ItemParameter_Land_LandMode `protobuf:"varint,8,opt,name=mode,proto3,enum=trajectory.trajectory_gcs_service.protocol.v1.ItemParameter_Land_LandMode" json:"mode,omitempty"`
 	// ROIグループ名
-	TagOfGroup       string                     `protobuf:"bytes,1,opt,name=tag_of_group,json=tagOfGroup,proto3" json:"tag_of_group,omitempty"`                       // RTL指定時は無効（離陸時のヘディングが自動で設定される）
-	ApproachAltitude *trjx_api_service.Altitude `protobuf:"bytes,6,opt,name=approach_altitude,json=approachAltitude,proto3,oneof" json:"approach_altitude,omitempty"` // 垂直降下を始める高度（着陸地点からの地上高。DEMが設定されていない地域でのAGL指定はエラー）
-	Attr             MissionItem_ItemAttr       `protobuf:"varint,20,opt,name=attr,proto3,enum=trajectory.trajectory_gcs_service.protocol.v1.MissionItem_ItemAttr" json:"attr,omitempty"`
+	TagOfGroup       string               `protobuf:"bytes,1,opt,name=tag_of_group,json=tagOfGroup,proto3" json:"tag_of_group,omitempty"`                       // RTL指定時は無効（離陸時のヘディングが自動で設定される）
+	ApproachAltitude *_type.Altitude      `protobuf:"bytes,6,opt,name=approach_altitude,json=approachAltitude,proto3,oneof" json:"approach_altitude,omitempty"` // 垂直降下を始める高度（着陸地点からの地上高。DEMが設定されていない地域でのAGL指定はエラー）
+	Attr             MissionItem_ItemAttr `protobuf:"varint,20,opt,name=attr,proto3,enum=trajectory.trajectory_gcs_service.protocol.v1.MissionItem_ItemAttr" json:"attr,omitempty"`
 }
 
 func (x *ItemParameter_Land) Reset() {
@@ -1663,7 +1663,7 @@ func (x *ItemParameter_Land) GetTagOfGroup() string {
 	return ""
 }
 
-func (x *ItemParameter_Land) GetApproachAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameter_Land) GetApproachAltitude() *_type.Altitude {
 	if x != nil {
 		return x.ApproachAltitude
 	}
@@ -2415,7 +2415,7 @@ type ItemParameterTakeoff struct {
 	// ROIグループ名
 	TagofGroup string `protobuf:"bytes,1,opt,name=tagof_group,json=tagofGroup,proto3" json:"tagof_group,omitempty"`
 	// 離陸後に到達する高度（省略もしくは相対高度0mの場合はデフォルト値）
-	Altitude *trjx_api_service.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3,oneof" json:"altitude,omitempty"`
+	Altitude *_type.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3,oneof" json:"altitude,omitempty"`
 }
 
 func (x *ItemParameterTakeoff) Reset() {
@@ -2457,7 +2457,7 @@ func (x *ItemParameterTakeoff) GetTagofGroup() string {
 	return ""
 }
 
-func (x *ItemParameterTakeoff) GetAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameterTakeoff) GetAltitude() *_type.Altitude {
 	if x != nil {
 		return x.Altitude
 	}
@@ -2475,7 +2475,7 @@ type ItemParameterROI struct {
 	// ROIの経度
 	Longitude float64 `protobuf:"fixed64,4,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	// ROIの高度
-	Altitude *trjx_api_service.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
+	Altitude *_type.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
 }
 
 func (x *ItemParameterROI) Reset() {
@@ -2524,7 +2524,7 @@ func (x *ItemParameterROI) GetLongitude() float64 {
 	return 0
 }
 
-func (x *ItemParameterROI) GetAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameterROI) GetAltitude() *_type.Altitude {
 	if x != nil {
 		return x.Altitude
 	}
@@ -2697,7 +2697,7 @@ type ItemParameterWaypoint struct {
 	// 経度（度）
 	Longitude float64 `protobuf:"fixed64,4,opt,name=longitude,proto3" json:"longitude,omitempty"`
 	// 高度（m）
-	Altitude *trjx_api_service.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
+	Altitude *_type.Altitude `protobuf:"bytes,5,opt,name=altitude,proto3" json:"altitude,omitempty"`
 	// ETA 到着予定時刻。UNIX時刻（秒）
 	Eta int64 `protobuf:"varint,6,opt,name=eta,proto3" json:"eta,omitempty"`
 	// 次のWaypointへのルートの属性
@@ -2780,7 +2780,7 @@ func (x *ItemParameterWaypoint) GetLongitude() float64 {
 	return 0
 }
 
-func (x *ItemParameterWaypoint) GetAltitude() *trjx_api_service.Altitude {
+func (x *ItemParameterWaypoint) GetAltitude() *_type.Altitude {
 	if x != nil {
 		return x.Altitude
 	}
@@ -2916,7 +2916,7 @@ type ItemParameterLand struct {
 	// RTL指定時は無効（離陸時のヘディングが自動で設定される）
 	TagOfGroup string `protobuf:"bytes,1,opt,name=tag_of_group,json=tagOfGroup,proto3" json:"tag_of_group,omitempty"`
 	// 高度属性
-	AltitudeAttr trjx_api_service.Altitude_Standard `protobuf:"varint,2,opt,name=altitude_attr,json=altitudeAttr,proto3,enum=trajectory.trjx_api_service.Altitude_Standard" json:"altitude_attr,omitempty"`
+	AltitudeAttr _type.Altitude_Standard `protobuf:"varint,2,opt,name=altitude_attr,json=altitudeAttr,proto3,enum=trajectory.trjx_api_service.Altitude_Standard" json:"altitude_attr,omitempty"`
 	// 着陸高度。
 	// Currentモードにおいては、0(Ellipsoid)では最後のWPと同じ、Relative,AGLは非許容（エラー）。MSLのみ有効。
 	// 0で無効。将来的にはoptionalに移行
@@ -2970,11 +2970,11 @@ func (x *ItemParameterLand) GetTagOfGroup() string {
 	return ""
 }
 
-func (x *ItemParameterLand) GetAltitudeAttr() trjx_api_service.Altitude_Standard {
+func (x *ItemParameterLand) GetAltitudeAttr() _type.Altitude_Standard {
 	if x != nil {
 		return x.AltitudeAttr
 	}
-	return trjx_api_service.Altitude_Standard(0)
+	return _type.Altitude_Standard(0)
 }
 
 func (x *ItemParameterLand) GetAltitude() float32 {
@@ -3236,7 +3236,7 @@ func (m *ROI) GetTarget() isROI_Target {
 	return nil
 }
 
-func (x *ROI) GetPoint() *trjx_api_service.Position {
+func (x *ROI) GetPoint() *_type.Position {
 	if x, ok := x.GetTarget().(*ROI_Point); ok {
 		return x.Point
 	}
@@ -3263,7 +3263,7 @@ type isROI_Target interface {
 
 type ROI_Point struct {
 	// ROIポイント
-	Point *trjx_api_service.Position `protobuf:"bytes,7,opt,name=point,proto3,oneof"`
+	Point *_type.Position `protobuf:"bytes,7,opt,name=point,proto3,oneof"`
 }
 
 type ROI_Road struct {
@@ -3584,7 +3584,7 @@ type SolidModel struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 原点、錐の頂点はこの直上に来ます
-	Origin *trjx_api_service.Position `protobuf:"bytes,1,opt,name=origin,proto3" json:"origin,omitempty"`
+	Origin *_type.Position `protobuf:"bytes,1,opt,name=origin,proto3" json:"origin,omitempty"`
 	// 東に対するobjファイルのx軸の角度[°]。右手系です
 	Angle float64 `protobuf:"fixed64,2,opt,name=angle,proto3" json:"angle,omitempty"`
 	// 高さ[m]
@@ -3633,7 +3633,7 @@ func (*SolidModel) Descriptor() ([]byte, []int) {
 	return file_trajectory_trajectory_gcs_service_protocol_v1_resource_proto_rawDescGZIP(), []int{31}
 }
 
-func (x *SolidModel) GetOrigin() *trjx_api_service.Position {
+func (x *SolidModel) GetOrigin() *_type.Position {
 	if x != nil {
 		return x.Origin
 	}
@@ -4052,8 +4052,8 @@ type SearchSpace struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MaxCoordinate *trjx_api_service.Coordinate `protobuf:"bytes,1,opt,name=max_coordinate,json=maxCoordinate,proto3" json:"max_coordinate,omitempty"`
-	MinCoordinate *trjx_api_service.Coordinate `protobuf:"bytes,2,opt,name=min_coordinate,json=minCoordinate,proto3" json:"min_coordinate,omitempty"`
+	MaxCoordinate *_type.Coordinate `protobuf:"bytes,1,opt,name=max_coordinate,json=maxCoordinate,proto3" json:"max_coordinate,omitempty"`
+	MinCoordinate *_type.Coordinate `protobuf:"bytes,2,opt,name=min_coordinate,json=minCoordinate,proto3" json:"min_coordinate,omitempty"`
 }
 
 func (x *SearchSpace) Reset() {
@@ -4088,14 +4088,14 @@ func (*SearchSpace) Descriptor() ([]byte, []int) {
 	return file_trajectory_trajectory_gcs_service_protocol_v1_resource_proto_rawDescGZIP(), []int{36}
 }
 
-func (x *SearchSpace) GetMaxCoordinate() *trjx_api_service.Coordinate {
+func (x *SearchSpace) GetMaxCoordinate() *_type.Coordinate {
 	if x != nil {
 		return x.MaxCoordinate
 	}
 	return nil
 }
 
-func (x *SearchSpace) GetMinCoordinate() *trjx_api_service.Coordinate {
+func (x *SearchSpace) GetMinCoordinate() *_type.Coordinate {
 	if x != nil {
 		return x.MinCoordinate
 	}
@@ -4117,11 +4117,11 @@ type PortLocation struct {
 	// タグ
 	Tag string `protobuf:"bytes,4,opt,name=tag,proto3" json:"tag,omitempty"`
 	// 離着陸機体位置
-	UavPosition *trjx_api_service.Position `protobuf:"bytes,5,opt,name=uav_position,json=uavPosition,proto3" json:"uav_position,omitempty"`
+	UavPosition *_type.Position `protobuf:"bytes,5,opt,name=uav_position,json=uavPosition,proto3" json:"uav_position,omitempty"`
 	// 離陸上昇高度(m)
 	TakeoffAltitude float32 `protobuf:"fixed32,6,opt,name=takeoff_altitude,json=takeoffAltitude,proto3" json:"takeoff_altitude,omitempty"`
 	// 最近接点位置
-	ClosestPosition *trjx_api_service.Position `protobuf:"bytes,7,opt,name=closest_position,json=closestPosition,proto3" json:"closest_position,omitempty"`
+	ClosestPosition *_type.Position `protobuf:"bytes,7,opt,name=closest_position,json=closestPosition,proto3" json:"closest_position,omitempty"`
 	// 本構造体のデータを持つか否かのフラグ(true:持つ/false:持たない)
 	HasValue bool `protobuf:"varint,8,opt,name=has_value,json=hasValue,proto3" json:"has_value,omitempty"`
 	// 有効期間始点 UNIX時間
@@ -4192,7 +4192,7 @@ func (x *PortLocation) GetTag() string {
 	return ""
 }
 
-func (x *PortLocation) GetUavPosition() *trjx_api_service.Position {
+func (x *PortLocation) GetUavPosition() *_type.Position {
 	if x != nil {
 		return x.UavPosition
 	}
@@ -4206,7 +4206,7 @@ func (x *PortLocation) GetTakeoffAltitude() float32 {
 	return 0
 }
 
-func (x *PortLocation) GetClosestPosition() *trjx_api_service.Position {
+func (x *PortLocation) GetClosestPosition() *_type.Position {
 	if x != nil {
 		return x.ClosestPosition
 	}
@@ -4448,13 +4448,13 @@ type Spot struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id       int64                      `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                              // スポットID
-	PortId   int64                      `protobuf:"varint,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`        // 親ポートID
-	Name     *string                    `protobuf:"bytes,3,opt,name=name,proto3,oneof" json:"name,omitempty"`                     // 名称
-	Tag      *string                    `protobuf:"bytes,5,opt,name=tag,proto3,oneof" json:"tag,omitempty"`                       // タグ
-	IsUsed   bool                       `protobuf:"varint,6,opt,name=is_used,json=isUsed,proto3" json:"is_used,omitempty"`        // スポット利用状態(true:利用中 / false:未利用) Create時は無効
-	SpotSize float32                    `protobuf:"fixed32,7,opt,name=spot_size,json=spotSize,proto3" json:"spot_size,omitempty"` // スポットの半径(m)
-	Center   *trjx_api_service.Position `protobuf:"bytes,8,opt,name=center,proto3" json:"center,omitempty"`                       // スポット中心座標　TODO: Port内の座標確認をどちらのサーバーでやるか確認
+	Id       int64           `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                              // スポットID
+	PortId   int64           `protobuf:"varint,2,opt,name=port_id,json=portId,proto3" json:"port_id,omitempty"`        // 親ポートID
+	Name     *string         `protobuf:"bytes,3,opt,name=name,proto3,oneof" json:"name,omitempty"`                     // 名称
+	Tag      *string         `protobuf:"bytes,5,opt,name=tag,proto3,oneof" json:"tag,omitempty"`                       // タグ
+	IsUsed   bool            `protobuf:"varint,6,opt,name=is_used,json=isUsed,proto3" json:"is_used,omitempty"`        // スポット利用状態(true:利用中 / false:未利用) Create時は無効
+	SpotSize float32         `protobuf:"fixed32,7,opt,name=spot_size,json=spotSize,proto3" json:"spot_size,omitempty"` // スポットの半径(m)
+	Center   *_type.Position `protobuf:"bytes,8,opt,name=center,proto3" json:"center,omitempty"`                       // スポット中心座標　TODO: Port内の座標確認をどちらのサーバーでやるか確認
 }
 
 func (x *Spot) Reset() {
@@ -4531,7 +4531,7 @@ func (x *Spot) GetSpotSize() float32 {
 	return 0
 }
 
-func (x *Spot) GetCenter() *trjx_api_service.Position {
+func (x *Spot) GetCenter() *_type.Position {
 	if x != nil {
 		return x.Center
 	}
@@ -4843,8 +4843,8 @@ type ROI_RoadROI struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Start *trjx_api_service.Position `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
-	End   *trjx_api_service.Position `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
+	Start *_type.Position `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
+	End   *_type.Position `protobuf:"bytes,2,opt,name=end,proto3" json:"end,omitempty"`
 	// 起点WPとターゲットの距離からの差
 	Offset float32 `protobuf:"fixed32,3,opt,name=offset,proto3" json:"offset,omitempty"`
 }
@@ -4881,14 +4881,14 @@ func (*ROI_RoadROI) Descriptor() ([]byte, []int) {
 	return file_trajectory_trajectory_gcs_service_protocol_v1_resource_proto_rawDescGZIP(), []int{24, 0}
 }
 
-func (x *ROI_RoadROI) GetStart() *trjx_api_service.Position {
+func (x *ROI_RoadROI) GetStart() *_type.Position {
 	if x != nil {
 		return x.Start
 	}
 	return nil
 }
 
-func (x *ROI_RoadROI) GetEnd() *trjx_api_service.Position {
+func (x *ROI_RoadROI) GetEnd() *_type.Position {
 	if x != nil {
 		return x.End
 	}
@@ -5205,7 +5205,7 @@ type ResultPathForPlan_InBarrierError struct {
 	// 危険なパス
 	DangerPath *Mission `protobuf:"bytes,1,opt,name=danger_path,json=dangerPath,proto3" json:"danger_path,omitempty"`
 	// 障害物に衝突してしまう位置
-	Position *trjx_api_service.Position `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
+	Position *_type.Position `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
 }
 
 func (x *ResultPathForPlan_InBarrierError) Reset() {
@@ -5247,7 +5247,7 @@ func (x *ResultPathForPlan_InBarrierError) GetDangerPath() *Mission {
 	return nil
 }
 
-func (x *ResultPathForPlan_InBarrierError) GetPosition() *trjx_api_service.Position {
+func (x *ResultPathForPlan_InBarrierError) GetPosition() *_type.Position {
 	if x != nil {
 		return x.Position
 	}
@@ -5263,7 +5263,7 @@ type ResultPathForPlan_InNoDataError struct {
 	// 安全が保障されないパス
 	UnsafePath *Mission `protobuf:"bytes,1,opt,name=unsafe_path,json=unsafePath,proto3" json:"unsafe_path,omitempty"`
 	// データが無い位置
-	Position *trjx_api_service.Position `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
+	Position *_type.Position `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
 }
 
 func (x *ResultPathForPlan_InNoDataError) Reset() {
@@ -5305,7 +5305,7 @@ func (x *ResultPathForPlan_InNoDataError) GetUnsafePath() *Mission {
 	return nil
 }
 
-func (x *ResultPathForPlan_InNoDataError) GetPosition() *trjx_api_service.Position {
+func (x *ResultPathForPlan_InNoDataError) GetPosition() *_type.Position {
 	if x != nil {
 		return x.Position
 	}
@@ -6459,10 +6459,10 @@ var file_trajectory_trajectory_gcs_service_protocol_v1_resource_proto_goTypes = 
 	(*ResultPathForPlan_UnreachableError)(nil),      // 74: trajectory.trajectory_gcs_service.protocol.v1.ResultPathForPlan.UnreachableError
 	(*timestamppb.Timestamp)(nil),                   // 75: google.protobuf.Timestamp
 	(*durationpb.Duration)(nil),                     // 76: google.protobuf.Duration
-	(*trjx_api_service.Altitude)(nil),               // 77: trajectory.trjx_api_service.Altitude
-	(trjx_api_service.Altitude_Standard)(0),         // 78: trajectory.trjx_api_service.Altitude.Standard
-	(*trjx_api_service.Position)(nil),               // 79: trajectory.trjx_api_service.Position
-	(*trjx_api_service.Coordinate)(nil),             // 80: trajectory.trjx_api_service.Coordinate
+	(*_type.Altitude)(nil),                          // 77: trajectory.trjx_api_service.Altitude
+	(_type.Altitude_Standard)(0),                    // 78: trajectory.trjx_api_service.Altitude.Standard
+	(*_type.Position)(nil),                          // 79: trajectory.trjx_api_service.Position
+	(*_type.Coordinate)(nil),                        // 80: trajectory.trjx_api_service.Coordinate
 	(*spatial.SpatialIdentification)(nil),           // 81: generic.v2.SpatialIdentification
 }
 var file_trajectory_trajectory_gcs_service_protocol_v1_resource_proto_depIdxs = []int32{
