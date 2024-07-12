@@ -56,12 +56,12 @@ cd cmd
 
 3. モジュール作成<br>
 ```sh
-cd build/github.com/trajectoryjp/TrajectoryApiService
-go mod init github.com/trajectoryjp/TrajectoryApiService
+cd build/github.com/trajectoryjp/trjx_api_service
+go mod init github.com/trajectoryjp/trjx_api_service
 ```
 
-4. アプリケーション側の対応<br>
+1. アプリケーション側の対応<br>
 `go.mod`にreplaceを追加
 ```
-replace github.com/trajectoryjp/TrajectoryApiService => ../TrajectoryApiService/build/github.com/trajectoryjp/TrajectoryApiService
+replace github.com/trajectoryjp/trjx_api_service => ../trjx_api_service/build/github.com/trajectoryjp/trjx_api_service
 ```
