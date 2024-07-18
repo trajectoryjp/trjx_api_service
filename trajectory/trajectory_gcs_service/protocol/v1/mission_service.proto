@@ -14,16 +14,16 @@ service MissionService {
     rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
 
     // CreateMissionRecord: ミッションをデータベースに追加する
-    rpc CreateMissionRecord(CreateMissionRecordRequest) returns (MissionID) {}
+    rpc CreateMissionRecord(MissionRecord) returns (MissionID) {}
 
     // GetMissionRecord: ミッションの取得
-    rpc GetMissionRecord(MissionID) returns (Mission) {}
+    rpc GetMissionRecord(MissionID) returns (MissionRecord) {}
 
     // DeleteMission: ミッションの削除
     rpc DeleteMissionRecord(MissionID) returns (google.protobuf.Empty) {}
 
     // UpdateMission: ミッションの更新
-    rpc UpdateMissionRecord(UpdateMissionRecordRequest) returns (Mission) {}
+    rpc UpdateMissionRecord(UpdateMissionRecordRequest) returns (MissionRecord) {}
 }
 
 message CreateMissionRequest { 
@@ -56,7 +56,7 @@ message CreateMissionResponse {
 }
 
 
-message CreateMissionRecordRequest {
+message MissionRecord {
     Mission mission = 1; // MissionItemのリスト
     string name = 2; // 保存名
     ProjectID project_id = 3; // 所有組織
@@ -68,10 +68,5 @@ message CreateMissionRecordRequest {
 
 message UpdateMissionRecordRequest {
     MissionID mission_id = 1; // データベースレコードキー。必須
-    Mission mission = 2; // 
-    string name = 3; // 保存名
-    ProjectID project_id = 4; // 所有組織
-    TransactionID transaction_id = 5; // トランザクションID
-    UAVID uav_id = 6;
-    ApplicationAttr app = 7; // Updateを要求したアプリケーション。subsetMission=trueの場合はbundleIDが一致していなければならない。
+    MissionRecord mission_record = 2; // ミッションのデータベースレコード。未指定のフィールドは更新されない
 }
