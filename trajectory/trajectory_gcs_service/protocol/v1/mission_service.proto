@@ -13,17 +13,17 @@ service MissionService {
     // CreateMission: ミッションの生成
     rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
 
-    // AddMission: ミッションをデータベースに追加する
-    rpc AddMission(AddMissionRequest) returns (MissionID) {}
+    // CreateMissionRecord: ミッションをデータベースに追加する
+    rpc CreateMissionRecord(CreateMissionRecordRequest) returns (MissionID) {}
 
-    // GetMission: ミッションの取得
-    rpc GetMission(MissionID) returns (Mission) {}
+    // GetMissionRecord: ミッションの取得
+    rpc GetMissionRecord(MissionID) returns (Mission) {}
 
     // DeleteMission: ミッションの削除
-    rpc DeleteMission(MissionID) returns (google.protobuf.Empty) {}
+    rpc DeleteMissionRecord(MissionID) returns (google.protobuf.Empty) {}
 
     // UpdateMission: ミッションの更新
-    rpc UpdateMission(UpdateMissionRequest) returns (Mission) {}
+    rpc UpdateMissionRecord(UpdateMissionRecordRequest) returns (Mission) {}
 }
 
 message CreateMissionRequest { 
@@ -55,8 +55,8 @@ message CreateMissionResponse {
     repeated string reserved_route_ids = 3 ; // 予約ID
 }
 
-// AddMissionリクエスト
-message AddMissionRequest {
+
+message CreateMissionRecordRequest {
     Mission mission = 1; // MissionItemのリスト
     string name = 2; // 保存名
     ProjectID project_id = 3; // 所有組織
@@ -65,8 +65,8 @@ message AddMissionRequest {
     ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
 }
 
-// UpdateMissionリクエスト
-message UpdateMissionRequest {
+
+message UpdateMissionRecordRequest {
     MissionID mission_id = 1; // データベースレコードキー。必須
     Mission mission = 2; // 
     string name = 3; // 保存名
