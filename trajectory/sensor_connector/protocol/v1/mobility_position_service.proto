@@ -22,25 +22,9 @@
 // モビリティ位置情報サービス
 service MobilityPositionService {
 
-    // モビリティ位置情報の取得
-    rpc ListMobilePosition(ListMobilePositionRequest) returns (stream ListMobilePositionResponse);
-
     // モビリティポジションの登録
     rpc PushMobilityPosition(stream PushMobilityPositionRequest) returns (stream PushMobilityPositionResponse);
 
-}
-
-// モビリティ位置情報取得リクエスト
-message ListMobilePositionRequest{
-    MobilityType type = 1;                                          // 取得位置情報種別
-}
-
-// モビリティ位置情報取得レスポンス
-message ListMobilePositionResponse{
-    oneof positions {                                               // 位置情報リスト
-        trjx_api_service.AdsBPositions ads_b_positions = 1;         // ADS-B位置情報リスト
-        trjx_api_service.RemoteIdPositions remote_id_positions = 2; // リモートID情報リスト
-    }
 }
 
 // モビリティポジションの登録リクエスト
