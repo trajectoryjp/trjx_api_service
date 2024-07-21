@@ -1,0 +1,68 @@
+/***　Copyright © 2023-2024 Trajectory. All rights reserved. ***/
+
+/*
+ * <機能概要>
+ * Sensor Connector(以降SCと記載)は、・・・
+ *
+ * <アクセス方法>
+ * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
+ * "x-grpc-service": "SensorConnector"
+ * "username": システムユーザID
+ * "token": アクセストークン
+ */
+
+ syntax = "proto3";
+
+ package trajectory.sensor_connector.protocol.v1;
+ option go_package = "github.com/trajectoryjp/trjx_api_service/sensor";
+ 
+ import "trajectory/type/ads_b.proto";
+ import "trajectory/type/remote_identification.proto";
+
+// モビリティ位置情報サービス
+service MobilityPositionService {
+
+    // モビリティ位置情報の取得
+    rpc ListMobilePosition(ListMobilePositionRequest) returns (stream ListMobilePositionResponse);
+
+    // モビリティポジションの登録
+    rpc PushMobilityPosition(stream PushMobilityPositionRequest) returns (stream PushMobilityPositionResponse);
+
+}
+
+// モビリティ位置情報取得リクエスト
+message ListMobilePositionRequest{
+    MobilityType type = 1;                                          // 取得位置情報種別
+}
+
+// モビリティ位置情報取得レスポンス
+message ListMobilePositionResponse{
+    oneof positions {                                               // 位置情報リスト
+        trjx_api_service.AdsBPositions ads_b_positions = 1;         // ADS-B位置情報リスト
+        trjx_api_service.RemoteIdPositions remote_id_positions = 2; // リモートID情報リスト
+    }
+}
+
+// モビリティポジションの登録リクエスト
+message PushMobilityPositionRequest{
+    oneof positions {                                               // 位置情報リスト
+        trjx_api_service.AdsBPositions ads_b_positions = 1;         // ADS-B位置情報リスト
+        trjx_api_service.RemoteIdPositions remote_id_positions = 2; // リモートID情報リスト
+    }
+}
+
+// モビリティポジションの登録レスポンス
+message PushMobilityPositionResponse{
+    uint32 code = 1;                                                // ステータスコード
+    string message = 2;                                             // メッセージ
+    MobilityType type = 3;                                          // 取得位置情報種別
+}
+
+// 取得位置情報種別
+enum MobilityType {
+    MOBILITY_TYPE_UNSPECIFIED = 0;                                  // 未設定
+    MOBILITY_TYPE_ABS_D = 1;                                        // ABS-D
+    MOBILITY_TYPE_REMOTE_ID = 2;                                    // リモートID
+}
+
+
