@@ -15,7 +15,7 @@ service UserAccountService {
 
     // ListUserPermissions
     // アクセス権限: admin, operator
-    rpc ListUserPermissions(ListUserPermissionsRequest) returns (ListUserPermissionsResponse) {}
+    rpc ListUserPermissions(google.protobuf.Empty) returns (ListUserPermissionsResponse) {}
 
     // UpdateUserPermission
     // アクセス権限: admin
@@ -45,12 +45,6 @@ message UserPermissionWithName {
     UserPermission user_Permission = 2;
 }
 
-message ListUserPermissionsRequest {
-    int32 page_size = 1;
-    string page_token = 2;
-}
-
 message ListUserPermissionsResponse {
     repeated UserPermission user_permission_with_name_list = 1;
-    string next_page_token = 2;
 }
