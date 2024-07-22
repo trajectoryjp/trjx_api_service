@@ -25,152 +25,6 @@ message ScheduledTime {
     google.protobuf.Duration occupy = 4;
 }
 
-// 離陸を実行する。
-message ItemParameter_Takeoff {
-    // ROIグループ名
-    string tag_of_group = 1;
-    // 垂直上昇高度
-    optional trajectory.trjx_api_service.Altitude takeoff_altitude = 6 ;
-}
-
-// ROIを指定する。
-message ItemParameter_ROI {
-    // ROIの緯度
-    double latitude = 3;
-    // ROIの経度
-    double longitude = 4;
-    // ROIの高度
-    trajectory.trjx_api_service.Altitude altitude = 5;
-}
-
-// 指定の座標のWaypointへ向かう
-message ItemParameter_Waypoint {
-    // ROIグループ名
-    string tag_of_group = 1; // heading設定時は無効
-    // 緯度
-    double latitude = 3;
-    // 経度
-    double longitude = 4;
-    // 高度
-    trajectory.trjx_api_service.Altitude altitude = 5;
-    // ETA 到着予定時刻
-    int64 eta = 6;
-    // 次のWaypointへのルートの属性
-    MissionItem.SafetyRoute safety_route_attr = 7 ; //（入力ではdon't care）
-    // trueで無限pause（再開メッセージを受けるまで）
-    bool    pause = 10;
-    // pauseがfalseの場合のみ有効。秒
-    float hold_time = 11;
-    // ヘディング
-    HeadingAngle heading = 12 ; // 指定なしの場合は進行方向。heading設定でROI（tagOfGroup）はキャンセル。
-    message HeadingAngle {
-        float degree = 1 ; // 度。絶対角度、北が0度。
-    }
-     // スピード（本WP通過後の速度)
-    SpeedDef speed = 13 ;
-    message SpeedDef { // 対地速度のみ
-        float speed = 1 ; // m/s
-    }
-    // Attr attr = 20;
-    MissionItem.ItemAttr attr = 20 ;
-    repeated CameraControl camera_control = 41 ; //角度は絶対値指定（absolute）のみ許容。重複不可。
-    oneof CameraOption { // 指定がなく、ROIが設定され、機体が能力を有する場合はシャッターを切る（Shoot=trueに同じ）
-        bool auto_shoot  = 42 ; // ROIが設定されていてもfalseの場合はシャッターを切らない。trueの場合はROIが設定されているとシャッターを切る。
-        // CameraCommandのshutterはROIとは独立なシャッター制御。（重複しても切るシャッターイベントは1つ）
-        float shoot_interval_distance = 43 ; // 写真の撮影間隔（m）。0以下で停止。
-        int32 shoot_interval_time = 44 ; // 写真の撮影間隔（秒）。0以下で停止。
-    }
-
-    // Type
-    enum Type {
-        GENERAL = 0 ; // 通常のROI
-        ROAD_ROI = 1 ; // RoadROIにより生成されたWaypoint
-    }
-    Type waypoint_type = 21 ;
-
-}
-// 離陸地点のWaypointへ向かう
-message ItemParameter_TakeoffPoint {
-    // ROIグループ名
-    string tag_of_group = 1;
-    // 高度
-    trajectory.trjx_api_service.Altitude altitude = 5; // （省略もしくは0の場合は離陸時と同じ高度）
-    // ETA 到着予定時刻
-    int64 eta = 6;
-    // 次のWaypointへのルートの属性
-    MissionItem.SafetyRoute safety_route_attr = 7 ; // 入力ではdon't care）
-    float hold_time = 11;
-    bool manual_camera_shoot = 40 ;
-    repeated CameraControl camera_control = 41 ;
-    HeadingAngle heading = 12 ; // 指定なしの場合は進行方向。heading設定でROI（tagOfGroup）はキャンセル。
-    message HeadingAngle {
-        float degree = 1 ; // 度。絶対角度、北が0度。
-    }
-    // スピード（本WP通過後の速度）
-    SpeedDef speed = 13 ;
-    message SpeedDef {
-        float speed = 1 ; // m/s
-    }
-
-    oneof CameraOption { // 指定がなく、ROIが設定され、機体が能力を有する場合はシャッターを切る（Shoot=trueに同じ）
-        bool auto_shoot  = 42 ; // ROIが設定されていてもfalseの場合はシャッターを切らない。trueの場合はROIが設定されているとシャッターを切る。
-        // CameraCommandのshutterはROIとは独立なシャッター制御。（重複しても切るシャッターイベントは1つ）
-        float shoot_interval_distance = 43 ; // 写真の撮影間隔（m）。0以下で停止。
-        int32 shoot_interval_time = 44 ; // 写真の撮影間隔（秒）。0以下で停止。
-    }
-}
-
-// 着陸を実行する
-// 最終ポイントで本Itemを指定しない場合はDefaultの動作になる
-message ItemParameter_Land {
-    
-    // 着陸種別
-    enum LandMode {
-        LAND_MODE_UNSPECIFIED = 0;
-        DEFAULT = 10; // 機体の種別により自動でモードを決定する
-        TAKEOFF_POINT = 1; // 離陸地点に戻って着陸する。（緯度、経度の指定は無視される）
-        RTL = 2; // RTLに指定された位置へ着陸する。（緯度、経度の指定は無視される）
-        CURRENT = 3 ; // 緯度、経度で指定した位置に着陸する。
-        TRACKING = 4 ; // トラッキングで与える場所に着陸（実装予定）（緯度、経度の指定は無視される）
-    };
-    LandMode mode = 8;
-    // ROIグループ名
-    string tag_of_group = 1; // RTL指定時は無効（離陸時のヘディングが自動で設定される）
-    optional trajectory.trjx_api_service.Altitude approach_altitude = 6 ; // 垂直降下を始める高度（着陸地点からの地上高。DEMが設定されていない地域でのAGL指定はエラー）
-    MissionItem.ItemAttr attr = 20 ;
-}
-
-// 速度を変更する
-// 利用は推奨しない。RESUME時にはデフォルト速度に戻る。
-// Waypointのspeedを推奨
-message ItemParameter_Speed {
-    float speed = 1; // m/sec
-    MissionItem.ItemAttr attr = 20 ;
-}
-
-// 入力には指定しない
-// 利用は推奨しない。RESUME時にはデフォルトヘディングに戻る。
-// Waypointのheadingを推奨
-message ItemParameter_Yaw {
-    float angle = 1;
-    MissionItem.ItemAttr attr = 20 ;
-}
-
-// 入力には指定しない
-// 遅延時間を指定する。
-message ItemParameter_Delay {
-    // 遅延時間（秒）
-    int32 delay_sec = 1;
-    MissionItem.ItemAttr attr = 30 ;
-}
-
-// 入力には指定しない
-// ARM/DISARMする。
-message ItemParameter_Arm {
-    bool arm = 1 ; // trueでARM。falseでDISARM
-    MissionItem.ItemAttr attr = 20 ;
-}
-
 // Export
 message ExternalMission {
     bool result = 1 ;
@@ -298,14 +152,30 @@ message MissionItem {
     }
 }
 
+message PortZone { // ドローンボックスと区別するための名称
+    int64 port_id = 1 ;
+
+    // 離陸：指定なしの場合は機体を置いた位置から離陸する。機体を置いた周辺のスポットが予約されている時はエラー。
+    // 着陸：指定なしの場合は空きスポットを自動割付（将来的に実装予定）。
+    optional int64 spot_id = 2 ; 
+}
+
 // 離陸を実行する。
 message ItemParameterTakeoff {
     reserved 3, 4;
     reserved "latitude", "longitude";
     // ROIグループ名
-    string tagof_group = 1;
-    // 離陸後に到達する高度（省略もしくは相対高度0mの場合はデフォルト値）
-    optional trajectory.trjx_api_service.Altitude altitude = 5;
+    string tag_of_group = 1;
+    // 垂直上昇高度
+    // optional trajectory.trjx_api_service.Altitude takeoff_altitude = 6 ;  // DEPRECATED（Conditionで指定）
+    oneof takeoff_select {
+        PortZone port_zone = 11 ; // ポート利用
+        Condition condition = 12 ; // 条件の明示的指定
+    }
+
+    message Condition {
+        optional trajectory.trjx_api_service.Altitude takeoff_altitude = 1 ; 
+    }
 }
 
 // ROIを指定する。
@@ -437,28 +307,25 @@ message ItemParameterLand {
     // 着陸種別
     enum LandMode {
         LAND_MODE_UNSPECIFIED = 0;
-        // 機体の種別により自動でモードを決定する
-        DEFAULT = 10;
-        // 離陸地点に戻って着陸する。（緯度、経度の指定は無視される）
-        TAKEOFF_POINT = 1;
-        // RTLに指定された位置へ着陸する。（緯度、経度の指定は無視される）
-        RTL = 2;
-        // 緯度、経度で指定した位置に着陸する。
-        CURRENT = 3;
-        // トラッキングで与える場所に着陸（実装予定）（緯度、経度の指定は無視される）
-        TRAKING = 4;
+        DEFAULT = 10; // 機体の種別により自動でモードを決定する
+        TAKEOFF_POINT = 1; // 離陸地点に戻って着陸する。（緯度、経度の指定は無視される）
+        RTL = 2; // RTLに指定された位置へ着陸する。（緯度、経度の指定は無視される）
+        CURRENT = 3 ; // 緯度、経度で指定した位置に着陸する。
+        TRACKING = 4 ; // トラッキングで与える場所に着陸（実装予定）（緯度、経度の指定は無視される）
     };
-    LandMode mode = 8;
+    // LandMode mode = 8;  // DEPRECATED（Conditionで指定）
     // ROIグループ名
-    // RTL指定時は無効（離陸時のヘディングが自動で設定される）
-    string tag_of_group = 1;
-    // 高度属性 
-    trajectory.trjx_api_service.Altitude.Standard altitude_attr = 2;
-    // 着陸高度。
-    // Currentモードにおいては、0(Ellipsoid)では最後のWPと同じ、Relative,AGLは非許容（エラー）。MSLのみ有効。
-    // 0で無効。将来的にはoptionalに移行
-    float altitude = 5;
-    optional MissionItem.ItemAttr attr = 20;
+    string tag_of_group = 1; // RTL指定時は無効（離陸時のヘディングが自動で設定される）
+    // optional trajectory.trjx_api_service.Altitude approach_altitude = 6 ; // 垂直降下を始める高度（着陸地点からの地上高。DEMが設定されていない地域でのAGL指定はエラー）// DEPRECATED（Conditionで指定）
+    oneof landing_select {
+        PortZone port_zone = 11 ; // ポート利用
+        Condition condition = 12 ; // 条件の明示的指定
+    }
+    message Condition {
+        LandMode mode = 1;
+        optional trajectory.trjx_api_service.Altitude approach_altitude = 2 ; // 垂直降下を始める高度（着陸地点からの地上高。DEMが設定されていない地域でのAGL指定はエラー）  
+    }
+    MissionItem.ItemAttr attr = 20;
 }
 
 // 速度を変更する
