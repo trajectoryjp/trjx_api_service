@@ -68,5 +68,5 @@ message MissionRecord {
 
 message UpdateMissionRecordRequest {
     MissionID mission_id = 1; // データベースレコードキー。必須
-    MissionRecord mission_record = 2; // ミッションのデータベースレコード。未指定のフィールドは更新されない
+    MissionRecord mission_record = 2; // ミッションのデータベースレコード
 }
