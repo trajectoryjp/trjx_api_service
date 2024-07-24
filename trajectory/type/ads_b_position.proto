@@ -5,23 +5,7 @@ syntax = "proto3";
 package trajectory.trjx_api_service;
 option go_package = "github.com/trajectoryjp/trjx_api_service/type";
 
-import "google/protobuf/timestamp.proto";
-
-/*
- * ADS-Bテレメトリー
- * テレメトリー情報は以下を参照
- * https://docs.google.com/presentation/d/1zhGvLYiAusAamBDzhFCr-PSI-p08v7nq/edit#slide=id.p6
- * https://github.com/wiedehopf/readsb/blob/dev/README-json.md
- */
-message AdsBPositions {
-    google.protobuf.Timestamp now = 1;      // データ(ファイル)生成時刻
-    int32 message = 2;                      // the total number of Mode S messages processed since readsb started.
-    repeated Aircraft aircraft = 3;         // 航空機情報リスト
-}
-
-// {"hex":"71c016","flight":"JNA210  ","alt_baro":32000,"alt_geom":32075,"gs":395.2,"ias":281,"mach":0.776,"track":271.6,"mag_heading":277.2,"baro_rate":0,"geom_rate":32,"squawk":"3614","emergency":"none","category":"A3","nav_qnh":1013.6,"nav_altitude_mcp":32000,"nav_heading":277.0,"lat":35.917798,"lon":138.913879,"nic":8,"rc":186,"seen_pos":0.6,"version":2,"nic_baro":1,"nac_p":10,"nac_v":2,"sil":3,"sil_type":"perhour","gva":2,"sda":2,"mlat":[],"tisb":[],"messages":1692,"seen":0.0,"rssi":-24.7},
-
-// ABS-D 航空機機体情報
+// ADS-B 航空機機体情報
 message Aircraft {
     string hex = 1;                         // 24-bit ICAO identifier of the aircraft as 6 digits
     MessageType type = 2;                   // type of underlying messages
@@ -73,7 +57,7 @@ message Aircraft {
     string tat = 48;                        // outer/static air temperature (C) and total air temperature (C) are calculated from mach number and true airspeed (typically somewhat inaccurate at lower altitudes / mach numbers below 0.5, calculation is inhibited for mach < 0.395)
     string acas_ra = 49;                    // experimental, subject to change, see format here
     string gpcOkBefore = 50;                // experimental, subject to change: aircraft lost GPS / GPS heavily degraded, it was working well before this timestamp, only displayed for 15 min after GPS is lost / degraded
-    // ABS-Dメッセージタイプ
+    // ADS-Bメッセージタイプ
     enum MessageType {
         MESSGAGE_TYPE_UNSPECIFIED = 0;      // 未設定
         MESSGAGE_TYPE_ADS_B_ICAO = 1;       // messages from a Mode S or ADS-B transponder, using a 24-bit ICAO address

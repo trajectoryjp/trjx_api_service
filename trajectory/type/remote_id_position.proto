@@ -8,14 +8,9 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/type";
 import "google/protobuf/timestamp.proto";
 
 
-// リモートID位置情報リスト
-// テレメトリー情報はここを参照 → https://qiita.com/hsgucci/items/b28cea274d8f94bb18b9
-message RemoteIdPositions {
-    repeated RemoteIdPosition positions = 1;        // リモートID位置情報リスト
-}
-
 // リモートID位置情報
-message RemoteIdPosition {
+// テレメトリー情報はここを参照 → https://qiita.com/hsgucci/items/b28cea274d8f94bb18b9
+message RemoteId {
     RemoteIdAircraftInformation aircraft_information = 1;
     RemoteIdDynamicPosition dynamic_position = 2;
 }
