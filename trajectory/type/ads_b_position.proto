@@ -56,7 +56,7 @@ message Aircraft {
     string oat = 47;                        // outer/static air temperature (C) and total air temperature (C) are calculated from mach number and true airspeed (typically somewhat inaccurate at lower altitudes / mach numbers below 0.5, calculation is inhibited for mach < 0.395)
     string tat = 48;                        // outer/static air temperature (C) and total air temperature (C) are calculated from mach number and true airspeed (typically somewhat inaccurate at lower altitudes / mach numbers below 0.5, calculation is inhibited for mach < 0.395)
     string acas_ra = 49;                    // experimental, subject to change, see format here
-    string gpcOkBefore = 50;                // experimental, subject to change: aircraft lost GPS / GPS heavily degraded, it was working well before this timestamp, only displayed for 15 min after GPS is lost / degraded
+    string gps_ok_before = 50;              // experimental, subject to change: aircraft lost GPS / GPS heavily degraded, it was working well before this timestamp, only displayed for 15 min after GPS is lost / degraded
     // ADS-Bメッセージタイプ
     enum MessageType {
         MESSGAGE_TYPE_UNSPECIFIED = 0;      // 未設定

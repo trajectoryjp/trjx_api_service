@@ -46,7 +46,7 @@ message RemoteIdAircraftInformation {
         AIRCRAFT_TYPE_UNSPECIFIED = 0;   // 未設定
         AIRCRAFT_TYPE_AIRPLANE = 1;      // 航空機
         AIRCRAFT_TYPE_HELICOPTER = 2;    // ヘリコプター
-        AIRCRAFT_TYPE_MULTIROTER = 3;    // マルチローター
+        AIRCRAFT_TYPE_MULTIROTOR = 3;    // マルチローター
         AIRCRAFT_TYPE_OTHERS = 4;        // その他
         AIRCRAFT_TYPE_GLIDER = 5;        // グライダー
         AIRCRAFT_TYPE_AIRSHIP = 6;       // エアシップ
@@ -74,7 +74,7 @@ message RemoteIdDynamicPosition {
     uint32 pressure_altitude = 7;                       // Pressure Altitude (Ref 29.92 inHg, 1013.24 mb) (Altitude + 1000 m)/0.5 (LE)
     uint32 geodetic_altitude = 8;                       // WGS-84 HAE (Altitude + 1000 m)/0.5
     uint32 height = 9;                                  // Height above takeoff location or Height above ground (indicate with Height Type Bit) (Altitude + 1000 m)/0.5
-    bytes hotizontal_vertial_accuracy = 10;             // Horizontal and vertical accuracy in bits
+    bytes holizontal_vertical_accuracy = 10;            // Horizontal and vertical accuracy in bits
     bytes baro_altitude_accuracy_speed_accuracy = 11;   // Baro altitude and accuracy and speed accuracy in bits
     uint32 timestamp = 12;                              // Time of applicability expressed in 1/10ths of seconds since the last hour
     bytes reserved_timestamp_accuracy = 13;             // Reserved bits and timestamp accuracy in bits
