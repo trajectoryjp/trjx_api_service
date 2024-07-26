@@ -1,0 +1,83 @@
+/***　Copyright © 2023-2024 Trajectory. All rights reserved. ***/
+
+syntax = "proto3";
+
+package trajectory.trjx_api_service;
+option go_package = "github.com/trajectoryjp/trjx_api_service/type";
+
+import "google/protobuf/timestamp.proto";
+
+
+// リモートID位置情報
+// テレメトリー情報はここを参照 → https://qiita.com/hsgucci/items/b28cea274d8f94bb18b9
+message RemoteId {
+    RemoteIdAircraftInformation aircraft_information = 1;
+    RemoteIdDynamicPosition dynamic_position = 2;
+}
+
+// 静的所有機体情報
+// 国土交通省リモートID技術規格書を参照
+message RemoteIdAircraftInformation {
+    string registration_code = 1;                   // 登録記号
+    Category category = 2;                          // 製造区分
+    string manufacturer_jpn = 3;                    // 製造者日本語
+    string model_jpn = 4;                           // 型式日本語
+    string manufacturer_eng = 5;                    // 製造者英語
+    string model_eng = 6;                           // 型式英語
+    string manufacturing_number = 7;                // 製造番号
+    bool remodeling_type = 8;                       // 改造有無
+    AircraftType aircraft_type = 9;                 // 種類
+    RIDType rid_type = 10;                          // RID を有している機体か
+    string rid_manufacturer_jpn = 11;               // RID 外付け機器の製造者名(日本語) 内蔵の場合、無人航空機の製造者と同一
+    string rid_model_jpn = 12;                      // RID 外付け機器の型式名(日本語)  内蔵の場合、無人航空機の型式と同一
+    string rid_manufacturer_eng = 13;               // RID 外付け機器の製造者名(英語)　内蔵の場合、無人航空機の製造者と同一
+    string rid_model_eng = 14;                      // RID 外付け機器の型式名(英語)　内蔵の場合、無人航空機の型式と同一
+    string rid_manufacturing_number = 15;           // RID 外付け機器の製造番号　内蔵の場合、無人航空機の製造番号と同一
+    google.protobuf.Timestamp modified_date = 16;   // 更新日時(UTC) 初期登録時は空文字列を返す YYYY-MM-DDThh:mm:ssZ 形式とする。
+     bool write_status = 17;                        // RID 機器等への登録記号情報等の書き込み状態　false = 未書き込み / true = 書き込み済み
+    // 製造区分
+     enum Category {
+        CATEGORY_UNSPECIFIED = 0;        // 未設定
+        CATEGORY_COMPANY = 1;            // 企業
+        CATEGORY_INDIVIDUAL = 2;         // 個人
+    }
+    // 種類
+    enum AircraftType {
+        AIRCRAFT_TYPE_UNSPECIFIED = 0;   // 未設定
+        AIRCRAFT_TYPE_AIRPLANE = 1;      // 航空機
+        AIRCRAFT_TYPE_HELICOPTER = 2;    // ヘリコプター
+        AIRCRAFT_TYPE_MULTIROTOR = 3;    // マルチローター
+        AIRCRAFT_TYPE_OTHERS = 4;        // その他
+        AIRCRAFT_TYPE_GLIDER = 5;        // グライダー
+        AIRCRAFT_TYPE_AIRSHIP = 6;       // エアシップ
+    }
+    // RIDを持つ機体か？
+    enum RIDType {
+        RID_TYPE_UNSPECIFIED = 0;       // 未設定
+        RID_TYPE_INTERNAL = 1;          // 内部
+        RID_TYPE_EXTERNAL = 2;          // 外部
+    }
+    
+         
+}
+
+// 今の段階ではRemoteIdからエンコードされた情報を受信機でデコードしてTRJX内部で情報を扱う想定
+// 動的所有機体情報
+// ASTM Designation: F3411 − 19 Standard Specification for Remote ID and Tracking を参照
+message RemoteIdDynamicPosition {
+    bytes status_flag = 1;                              // Status and flags represented as 1 byte
+    uint32 track_direction = 2;                         // Direction expressed as the route course measured clockwise from true north.
+    uint32 speed = 3;                                   // Ground Speed in m/s encloded as specified in Table 7
+    uint32 vertical_speed = 4;                          // Vertical Speed m/s (+ up, – down) Multiplier = 0.5
+    sint32 latitude = 5;                                // Latitude of UA deg*10^7
+    sint32 longitude = 6;                               // Longitude of UA deg*10^7
+    uint32 pressure_altitude = 7;                       // Pressure Altitude (Ref 29.92 inHg, 1013.24 mb) (Altitude + 1000 m)/0.5 (LE)
+    uint32 geodetic_altitude = 8;                       // WGS-84 HAE (Altitude + 1000 m)/0.5
+    uint32 height = 9;                                  // Height above takeoff location or Height above ground (indicate with Height Type Bit) (Altitude + 1000 m)/0.5
+    bytes holizontal_vertical_accuracy = 10;            // Horizontal and vertical accuracy in bits
+    bytes baro_altitude_accuracy_speed_accuracy = 11;   // Baro altitude and accuracy and speed accuracy in bits
+    uint32 timestamp = 12;                              // Time of applicability expressed in 1/10ths of seconds since the last hour
+    bytes reserved_timestamp_accuracy = 13;             // Reserved bits and timestamp accuracy in bits
+}
+
+

@@ -1,0 +1,88 @@
+/***　Copyright © 2023-2024 Trajectory. All rights reserved. ***/
+
+syntax = "proto3";
+
+package trajectory.trjx_api_service;
+option go_package = "github.com/trajectoryjp/trjx_api_service/type";
+
+// ADS-B 航空機機体情報
+message Aircraft {
+    string hex = 1;                         // 24-bit ICAO identifier of the aircraft as 6 digits
+    MessageType type = 2;                   // type of underlying messages
+    string flight = 3;                      // callsign, the flight name or aircraft registration as 8 chars (2.2.8.2.6)
+    int32 alt_baro = 4;                     // the aircraft barometric altitude in feet as a number OR "ground" as a string(altitude_barometric)
+    int32 alt_geom = 5;                     // geometric (GNSS / INS) altitude in feet referenced to the WGS84 ellipsoid(altitude_geometric)
+    float gs = 6;                           // ground speed in knots
+    int32 ias = 7;                          // indicated air speed in knots
+    float tas = 8;                          // true air speed in knots
+    float mach = 9;                         // Mach number
+    float track = 10;                       // true track over ground in degrees (0-359)
+    float track_rate = 11;                  // Rate of change of track, degrees/second
+    float roll = 12;                        // Roll, degrees, negative is left roll
+    float mag_heading = 13;                 // Heading, degrees clockwise from magnetic north
+    float true_heading = 14;                // Heading, degrees clockwise from true north (usually only transmitted on ground, in the air usually derived from the magnetic heading using magnetic model WMM2020)
+    int32 baro_rate = 15;                   // Rate of change of barometric altitude, feet/minute
+    int32 geom_rate = 16;                   // Rate of change of geometric (GNSS / INS) altitude, feet/minute
+    string squawk = 17;                     // Mode A code (Squawk), encoded as 4 octal digits
+    EmergencyStatus emergency = 18;         // ADS-B emergency/priority status, a superset of the 7x00 squawks (2.2.3.2.7.8.1.1) (none, general, lifeguard, minfuel, nordo, unlawful, downed, reserved)
+    string category = 19;                   // emitter category to identify particular aircraft or vehicle classes (values A0 - D7) (2.2.3.2.5.2)
+    float nav_qnh = 20;                     // altimeter setting (QFE or QNH/QNE), hPa
+    uint32 nav_altitude_mcp = 21;           // selected altitude from the Mode Control Panel / Flight Control Unit (MCP/FCU) or equivalent equipment
+    string nav_altitude_fms = 22;           // selected altitude from the Flight Manaagement System (FMS) (2.2.3.2.7.1.3.3)
+    float nav_heading = 23;                 // selected heading (True or Magnetic is not defined in DO-260B, mostly Magnetic as that is the de facto standard) (2.2.3.2.7.1.3.7)
+    repeated string nav_modes = 24;         // set of engaged automation modes: 'autopilot', 'vnav', 'althold', 'approach', 'lnav', 'tcas'
+    double longitude = 25;                  // the aircraft position in decimal degrees
+    double latitude = 26;                   // the aircraft position in decimal degrees
+    uint32 nic = 27;                        // Navigation Integrity Category (2.2.3.2.7.2.6)
+    int32 rc = 28;                          // Radius of Containment, meters; a measure of position integrity derived from NIC & supplementary bits. (2.2.3.2.7.2.6, Table 2-69)
+    float seen_pos = 29;                    // how long ago (in seconds before "now") the position was last updated
+    uint32 version = 30;                    // ADS-B Version Number 0, 1, 2 (3-7 are reserved) (2.2.3.2.7.5)
+    uint32 nic_baro = 31;                   // Navigation Integrity Category for Barometric Altitude (2.2.5.1.35)
+    uint32 nac_p = 32;                      // Navigation Accuracy for Position (2.2.5.1.35)
+    uint32 nac_v = 33;                      // Navigation Accuracy for Velocity (2.2.5.1.19)
+    uint32 sil = 34;                        // Source Integity Level (2.2.5.1.40)
+    string sil_type = 35;                   // interpretation of SIL: unknown, perhour, persample
+    uint32 gva = 36;                        // Geometric Vertical Accuracy (2.2.3.2.7.2.8)
+    uint32 sda = 37;                        // System Design Assurance (2.2.3.2.7.2.4.6)
+    repeated string mlat = 38;              // list of fields derived from MLAT data
+    repeated string tisb = 39;              // list of fields derived from TIS-B data
+    uint32 messages = 40;                   // total number of Mode S messages received from this aircraft
+    float seen = 41;                        // how long ago (in seconds before "now") a message was last received from this aircraft
+    float rssi = 42;                        // recent average RSSI (signal power), in dbFS; this will always be negative.
+    string alert = 43;                      // Flight status alert bit (2.2.3.2.3.2)
+    string spi = 44;                        // Flight status special position identification bit (2.2.3.2.3.2)
+    string wd = 45;                         // wind direction and wind speed are calculated from ground track, true heading, true airspeed and ground speed
+    string ws = 46;                         // wind direction and wind speed are calculated from ground track, true heading, true airspeed and ground speed
+    string oat = 47;                        // outer/static air temperature (C) and total air temperature (C) are calculated from mach number and true airspeed (typically somewhat inaccurate at lower altitudes / mach numbers below 0.5, calculation is inhibited for mach < 0.395)
+    string tat = 48;                        // outer/static air temperature (C) and total air temperature (C) are calculated from mach number and true airspeed (typically somewhat inaccurate at lower altitudes / mach numbers below 0.5, calculation is inhibited for mach < 0.395)
+    string acas_ra = 49;                    // experimental, subject to change, see format here
+    string gps_ok_before = 50;              // experimental, subject to change: aircraft lost GPS / GPS heavily degraded, it was working well before this timestamp, only displayed for 15 min after GPS is lost / degraded
+    // ADS-Bメッセージタイプ
+    enum MessageType {
+        MESSGAGE_TYPE_UNSPECIFIED = 0;      // 未設定
+        MESSGAGE_TYPE_ADS_B_ICAO = 1;       // messages from a Mode S or ADS-B transponder, using a 24-bit ICAO address
+        MESSGAGE_TYPE_ADS_B_ICAO_NT = 2;    // messages from an ADS-B equipped "non-transponder" emitter e.g. a ground vehicle, using a 24-bit ICAO address
+        MESSGAGE_TYPE_ADSR_ICAO = 3;        // rebroadcast of ADS-B messages originally sent via another data link e.g. UAT, using a 24-bit ICAO address
+        MESSGAGE_TYPE_TISB_ICAO = 4;        // traffic information about a non-ADS-B target identified by a 24-bit ICAO address, e.g. a Mode S target tracked by secondary radar
+        MESSGAGE_TYPE_ADSC = 5;             // ADS-C (received by monitoring satellite downlinks)
+        MESSGAGE_TYPE_MLAT = 6;             // MLAT, position calculated arrival time differences using multiple receivers, outliers and varying accuracy is expected.
+        MESSGAGE_TYPE_OTHER = 7;            // miscellaneous data received via Basestation / SBS format, quality / source is unknown.
+        MESSGAGE_TYPE_MODE_S = 8;           // ModeS data from the planes transponder (no position transmitted)
+        MESSGAGE_TYPE_ADSB_OTHER = 9;       // messages from an ADS-B transponder using a non-ICAO address, e.g. anonymized address
+        MESSGAGE_TYPE_ADSR_OTHER = 10;      // rebroadcast of ADS-B messages originally sent via another data link e.g. UAT, using a non-ICAO address
+        MESSGAGE_TYPE_TISB_OTHER = 11;      //  traffic information about a non-ADS-B target using a non-ICAO address        
+        MESSGAGE_TYPE_TISB_TRACKFILE = 12;  //  traffic information about a non-ADS-B target using a track/file identifier, typically from primary or Mode A/C radar
+    }
+
+    // エマージェンシーステータス
+    enum EmergencyStatus {
+        EMERGENCY_STATUS_NONE = 0;          // 未設定
+        EMERGENCY_STATUS_GENERAL = 1;       // 
+        EMERGENCY_STATUS_LIFEGUARD = 2;     // 
+        EMERGENCY_STATUS_MINFUEL = 3;       //
+        EMERGENCY_STATUS_NORDO = 4;         //
+        EMERGENCY_STATUS_UNLAWFUL = 5;      //
+        EMERGENCY_STATUS_DOWNED = 6;        //
+        EMERGENCY_STATUS_RESERVED = 7;      //
+    }    
+}
