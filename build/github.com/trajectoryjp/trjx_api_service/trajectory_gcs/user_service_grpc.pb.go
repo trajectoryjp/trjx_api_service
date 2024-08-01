@@ -34,7 +34,7 @@ type UserAccountServiceClient interface {
 	GetUserPermission(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserPermission, error)
 	// ListUserPermissions
 	// アクセス権限: admin, operator
-	ListUserPermissions(ctx context.Context, in *ListUserPermissionsRequest, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error)
+	ListUserPermissions(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error)
 	// UpdateUserPermission
 	// アクセス権限: admin
 	// Updateは全更新
@@ -59,7 +59,7 @@ func (c *userAccountServiceClient) GetUserPermission(ctx context.Context, in *em
 	return out, nil
 }
 
-func (c *userAccountServiceClient) ListUserPermissions(ctx context.Context, in *ListUserPermissionsRequest, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error) {
+func (c *userAccountServiceClient) ListUserPermissions(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListUserPermissionsResponse)
 	err := c.cc.Invoke(ctx, UserAccountService_ListUserPermissions_FullMethodName, in, out, cOpts...)
@@ -88,7 +88,7 @@ type UserAccountServiceServer interface {
 	GetUserPermission(context.Context, *emptypb.Empty) (*UserPermission, error)
 	// ListUserPermissions
 	// アクセス権限: admin, operator
-	ListUserPermissions(context.Context, *ListUserPermissionsRequest) (*ListUserPermissionsResponse, error)
+	ListUserPermissions(context.Context, *emptypb.Empty) (*ListUserPermissionsResponse, error)
 	// UpdateUserPermission
 	// アクセス権限: admin
 	// Updateは全更新
@@ -103,7 +103,7 @@ type UnimplementedUserAccountServiceServer struct {
 func (UnimplementedUserAccountServiceServer) GetUserPermission(context.Context, *emptypb.Empty) (*UserPermission, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserPermission not implemented")
 }
-func (UnimplementedUserAccountServiceServer) ListUserPermissions(context.Context, *ListUserPermissionsRequest) (*ListUserPermissionsResponse, error) {
+func (UnimplementedUserAccountServiceServer) ListUserPermissions(context.Context, *emptypb.Empty) (*ListUserPermissionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUserPermissions not implemented")
 }
 func (UnimplementedUserAccountServiceServer) UpdateUserPermission(context.Context, *UserPermissionWithName) (*UserPermissionWithName, error) {
@@ -141,7 +141,7 @@ func _UserAccountService_GetUserPermission_Handler(srv interface{}, ctx context.
 }
 
 func _UserAccountService_ListUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListUserPermissionsRequest)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func _UserAccountService_ListUserPermissions_Handler(srv interface{}, ctx contex
 		FullMethod: UserAccountService_ListUserPermissions_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserAccountServiceServer).ListUserPermissions(ctx, req.(*ListUserPermissionsRequest))
+		return srv.(UserAccountServiceServer).ListUserPermissions(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

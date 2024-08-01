@@ -689,3 +689,24 @@ message Spot {
     float spot_size = 7;                                // スポットの半径(m)
     trajectory.trjx_api_service.Position center = 8;    // スポット中心座標　TODO: Port内の座標確認をどちらのサーバーでやるか確認
 }
+
+// ルート情報
+message RouteObjectForPlan {
+    int64 id = 1;                                       // ルートID
+    string reserved_route_id = 2;                       // ルート予約ID
+    int64 organizations_id = 3;                         // 組織ID(所有組織)
+    int64 group_id = 4;                                 // グループID
+    string uav_id = 5;                                  // 機体ID(文字列)
+    RouteInterval interval = 6;                         // ルート種別
+    double total_cost = 7;                              // ルートのコスト値(パスのコスト値合計)
+    google.protobuf.Timestamp start_time = 8;                               // 有効期間始点 UNIX時間
+    google.protobuf.Timestamp end_time = 9;                                 // 有効期間終点 UNIX時間
+    repeated ResultPathForPlan paths = 10;              // パス生成結果
+}
+
+// ルート区間
+enum RouteInterval {
+    ROUTE_INTERVAL_ROUTE = 0;                           // 飛行ルート(default)
+    ROUTE_INTERVAL_TAKEOFF = 1;                         // 離陸ターミナルルート
+    ROUTE_INTERVAL_LANDING = 2;                         // 着陸ターミナルルート
+}

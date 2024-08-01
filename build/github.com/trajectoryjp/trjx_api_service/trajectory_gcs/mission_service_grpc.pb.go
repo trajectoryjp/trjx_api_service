@@ -20,11 +20,11 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	MissionService_CreateMission_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/CreateMission"
-	MissionService_AddMission_FullMethodName    = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/AddMission"
-	MissionService_GetMission_FullMethodName    = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/GetMission"
-	MissionService_DeleteMission_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/DeleteMission"
-	MissionService_UpdateMission_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/UpdateMission"
+	MissionService_CreateMission_FullMethodName       = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/CreateMission"
+	MissionService_CreateMissionRecord_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/CreateMissionRecord"
+	MissionService_GetMissionRecord_FullMethodName    = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/GetMissionRecord"
+	MissionService_DeleteMissionRecord_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/DeleteMissionRecord"
+	MissionService_UpdateMissionRecord_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/UpdateMissionRecord"
 )
 
 // MissionServiceClient is the client API for MissionService service.
@@ -33,14 +33,14 @@ const (
 type MissionServiceClient interface {
 	// CreateMission: ミッションの生成
 	CreateMission(ctx context.Context, in *CreateMissionRequest, opts ...grpc.CallOption) (*CreateMissionResponse, error)
-	// AddMission: ミッションをデータベースに追加する
-	AddMission(ctx context.Context, in *AddMissionRequest, opts ...grpc.CallOption) (*MissionID, error)
-	// GetMission: ミッションの取得
-	GetMission(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*Mission, error)
+	// CreateMissionRecord: ミッションをデータベースに追加する
+	CreateMissionRecord(ctx context.Context, in *MissionRecord, opts ...grpc.CallOption) (*MissionID, error)
+	// GetMissionRecord: ミッションの取得
+	GetMissionRecord(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*MissionRecord, error)
 	// DeleteMission: ミッションの削除
-	DeleteMission(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteMissionRecord(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// UpdateMission: ミッションの更新
-	UpdateMission(ctx context.Context, in *UpdateMissionRequest, opts ...grpc.CallOption) (*Mission, error)
+	UpdateMissionRecord(ctx context.Context, in *UpdateMissionRecordRequest, opts ...grpc.CallOption) (*MissionRecord, error)
 }
 
 type missionServiceClient struct {
@@ -61,40 +61,40 @@ func (c *missionServiceClient) CreateMission(ctx context.Context, in *CreateMiss
 	return out, nil
 }
 
-func (c *missionServiceClient) AddMission(ctx context.Context, in *AddMissionRequest, opts ...grpc.CallOption) (*MissionID, error) {
+func (c *missionServiceClient) CreateMissionRecord(ctx context.Context, in *MissionRecord, opts ...grpc.CallOption) (*MissionID, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MissionID)
-	err := c.cc.Invoke(ctx, MissionService_AddMission_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, MissionService_CreateMissionRecord_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *missionServiceClient) GetMission(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*Mission, error) {
+func (c *missionServiceClient) GetMissionRecord(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*MissionRecord, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Mission)
-	err := c.cc.Invoke(ctx, MissionService_GetMission_FullMethodName, in, out, cOpts...)
+	out := new(MissionRecord)
+	err := c.cc.Invoke(ctx, MissionService_GetMissionRecord_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *missionServiceClient) DeleteMission(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *missionServiceClient) DeleteMissionRecord(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, MissionService_DeleteMission_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, MissionService_DeleteMissionRecord_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *missionServiceClient) UpdateMission(ctx context.Context, in *UpdateMissionRequest, opts ...grpc.CallOption) (*Mission, error) {
+func (c *missionServiceClient) UpdateMissionRecord(ctx context.Context, in *UpdateMissionRecordRequest, opts ...grpc.CallOption) (*MissionRecord, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Mission)
-	err := c.cc.Invoke(ctx, MissionService_UpdateMission_FullMethodName, in, out, cOpts...)
+	out := new(MissionRecord)
+	err := c.cc.Invoke(ctx, MissionService_UpdateMissionRecord_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,14 +107,14 @@ func (c *missionServiceClient) UpdateMission(ctx context.Context, in *UpdateMiss
 type MissionServiceServer interface {
 	// CreateMission: ミッションの生成
 	CreateMission(context.Context, *CreateMissionRequest) (*CreateMissionResponse, error)
-	// AddMission: ミッションをデータベースに追加する
-	AddMission(context.Context, *AddMissionRequest) (*MissionID, error)
-	// GetMission: ミッションの取得
-	GetMission(context.Context, *MissionID) (*Mission, error)
+	// CreateMissionRecord: ミッションをデータベースに追加する
+	CreateMissionRecord(context.Context, *MissionRecord) (*MissionID, error)
+	// GetMissionRecord: ミッションの取得
+	GetMissionRecord(context.Context, *MissionID) (*MissionRecord, error)
 	// DeleteMission: ミッションの削除
-	DeleteMission(context.Context, *MissionID) (*emptypb.Empty, error)
+	DeleteMissionRecord(context.Context, *MissionID) (*emptypb.Empty, error)
 	// UpdateMission: ミッションの更新
-	UpdateMission(context.Context, *UpdateMissionRequest) (*Mission, error)
+	UpdateMissionRecord(context.Context, *UpdateMissionRecordRequest) (*MissionRecord, error)
 	mustEmbedUnimplementedMissionServiceServer()
 }
 
@@ -125,17 +125,17 @@ type UnimplementedMissionServiceServer struct {
 func (UnimplementedMissionServiceServer) CreateMission(context.Context, *CreateMissionRequest) (*CreateMissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMission not implemented")
 }
-func (UnimplementedMissionServiceServer) AddMission(context.Context, *AddMissionRequest) (*MissionID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddMission not implemented")
+func (UnimplementedMissionServiceServer) CreateMissionRecord(context.Context, *MissionRecord) (*MissionID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateMissionRecord not implemented")
 }
-func (UnimplementedMissionServiceServer) GetMission(context.Context, *MissionID) (*Mission, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMission not implemented")
+func (UnimplementedMissionServiceServer) GetMissionRecord(context.Context, *MissionID) (*MissionRecord, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMissionRecord not implemented")
 }
-func (UnimplementedMissionServiceServer) DeleteMission(context.Context, *MissionID) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteMission not implemented")
+func (UnimplementedMissionServiceServer) DeleteMissionRecord(context.Context, *MissionID) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteMissionRecord not implemented")
 }
-func (UnimplementedMissionServiceServer) UpdateMission(context.Context, *UpdateMissionRequest) (*Mission, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateMission not implemented")
+func (UnimplementedMissionServiceServer) UpdateMissionRecord(context.Context, *UpdateMissionRecordRequest) (*MissionRecord, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateMissionRecord not implemented")
 }
 func (UnimplementedMissionServiceServer) mustEmbedUnimplementedMissionServiceServer() {}
 
@@ -168,74 +168,74 @@ func _MissionService_CreateMission_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MissionService_AddMission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddMissionRequest)
+func _MissionService_CreateMissionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MissionRecord)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MissionServiceServer).AddMission(ctx, in)
+		return srv.(MissionServiceServer).CreateMissionRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MissionService_AddMission_FullMethodName,
+		FullMethod: MissionService_CreateMissionRecord_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MissionServiceServer).AddMission(ctx, req.(*AddMissionRequest))
+		return srv.(MissionServiceServer).CreateMissionRecord(ctx, req.(*MissionRecord))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MissionService_GetMission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MissionService_GetMissionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MissionID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MissionServiceServer).GetMission(ctx, in)
+		return srv.(MissionServiceServer).GetMissionRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MissionService_GetMission_FullMethodName,
+		FullMethod: MissionService_GetMissionRecord_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MissionServiceServer).GetMission(ctx, req.(*MissionID))
+		return srv.(MissionServiceServer).GetMissionRecord(ctx, req.(*MissionID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MissionService_DeleteMission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MissionService_DeleteMissionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MissionID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MissionServiceServer).DeleteMission(ctx, in)
+		return srv.(MissionServiceServer).DeleteMissionRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MissionService_DeleteMission_FullMethodName,
+		FullMethod: MissionService_DeleteMissionRecord_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MissionServiceServer).DeleteMission(ctx, req.(*MissionID))
+		return srv.(MissionServiceServer).DeleteMissionRecord(ctx, req.(*MissionID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MissionService_UpdateMission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateMissionRequest)
+func _MissionService_UpdateMissionRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateMissionRecordRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MissionServiceServer).UpdateMission(ctx, in)
+		return srv.(MissionServiceServer).UpdateMissionRecord(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MissionService_UpdateMission_FullMethodName,
+		FullMethod: MissionService_UpdateMissionRecord_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MissionServiceServer).UpdateMission(ctx, req.(*UpdateMissionRequest))
+		return srv.(MissionServiceServer).UpdateMissionRecord(ctx, req.(*UpdateMissionRecordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -252,20 +252,20 @@ var MissionService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _MissionService_CreateMission_Handler,
 		},
 		{
-			MethodName: "AddMission",
-			Handler:    _MissionService_AddMission_Handler,
+			MethodName: "CreateMissionRecord",
+			Handler:    _MissionService_CreateMissionRecord_Handler,
 		},
 		{
-			MethodName: "GetMission",
-			Handler:    _MissionService_GetMission_Handler,
+			MethodName: "GetMissionRecord",
+			Handler:    _MissionService_GetMissionRecord_Handler,
 		},
 		{
-			MethodName: "DeleteMission",
-			Handler:    _MissionService_DeleteMission_Handler,
+			MethodName: "DeleteMissionRecord",
+			Handler:    _MissionService_DeleteMissionRecord_Handler,
 		},
 		{
-			MethodName: "UpdateMission",
-			Handler:    _MissionService_UpdateMission_Handler,
+			MethodName: "UpdateMissionRecord",
+			Handler:    _MissionService_UpdateMissionRecord_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
