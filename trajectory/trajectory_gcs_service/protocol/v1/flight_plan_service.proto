@@ -8,7 +8,7 @@ import "trajectory/type/resource.proto";
 
 
 // 飛行計画を操作するAPI
-service FlightPlanSerivce {
+service FlightPlanService {
     // 飛行計画作成
     // rpc CreateFlightPlan(CreateFlightPlanRequest) returns (CreateFlightPlanResponse);
 
