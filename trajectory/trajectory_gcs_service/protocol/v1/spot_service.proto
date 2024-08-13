@@ -5,10 +5,8 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
-import "google/protobuf/timestamp.proto";
 
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
-import "trajectory/type/resource.proto";
 
 // ポート配下のスポットを操作を行うAPI
 service SpotService {
