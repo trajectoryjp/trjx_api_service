@@ -723,3 +723,52 @@ enum RouteInterval {
     ROUTE_INTERVAL_TAKEOFF = 1;                         // 離陸ターミナルルート
     ROUTE_INTERVAL_LANDING = 2;                         // 着陸ターミナルルート
 }
+
+// 飛行経路変更の応答
+message ReroutingResult {
+    enum Progress {
+        PROGRESS_UNSPECIFIED = 0;
+        CALCULATING = 1;
+        QUEUEING = 2;                                   // WP転送中
+        SETTING = 3;                                    // WP転送中
+        CHANGING = 4;                                   // ルート変更指示中
+        COMPLETE = 5;                                   // 完了
+        CANCELED = 9;                                   // ミッション変更キャンセル
+        VOID = 15 ;                                     // リルート無効（通り過ぎたなど）
+        ERROR = 10;                                     // エラー終了
+        ERROR_COMMAND = 11 ;                            // UAVコマンドエラー
+        ERROR_DUPLICATE = 12 ;                          // 指定したWPが重複
+        ERROR_UNSTABLE = 13 ;                           // リルート可能状態でない
+        ERROR_EMPTY_MISSION = 14 ;                      // 指定したミッションが空
+        ERROR_FLIGHT_PATH_STRATA_CONFIG = 51;           // FP9001
+        ERROR_FLIGHT_PATH_NOT_FOUND_AREA = 52;          // FP9002
+        ERROR_FLIGHT_PATH_NOT_FOUND_MODEL = 53;         // FP9003
+        ERROR_FLIGHT_PATH_OUT_OF_AREA = 54;             // FP9004
+        ERROR_FLIGHT_PATH_ILLIGAL_POSITION = 55;        // FP9005
+        ERROR_FLIGHT_PATH_UNKNOWN = 50 ;
+        INTERNAL_ERROR = 99; 
+    }
+    Progress progress_state = 1;                        // 経過状態
+    uint32 progress = 2;                                // 各経過状態の経過量（0-100）
+    Mission mission = 3;                                // ルート計算を行った結果のミッションのリスト
+    string info = 4 ;                                   // 詳細情報
+}
+
+message GotoProgress {
+    enum GotoStatusDef {
+        GOTO_STATUS_DEF_UNSPECIFIED = 0 ;
+        PROCESSING = 1 ;                                // 処理中
+        TRYING = 2 ;                                    // 目標に向けて飛行中
+        REACHED = 3 ;                                   // 目標点到達しPause（ホバリング中）
+        COMPLETE = 4 ;                                  // Resume実行中
+        OTHER_GOTO = 5 ;                                // 別のGotoを受け入れ
+        RETURNED = 6 ;                                  // Puase実行不可で自動Resume
+        CANCELED = 7 ;                                  // キャンセル
+        ERROR = 10 ;                                    // エラー
+        ERROR_NO_UAV = 11 ;                             // UAVオブジェクトが取得できない
+        ERROR_NO_EXECUTING = 12 ;                       // 飛行中でない
+        ERROR_PAUSE = 13 ;                              // Pauseコマンド失敗
+        ERROR_PARAMETER = 14 ;                          // パラメータエラー
+    }
+    GotoStatusDef status = 1 ;
+}

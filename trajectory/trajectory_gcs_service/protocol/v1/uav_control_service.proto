@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+
+
+service UavControlService {
+    // Mission Interface：指定した座標に向かう
+    rpc Goto(GotoRequest) returns (stream GotoResponse) {}
+}
+
+// Goto指定パラメータ
+message GotoRequest {
+    UAVID uav_id = 1;   // UAVID
+    ItemParameterWaypoint point = 2 ; // 目的地点座標
+    ROI roi = 3 ; // 対象物座標
+    enum ReturnMode { // 目標地点到達後の戻り位置
+        RETURN_MODE_UNSPECIFIED = 0;
+        START_POINT = 1; // Gotoを開始した地点
+        NEXT_WAYPOINT = 2;
+    }
+    ReturnMode return_mode = 4;
+    string tag = 5 ; // オプション
+    string name = 6 ; // オプション
+}
+
+// Goto経過情報
+message GotoResponse {
+    oneof GotoStatus{
+        ReroutingResult setup_mission = 1 ;
+        GotoProgress    goto_progress = 2 ;
+    }
+    uint32 progress = 3;    // 各経過状態の経過量（0-100）
+    Mission mission = 4; // ルート計算を行った結果のミッションのリスト
+    string detail = 10; // 詳細情報
+}
