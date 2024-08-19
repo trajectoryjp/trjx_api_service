@@ -43,7 +43,7 @@ type MissionServiceClient interface {
 	// UpdateMission: ミッションの更新
 	UpdateMissionRecord(ctx context.Context, in *UpdateMissionRecordRequest, opts ...grpc.CallOption) (*MissionRecord, error)
 	// ListMissionIDRecords: ミッションIDのリスト取得
-	ListMissionIDRecords(ctx context.Context, in *ListMissionIDRecordsRequest, opts ...grpc.CallOption) (MissionService_ListMissionIDRecordsClient, error)
+	ListMissionIDRecords(ctx context.Context, in *ListMissionIDRecordsRequest, opts ...grpc.CallOption) (*ListMissionIDRecordsResponse, error)
 }
 
 type missionServiceClient struct {
@@ -104,37 +104,14 @@ func (c *missionServiceClient) UpdateMissionRecord(ctx context.Context, in *Upda
 	return out, nil
 }
 
-func (c *missionServiceClient) ListMissionIDRecords(ctx context.Context, in *ListMissionIDRecordsRequest, opts ...grpc.CallOption) (MissionService_ListMissionIDRecordsClient, error) {
+func (c *missionServiceClient) ListMissionIDRecords(ctx context.Context, in *ListMissionIDRecordsRequest, opts ...grpc.CallOption) (*ListMissionIDRecordsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &MissionService_ServiceDesc.Streams[0], MissionService_ListMissionIDRecords_FullMethodName, cOpts...)
+	out := new(ListMissionIDRecordsResponse)
+	err := c.cc.Invoke(ctx, MissionService_ListMissionIDRecords_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &missionServiceListMissionIDRecordsClient{ClientStream: stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type MissionService_ListMissionIDRecordsClient interface {
-	Recv() (*ListMissionIDRecordsResponse, error)
-	grpc.ClientStream
-}
-
-type missionServiceListMissionIDRecordsClient struct {
-	grpc.ClientStream
-}
-
-func (x *missionServiceListMissionIDRecordsClient) Recv() (*ListMissionIDRecordsResponse, error) {
-	m := new(ListMissionIDRecordsResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // MissionServiceServer is the server API for MissionService service.
@@ -152,7 +129,7 @@ type MissionServiceServer interface {
 	// UpdateMission: ミッションの更新
 	UpdateMissionRecord(context.Context, *UpdateMissionRecordRequest) (*MissionRecord, error)
 	// ListMissionIDRecords: ミッションIDのリスト取得
-	ListMissionIDRecords(*ListMissionIDRecordsRequest, MissionService_ListMissionIDRecordsServer) error
+	ListMissionIDRecords(context.Context, *ListMissionIDRecordsRequest) (*ListMissionIDRecordsResponse, error)
 	mustEmbedUnimplementedMissionServiceServer()
 }
 
@@ -175,8 +152,8 @@ func (UnimplementedMissionServiceServer) DeleteMissionRecord(context.Context, *M
 func (UnimplementedMissionServiceServer) UpdateMissionRecord(context.Context, *UpdateMissionRecordRequest) (*MissionRecord, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMissionRecord not implemented")
 }
-func (UnimplementedMissionServiceServer) ListMissionIDRecords(*ListMissionIDRecordsRequest, MissionService_ListMissionIDRecordsServer) error {
-	return status.Errorf(codes.Unimplemented, "method ListMissionIDRecords not implemented")
+func (UnimplementedMissionServiceServer) ListMissionIDRecords(context.Context, *ListMissionIDRecordsRequest) (*ListMissionIDRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMissionIDRecords not implemented")
 }
 func (UnimplementedMissionServiceServer) mustEmbedUnimplementedMissionServiceServer() {}
 
@@ -281,25 +258,22 @@ func _MissionService_UpdateMissionRecord_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MissionService_ListMissionIDRecords_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ListMissionIDRecordsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _MissionService_ListMissionIDRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMissionIDRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(MissionServiceServer).ListMissionIDRecords(m, &missionServiceListMissionIDRecordsServer{ServerStream: stream})
-}
-
-type MissionService_ListMissionIDRecordsServer interface {
-	Send(*ListMissionIDRecordsResponse) error
-	grpc.ServerStream
-}
-
-type missionServiceListMissionIDRecordsServer struct {
-	grpc.ServerStream
-}
-
-func (x *missionServiceListMissionIDRecordsServer) Send(m *ListMissionIDRecordsResponse) error {
-	return x.ServerStream.SendMsg(m)
+	if interceptor == nil {
+		return srv.(MissionServiceServer).ListMissionIDRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MissionService_ListMissionIDRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MissionServiceServer).ListMissionIDRecords(ctx, req.(*ListMissionIDRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // MissionService_ServiceDesc is the grpc.ServiceDesc for MissionService service.
@@ -329,13 +303,11 @@ var MissionService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateMissionRecord",
 			Handler:    _MissionService_UpdateMissionRecord_Handler,
 		},
-	},
-	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "ListMissionIDRecords",
-			Handler:       _MissionService_ListMissionIDRecords_Handler,
-			ServerStreams: true,
+			MethodName: "ListMissionIDRecords",
+			Handler:    _MissionService_ListMissionIDRecords_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "trajectory/trajectory_gcs_service/protocol/v1/mission_service.proto",
 }
