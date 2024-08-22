@@ -38,6 +38,7 @@ message UserPermission {
     bool video_user = 12;
     bool system_user = 13;
     bool system_api_access = 14;
+    bool port = 15;
 }
 
 message UserPermissionWithName {
