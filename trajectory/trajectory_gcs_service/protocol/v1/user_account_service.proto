@@ -24,21 +24,21 @@ service UserAccountService {
 }
 
 message UserPermission {
-    bool admin = 1;
-    bool operator = 2;
-    bool map_selectable = 3;
-    bool save_setting = 4;
-    bool movie = 5;
-    bool drone_auth = 6;
+    bool admin = 1;  // 管理者権限
+    bool operator = 2; // 操縦者権限
+    bool map_selectable = 3;  // 地図表示の選択権限
+    bool save_setting = 4;  // 地図表示設定の保存権限
+    bool movie = 5;  // 動画の閲覧権限
+    bool drone_auth = 6;  // SITL（ドローンシミュレータ）の操縦者権限
     bool sitl_auth = 7;
     bool ladder_auth = 8;
     bool tile_auth = 9;
     bool annotation_auth = 10;
     bool video_auth = 11;
     bool video_user = 12;
-    bool system_user = 13;
     bool system_api_access = 14;
-    bool port = 15;
+    bool spatial_manegement = 15;
+    bool public_spatial_maneger = 16;
 }
 
 message UserPermissionWithName {
@@ -47,5 +47,5 @@ message UserPermissionWithName {
 }
 
 message ListUserPermissionsResponse {
-    repeated UserPermission user_permission_with_name_list = 1;
+    repeated UserPermissionWithName user_permission_with_name_list = 1;
 }
