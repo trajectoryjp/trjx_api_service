@@ -26,7 +26,7 @@ service UserAccountService {
 message UserPermission {
     bool admin = 1;  // 管理者権限
     bool operator = 2; // 操縦者権限
-    bool map_selectable = 3;  // 地図表示の選択権限
+    bool map_selectable = 3;  // 地図表示の選択権限。falseの場合、set_user_configsでprivate_setting=false指定不可（エラー。マップ表示していないのでprivate_setting=falseの設定も許容しない）
     bool save_setting = 4;  // 地図表示設定の保存権限
     bool movie = 5;  // 動画の閲覧権限
     bool drone_auth = 6;  // SITL（ドローンシミュレータ）の操縦者権限
