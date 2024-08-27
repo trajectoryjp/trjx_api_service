@@ -31,7 +31,7 @@ service RemoteIdPositionService {
 message UpdatingRemoteIdPositionsRequest{
     int64 now = 1;                                    // データ生成時刻(UNIX時刻)
     int32 message = 2;                                // 通知ポジション数
-    repeated trjx_api_service.RemoteId positions = 3; // リモートID情報リスト
+    repeated trjx_api_service.RemoteIdPosition positions = 3; // リモートID情報リスト
 }
 
 // リモートIDポジションの更新レスポンス
