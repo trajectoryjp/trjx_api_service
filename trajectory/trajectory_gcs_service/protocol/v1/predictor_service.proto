@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+
+import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+import "trajectory/type/resource.proto";
+import "uas/generic/v2/sdsp_g.proto";
+
+service PredictorService {
+
+    // WideGetPosition: 対象範囲にある機体の位置情報を取得する
+    rpc WideGetPosition(WideGetPositionRequest) returns (stream WideGetPositionResponse) {}
+}
+
+
+message WideGetPositionRequest {
+    // 中心位置
+    trajectory.trjx_api_service.Position fixed_position = 1;
+    oneof Dimension {
+        // 2次元で距離内の物体を探索したい場合
+        TwoDimensionsProximity twodproximity = 2;
+        // 3次元で距離内の物体を探索したい場合
+        ThreeDimensionsProximity threedproximity = 3;
+    }
+    enum OutputRange {
+        // 自組織・他組織の機体
+        OUTPUT_RANGE_UNSPECIFIED = 0;
+        // 他組織の機体のみ
+        EXCLUDE_OWN_ORGANIZATION = 1;
+    }
+    // 出力対象。省略時、自組織・他組織の機体。
+    optional OutputRange output_range = 4;
+    // 出力高度属性。省略時、楕円球体高を指定。RELATIVEは不可。
+    optional trajectory.trjx_api_service.AltitudeAttr output_altitude = 5;
+}
+
+message WideGetPositionResponse {
+    UAVID uavID = 1 ;
+    trajectory.trjx_api_service.UserType user_type = 7;
+    float distance = 3 ; // 距離 km
+    bool collision_course = 5 ;// 衝突コースの場合true
+    Approaching approach = 6 ; // 相対位置および速度
+    AbsolutePosition collision_point = 8;
+    float heading = 4;
+}
+
+message Approaching {
+    XYZPosition relative_position = 1;
+    AbsolutePosition absolute_position = 3;
+    PredictSpeed relative_speed = 2 ;
+}
+
+
+message TwoDimensionsProximity {
+    // 距離 km。
+    float distance = 5;
+}
+
+message ThreeDimensionsProximity {
+    // 距離 km。
+    float distance = 5;
+    // trueの場合は衝突ルートの場合のみ通知する。
+    bool detect_collision = 6;
+}
+
+message UserIndex {
+    int32 userIndex = 1 ;
+    trajectory.trjx_api_service.AltitudeAttr attr = 2;
+}
+
+message AbsolutePosition{
+    double latitude = 1;
+    double longitude = 2;
+    double altitude = 3;
+    string tag = 4; //ミッション識別子。GetETAで利用している
+}
+
+message UserPosition {
+    enum Attribute {
+        man = 0 ;
+        unmannedVehicle = 1;
+        car = 2;
+        ship = 3;
+        airplane =4;
+        helicopter =5;
+        marker =6;
+        train = 7 ;
+    }
+    Attribute attr = 1;
+    trajectory.trjx_api_service.Position position = 2 ; 
+}
+
+message XYZPosition {
+    // 経度方向距離(m)　北＋
+     double y = 1;   
+    // 緯度方向距離(m)　東＋
+    double x = 2;
+    // 高さ距離(m) 右手系 上+
+    double z = 3;
+}
+
+message PredictSpeed {
+    // 経度方向速度(m/sec)
+    double x = 1;
+    // 緯度方向速度(m/sec)
+    double y = 2;
+    // 上昇速度(m/sec) 右手系
+    double z = 3;
+}

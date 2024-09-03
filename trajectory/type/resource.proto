@@ -48,3 +48,16 @@ message Coordinate {
     // 経度
     double longitude = 2;
 }
+
+//ユーザ属性
+enum UserType{
+    TYPE_UNSPECIFIED = 0;                       // 未設定
+    TYPE_CAR = 2;                               // 車
+    TYPE_SHIP = 3;                              // 船
+    TYPE_AIRPLANE =4;                           // 航空機
+    TYPE_HELICOPTER =5;                         // ヘリコプター
+    TYPE_MARKER =6;                             // マーカー
+    TYPE_URBAN_AIR_MOBILITY = 7;                // エア・モビリティ(UAM)
+    TYPE_TRAIN = 8;                             // 電車
+    TYPE_UAV = 9;                               // UAV
+}
