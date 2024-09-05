@@ -3342,7 +3342,7 @@ type Port struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// ポートID
+	// ポートID(Create時は設定不要)
 	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	// 組織ID
 	OrganizationsId int64 `protobuf:"varint,2,opt,name=organizations_id,json=organizationsId,proto3" json:"organizations_id,omitempty"`
@@ -3358,7 +3358,7 @@ type Port struct {
 	Tag *string `protobuf:"bytes,7,opt,name=tag,proto3,oneof" json:"tag,omitempty"`
 	// ポート提供者
 	Provider *string `protobuf:"bytes,8,opt,name=provider,proto3,oneof" json:"provider,omitempty"`
-	// ポート形状をSolidModeで登録(角柱(PolygonalPillar)のみ登録可能)
+	// ポート形状をSolidModeで登録(角柱(PolygonalPillar)のみ登録可能), ポートの施設の高度はSolidModelのOriginで指定
 	Port *SolidModel `protobuf:"bytes,9,opt,name=port,proto3" json:"port,omitempty"`
 	// 有効期間始点
 	StartTime *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`

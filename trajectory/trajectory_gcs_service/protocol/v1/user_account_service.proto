@@ -33,12 +33,12 @@ message UserPermission {
     bool sitl_auth = 7;
     bool ladder_auth = 8;
     bool tile_auth = 9;
-    bool annotation_auth = 10;
     bool video_auth = 11;
     bool video_user = 12;
     bool system_api_access = 14;
     bool spatial_manegement = 15;
     bool public_spatial_maneger = 16;
+    bool private_spatial_maneger = 17;
 }
 
 message UserPermissionWithName {
