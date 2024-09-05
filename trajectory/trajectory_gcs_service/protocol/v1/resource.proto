@@ -511,7 +511,7 @@ message PortHeader {
 
 // ポート
 message Port {
-    // ポートID
+    // ポートID(Create時は設定不要)
     int64 id = 1;                         
     
     // 組織ID
@@ -535,7 +535,7 @@ message Port {
     // ポート提供者
     optional string provider = 8;                      
     
-    // ポート形状をSolidModeで登録(角柱(PolygonalPillar)のみ登録可能)
+    // ポート形状をSolidModeで登録(角柱(PolygonalPillar)のみ登録可能), ポートの施設の高度はSolidModelのOriginで指定
     SolidModel port = 9;                                
 
     // 有効期間始点
