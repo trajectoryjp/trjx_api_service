@@ -772,3 +772,8 @@ message GotoProgress {
     }
     GotoStatusDef status = 1 ;
 }
+
+message ApproachingPort {
+    int64 port_id = 1;
+    optional int64 spot_id = 2;
+}

@@ -11,7 +11,7 @@ import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
 import "trajectory/type/resource.proto";
 
 
-service PortService {
+service ApproachService {
     // 離陸申請
     rpc ApplyTakeoff(ApplyTakeoffRequest) returns (ApplyTakeoffResponse);
 
@@ -23,21 +23,6 @@ service PortService {
 
     // 飛行中飛行計画ID取得
     rpc GetCurrentFlightPlanId(GetCurrentFlightPlanIdRequest) returns (CurrentFlightPlanId);
-
-    // ポートの登録
-    rpc CreatePort(CreatePortRequest) returns (Port);
-
-    // ポートの取得
-    rpc GetPort(GetPortRequest) returns (Port);
-
-    // ポートのリスト取得
-    rpc ListPorts(ListPortsRequest) returns (stream ListPortsResponse);
-
-    // ポートの削除
-    rpc DeletePort(DeletePortRequest) returns (google.protobuf.Empty);
-
-    // ポートの更新
-    rpc UpdatePort(UpdatePortRequest) returns (Port);
 }
 
 // 離陸申請リクエスト
@@ -52,7 +37,7 @@ message ApplyTakeoffResponse {
     bool cleard = 1;                                 // 許可判定
 
     // TODO 名称変更
-    int64 apply_id = 2;                     // 申請ID
+    int64 approach_id = 2;                     // 申請ID
     // PortLocation port = 3;
 
     int64 port_id =11;                      // ポートID
@@ -75,7 +60,7 @@ message ApplyLandingRequest {
 // 着陸申請レスポンス
 message ApplyLandingResponse {
     bool cleard = 1;                                 // 許可判定
-    int64 apply_id = 2;                     // 申請ID
+    int64 approach_id = 2;                     // 申請ID
     // PortLocation port = 3;
 
     int64 port_id =11;                      // ポートID
@@ -89,7 +74,7 @@ message ApplyLandingResponse {
 
 // 離着陸経過リクエスト
 message NotifyApproachProgressRequest {
-    int64 apply_id = 1;             // 申請ID
+    int64 approach_id = 1;             // 申請ID
     Progress progress = 2;
     enum Progress {
         Progress_UNSPECIFIED = 0;
@@ -116,81 +101,3 @@ message CurrentFlightPlanId {
     optional ApproachingPort approaching_landing_port = 4;
 }
 
-message ApproachingPort {
-    int64 port_id = 1;
-    optional int64 spot_id = 2;
-}
-
-// ポート登録リクエスト
-message CreatePortRequest {
-    // 登録ポート
-    Port port = 1;
-}
-
-// ポート取得リクエスト
-message GetPortRequest {
-    // ポートID
-    int64 id = 1;
-
-    // クエリフィールド(指定されたカラムのみ取得)
-    google.protobuf.FieldMask fields = 2;
-}
-
-// TODO: UI再審議
-// ポート一覧取得・フィルタリング検索リクエスト
-message ListPortsRequest {
-    // 検索ボックス 検索範囲の制限を設ける
-    SearchSpace search_space = 1;
-
-    // 組織ID(所有組織)　true:自組織のみ false: 他組織を含める
-    bool own_organization = 2;
-
-     // グループID
-    optional int64 group_id = 3;                       
-
-    // TODO: UI再審議
-    // ポートの種別 true:private false:public
-    optional bool is_private = 4;                       
-
-    // 緊急着陸ポート種別 true:緊急着陸ポート/ flase:通常ポート
-    optional bool is_emergency = 5;
-
-    // 名称
-    optional string name = 6;                           
-
-    // タグ
-    optional string tag = 7;                            
-
-    // ポート提供者
-    optional string provider = 8;                       
-
-    // クエリフィールド(指定されたカラムのみ取得)
-    google.protobuf.FieldMask fields = 9;               
-}
-
-// ポート一覧取得・フィルタリング検索レスポンス
-message ListPortsResponse {
-    // ポート
-    repeated Port ports = 1;
-
-    // // リスト全体の項目数
-    // int32 total_count = 2;
-
-    // // 次のページを取得するトークン
-    // string next_page_token = 3;
-}
-
-// ポート更新リクエスト
-message UpdatePortRequest{
-    // 更新マスク(指定されたフィールドのみ更新)
-    google.protobuf.FieldMask update_mask = 1;
-
-    // ポート(更新マスクで指定したもののみ更新)
-    Port port = 2;
-}
-
-// ポート削除リクエスト
-message DeletePortRequest {
-    int64 id = 1;                                       // ポートID
-    optional bool is_logical = 2;                       // 論理削除フラグ(true:論理削除 /  false:物理削除)
-}
