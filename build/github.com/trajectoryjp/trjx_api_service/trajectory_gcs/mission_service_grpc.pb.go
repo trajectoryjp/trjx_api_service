@@ -20,11 +20,12 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	MissionService_CreateMission_FullMethodName       = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/CreateMission"
-	MissionService_CreateMissionRecord_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/CreateMissionRecord"
-	MissionService_GetMissionRecord_FullMethodName    = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/GetMissionRecord"
-	MissionService_DeleteMissionRecord_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/DeleteMissionRecord"
-	MissionService_UpdateMissionRecord_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/UpdateMissionRecord"
+	MissionService_CreateMission_FullMethodName        = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/CreateMission"
+	MissionService_CreateMissionRecord_FullMethodName  = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/CreateMissionRecord"
+	MissionService_GetMissionRecord_FullMethodName     = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/GetMissionRecord"
+	MissionService_DeleteMissionRecord_FullMethodName  = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/DeleteMissionRecord"
+	MissionService_UpdateMissionRecord_FullMethodName  = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/UpdateMissionRecord"
+	MissionService_ListMissionIDRecords_FullMethodName = "/trajectory.trajectory_gcs_service.protocol.v1.MissionService/ListMissionIDRecords"
 )
 
 // MissionServiceClient is the client API for MissionService service.
@@ -41,6 +42,8 @@ type MissionServiceClient interface {
 	DeleteMissionRecord(ctx context.Context, in *MissionID, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// UpdateMission: ミッションの更新
 	UpdateMissionRecord(ctx context.Context, in *UpdateMissionRecordRequest, opts ...grpc.CallOption) (*MissionRecord, error)
+	// ListMissionIDRecords: ミッションIDのリスト取得
+	ListMissionIDRecords(ctx context.Context, in *ListMissionIDRecordsRequest, opts ...grpc.CallOption) (*ListMissionIDRecordsResponse, error)
 }
 
 type missionServiceClient struct {
@@ -101,6 +104,16 @@ func (c *missionServiceClient) UpdateMissionRecord(ctx context.Context, in *Upda
 	return out, nil
 }
 
+func (c *missionServiceClient) ListMissionIDRecords(ctx context.Context, in *ListMissionIDRecordsRequest, opts ...grpc.CallOption) (*ListMissionIDRecordsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMissionIDRecordsResponse)
+	err := c.cc.Invoke(ctx, MissionService_ListMissionIDRecords_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MissionServiceServer is the server API for MissionService service.
 // All implementations must embed UnimplementedMissionServiceServer
 // for forward compatibility
@@ -115,6 +128,8 @@ type MissionServiceServer interface {
 	DeleteMissionRecord(context.Context, *MissionID) (*emptypb.Empty, error)
 	// UpdateMission: ミッションの更新
 	UpdateMissionRecord(context.Context, *UpdateMissionRecordRequest) (*MissionRecord, error)
+	// ListMissionIDRecords: ミッションIDのリスト取得
+	ListMissionIDRecords(context.Context, *ListMissionIDRecordsRequest) (*ListMissionIDRecordsResponse, error)
 	mustEmbedUnimplementedMissionServiceServer()
 }
 
@@ -136,6 +151,9 @@ func (UnimplementedMissionServiceServer) DeleteMissionRecord(context.Context, *M
 }
 func (UnimplementedMissionServiceServer) UpdateMissionRecord(context.Context, *UpdateMissionRecordRequest) (*MissionRecord, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMissionRecord not implemented")
+}
+func (UnimplementedMissionServiceServer) ListMissionIDRecords(context.Context, *ListMissionIDRecordsRequest) (*ListMissionIDRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMissionIDRecords not implemented")
 }
 func (UnimplementedMissionServiceServer) mustEmbedUnimplementedMissionServiceServer() {}
 
@@ -240,6 +258,24 @@ func _MissionService_UpdateMissionRecord_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MissionService_ListMissionIDRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMissionIDRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MissionServiceServer).ListMissionIDRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MissionService_ListMissionIDRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MissionServiceServer).ListMissionIDRecords(ctx, req.(*ListMissionIDRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MissionService_ServiceDesc is the grpc.ServiceDesc for MissionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +302,10 @@ var MissionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateMissionRecord",
 			Handler:    _MissionService_UpdateMissionRecord_Handler,
+		},
+		{
+			MethodName: "ListMissionIDRecords",
+			Handler:    _MissionService_ListMissionIDRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
