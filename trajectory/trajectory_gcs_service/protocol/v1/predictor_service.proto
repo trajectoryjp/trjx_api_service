@@ -3,11 +3,8 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
-import "google/protobuf/empty.proto";
-
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
 import "trajectory/type/resource.proto";
-import "uas/generic/v2/sdsp_g.proto";
 
 service PredictorService {
 
@@ -34,7 +31,7 @@ message WideGetPositionRequest {
     // 出力対象。省略時、自組織・他組織の機体。
     optional OutputRange output_range = 4;
     // 出力高度属性。省略時、楕円球体高を指定。RELATIVEは不可。
-    optional trajectory.trjx_api_service.AltitudeAttr output_altitude = 5;
+    optional trajectory.trjx_api_service.Standard output_altitude = 5;
 }
 
 message WideGetPositionResponse {
@@ -68,7 +65,7 @@ message ThreeDimensionsProximity {
 
 message UserIndex {
     int32 userIndex = 1 ;
-    trajectory.trjx_api_service.AltitudeAttr attr = 2;
+    trajectory.trjx_api_service.Standard attr = 2;
 }
 
 message AbsolutePosition{

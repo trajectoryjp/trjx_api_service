@@ -3,12 +3,11 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
-import "google/protobuf/empty.proto";
-import "google/protobuf/field_mask.proto";
 import "google/protobuf/duration.proto";
 
-import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
 import "trajectory/type/resource.proto";
+import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+
 
 
 service ApproachService {
@@ -43,8 +42,8 @@ message ApplyTakeoffResponse {
     int64 port_id =11;                      // ポートID
     string name = 12;                       // ポート名
     string tag = 13;                        // タグ
-    trajectory.trjx_api_service.Potision closest_position = 14;         // 最近接点位置
-    repeated trajectory.trjx_api_service.Potision waypoints = 15;       // 生成結果(Waypoint)
+    trajectory.trjx_api_service.Position closest_position = 14;         // 最近接点位置
+    repeated trajectory.trjx_api_service.Position waypoints = 15;       // 生成結果(Waypoint)
     int64 spot_id = 16;                     // スポットID
     google.protobuf.Duration occupied_time = 17 ;          // ポート占有時間
 }
@@ -66,8 +65,8 @@ message ApplyLandingResponse {
     int64 port_id =11;                      // ポートID
     string name = 12;                       // ポート名
     string tag = 13;                        // タグ
-    trajectory.trjx_api_service.Potision closest_position = 14;         // 最近接点位置
-    repeated trajectory.trjx_api_service.Potision waypoints = 15;       // 生成結果(Waypoint)
+    trajectory.trjx_api_service.Position closest_position = 14;         // 最近接点位置
+    repeated trajectory.trjx_api_service.Position waypoints = 15;       // 生成結果(Waypoint)
     int64 spot_id = 16;                     // スポットID
     google.protobuf.Duration occupied_time = 17 ;          // ポート占有時間
 }
