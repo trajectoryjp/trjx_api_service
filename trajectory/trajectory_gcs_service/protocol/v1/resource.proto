@@ -774,3 +774,22 @@ message ApproachingPort {
     int64 port_id = 1;
     optional int64 spot_id = 2;
 }
+
+message Position { // 要削除🟥 このPositionが他に存在すればいらない 🟥
+    // 高度属性
+    AltitudeAttr altitudeAttr = 1; // TR_DEV-1047
+
+    enum AltitudeAttr {
+        ELLIPSOIDE = 0 ;// 楕円球体高。default値。
+        RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+        AGL = 2 ; // 地表面高度。
+        MSL = 3; // 海抜高度（標高）。
+    }    
+
+    // 緯度
+    double latitude = 2;
+    // 経度
+    double longitude = 3;
+    // 高度
+    float altitude = 4;
+}

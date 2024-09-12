@@ -27,10 +27,10 @@ message ListVoxelsAroundPathsRequest {
     ProjectID project_id = 4;
     // SearchPathのzoomSetLevelからのquadkeyZoom-altitudeKeyZoomのペアーを選ぶ
     int64 zoom_level = 5;
-    // 開始時刻。nilの場合は値を持っていないと解釈されます。値を持っていない場合は暫定対処で現在の時刻になります
-    OptionalTimeStamp start_time = 7;
-    // 終了時刻。nilの場合は値を持っていないと解釈されます。値を持っていない場合は暫定対処で環境設定の時間だけ開始時刻に足されます
-    OptionalTimeStamp end_time = 8;
+    // 開始時刻 UnixTime
+    optional int64 start_time = 7;
+    // 終了時刻 UnixTime
+    optional int64 end_time = 8;
 }
 
 // ListVoxelsAroundPathResponse
@@ -46,6 +46,8 @@ message ListVoxelsAroundPathsResponse {
         repeated GroundRisk ground_risk_data = 7;
         // エアーリスクデータ　voxel情報
         repeated AirRisk air_risk_data = 8;
+
+        repeated TemporaryAirRisk temporary_air_risk_data = 10; // 一時エアーリスクデータ
 
         oneof body {
             // 安全なルート
@@ -93,6 +95,23 @@ message ListVoxelsAroundPathsResponse {
             float average = 4;
         }
 
+                // 一時エアーリスク
+        // 親子セルもリスク値を検索します。その自分、親、子データの中で、最大、最小、平均を保存します。
+        // 最小開始時刻と最大終了時刻も含まれます
+        message TemporaryAirRisk {
+            // 
+            generic.v2.SpatialIdentification spatial_id = 1; // z/f/x/y
+            // 最小
+            float min = 2;
+            // 最大
+            float max = 3;
+            // 平均
+            float average = 4;
+            // 最小開始時刻  UnixTime
+            int64 min_start_time  = 5;
+            // 最大終了時刻  UnixTime
+            int64 max_end_time  = 6;
+        }
 
         // エアーリスク
         // エアーリスクデータはリクエストから設定されたパラメータ（int64 zoom_level）を始まり、
