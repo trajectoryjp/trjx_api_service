@@ -6,8 +6,6 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 import "google/protobuf/empty.proto";
 
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
-import "trajectory/type/resource.proto";
-
 
 service MissionService {
     // CreateMission: ミッションの生成

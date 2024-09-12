@@ -5,6 +5,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+import "trajectory/type/resource.proto";
 
 service TelemetryService {
 
@@ -17,16 +18,10 @@ message GetMobilityPositionsRequest {
     oneof ReferencePosition { // 検知距離の基準位置
         UAVID uav_id = 1; // 時組織機体ID　他組織を指定した場合はエラー
         int32 user_index = 2; // publish positionで通知されるID
-        Position position = 3; // 座標
+        trajectory.trjx_api_service.Position position = 3; // 座標
     }
 
-    enum AltitudeAttribute {
-        ALTITUDE_ATTRIBUTE_ELIPSOIDE = 0 ;  // 楕円球体高
-        ALTITUDE_ATTRIBUTE_RELATIVE = 1;    // 離陸地点を基準とする相対高度(未対応)
-        ALTITUDE_ATTRIBUTE_AGL = 2 ;        // 地表面高度(未対応)
-        ALTITUDE_ATTRIBUTE_MSL = 3;         // 海抜高度（標高）
-    }
-    AltitudeAttribute output_altitude = 6; // 出力位置の高度属性
+    trajectory.trjx_api_service.Standard output_altitude = 6; // 出力位置の高度属性
     
     oneof DetectionMethod {
         float horizontal_distance = 11; // 水平距離(m)
@@ -71,19 +66,20 @@ message AbsolutePosition{
 }
 
 message ReferencePosition {
-    enum Attribute {
-        man = 0 ;
-        unmannedVehicle = 1;
-        car = 2;
-        ship = 3;
-        airplane =4;
-        helicopter =5;
-        marker =6;
-        train = 7 ;
-    }
-    Attribute attr = 1;
+    // Attribute_xx　に変更
+    // enum Attribute {
+    //     man = 0 ;
+    //     unmannedVehicle = 1;
+    //     car = 2;
+    //     ship = 3;
+    //     airplane =4;
+    //     helicopter =5;
+    //     marker =6;
+    //     train = 7 ;
+    // }
+    trajectory.trjx_api_service.UserType user_type = 1;
 
-    Position position = 2;
+    trajectory.trjx_api_service.Position position = 2;
 }
 
 message XYZPosition {

@@ -30,14 +30,14 @@ message Position {
 message Altitude {
     Standard standard = 1;
     float altitude = 2; // m
+}
 
-    enum Standard {
-        ALTITUDE_ATTR_UNSPECIFIED = 0 ;
-        RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
-        AGL = 2 ; // 地表面高度。
-        MSL = 3; // 海抜高度（標高）。
-        ELLIPSOIDE = 4 ;// 楕円球体高。default値。spank
-    }
+enum Standard {
+    ALTITUDE_ATTR_UNSPECIFIED = 0 ;
+    RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+    AGL = 2 ; // 地表面高度。
+    MSL = 3; // 海抜高度（標高）。
+    ELLIPSOIDE = 4 ;// 楕円球体高。default値。spank
 }
 
 // XY座標
