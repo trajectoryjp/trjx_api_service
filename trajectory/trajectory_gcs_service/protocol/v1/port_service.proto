@@ -4,7 +4,6 @@ package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/field_mask.proto";
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
 
 
@@ -36,9 +35,6 @@ message CreatePortRequest {
 message GetPortRequest {
     // ポートID
     int64 id = 1;
-
-    // クエリフィールド(指定されたカラムのみ取得)
-    google.protobuf.FieldMask fields = 2;
 }
 
 // TODO: UI再審議
@@ -68,9 +64,6 @@ message ListPortsRequest {
 
     // ポート提供者
     optional string provider = 8;                       
-
-    // クエリフィールド(指定されたカラムのみ取得)
-    google.protobuf.FieldMask fields = 9;               
 }
 
 // ポート一覧取得・フィルタリング検索レスポンス
@@ -87,10 +80,8 @@ message ListPortsResponse {
 
 // ポート更新リクエスト
 message UpdatePortRequest{
-    // 更新マスク(指定されたフィールドのみ更新)
-    google.protobuf.FieldMask update_mask = 1;
 
-    // ポート(更新マスクで指定したもののみ更新)
+    // ポート（指定した内容で上書き）
     Port port = 2;
 }
 
