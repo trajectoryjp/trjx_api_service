@@ -72,6 +72,8 @@ go.work
 # CMake
 cmake-build-*/
 
+github.com
+
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
 
