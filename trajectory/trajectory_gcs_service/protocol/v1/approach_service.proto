@@ -21,7 +21,7 @@ service ApproachService {
     rpc NotifyApproachProgress(NotifyApproachProgressRequest) returns (ApplyResponse);
 
     // 飛行中飛行計画ID取得
-    rpc GetCurrentFlightPlanId(GetCurrentFlightPlanIdRequest) returns (CurrentFlightPlanId);
+    rpc GetCurrentFlightPlanId(GetCurrentFlightPlanIdRequest) returns (stream CurrentFlightPlanId);
 }
 
 // 離陸申請リクエスト
