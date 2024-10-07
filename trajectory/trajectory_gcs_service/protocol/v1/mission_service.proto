@@ -6,6 +6,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 import "google/protobuf/empty.proto";
 
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+import "trajectory/type/resource.proto";
 
 service MissionService {
     // CreateMission: ミッションの生成
@@ -28,7 +29,6 @@ service MissionService {
 }
 
 message CreateMissionRequest { 
-    OragnizationID organization_id = 1;
     ProjectID project_id = 7;
     TransactionID transaction_id = 2 ; // WideArea切替。未指定はWide。
     oneof Select {
@@ -48,6 +48,8 @@ message CreateMissionRequest {
     optional ScheduledTime arrival_time = 11; // 到着時間。onlyAssignでは無効。
 
     Mission mission = 12; // ルート計算を行うMissionItemのリスト。
+
+    trajectory.trjx_api_service.Standard output_altitude = 14; // 出力高度属性。
 }
 
 message CreateMissionResponse {
