@@ -11,6 +11,9 @@ service TelemetryService {
 
     // GetMobilityPositions: 対象範囲にある機体の位置情報を取得する
     rpc GetMobilityPositions(GetMobilityPositionsRequest) returns (stream MobilityPosition) {}
+
+    // UAVのルート逸脱状態通知
+    rpc NotifyDeviation(UAVID) returns (stream DeviationResponse) {}
 }
 
 
@@ -98,4 +101,10 @@ message PredictSpeed {
     double y = 2;
     // 上昇速度(m/sec) 右手系
     double z = 3;
+}
+
+message DeviationResponse{
+    bool deviation_course = 1; // 逸脱の場合true
+    double deviation_angle = 2; //次のウェイポイントを中心に見た時、ルートからずれている角度(°)
+    XYZPosition normal_position = 3; //直前のウェイポイントと次のウェイポイントを繋いた直線上の1点からドローンの位置まで、直線と垂直になるよう引いたベクトル。
 }
