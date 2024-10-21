@@ -10,6 +10,9 @@ import "uas/generic/v2/sdsp_g.proto";
 service RouteService {
     // ListVoxelsAroundPath: インタアクティブルートの検査
     rpc ListVoxelsAroundPaths(ListVoxelsAroundPathsRequest) returns (ListVoxelsAroundPathsResponse);
+
+    // CheckWaypoints: ウェイポイントを配置できるかどうかを確認
+    rpc CheckWaypoints(CheckWaypointsRequest) returns (CheckWaypointsResponse);
 }
 
 // ListVoxelsAroundPathRequest
@@ -126,5 +129,37 @@ message ListVoxelsAroundPathsResponse {
             // 平均
             float average = 4;
         }
+    }
+}
+
+message CheckWaypointsRequest {
+    // トランザクションID。親プロジェクトのトランザクションIDは存在しないので、明示的に0を入れる
+    TransactionID transaction_id = 1;
+
+    repeated Waypoint waypoints = 2;
+}
+
+message CheckWaypointsResponse {
+    repeated Result results = 1;
+
+    message Result {
+        string name = 1;                                    // ウェイポイント名
+        trajectory.trjx_api_service.Position waypoint = 2;  // 位置情報
+        Code code = 3;                                      // ステータス
+    }
+
+    message Code {
+        Status status = 3;
+        string info = 4;
+    }
+
+    enum Status {
+        STATUS_UNSPECIFIED = 0;     // 未定義
+        STATUS_OK = 1;              // ウェイポイントチェックOK。safeで飛行可
+        STATUS_BARRIIER = 2;        // バリア領域。飛行不可
+        STATUS_NO_SPACE = 3;        // スペースなし。飛行不可
+        STATUS_RESERVED_PATH = 4;   // 予約空域。飛行不可
+        STATUS_NO_DATA = 5;         // エリア未設定。unsafeだが飛行可
+        STATUS_ERROR = 6;           // エラー。WP設定不可で飛行不可
     }
 }

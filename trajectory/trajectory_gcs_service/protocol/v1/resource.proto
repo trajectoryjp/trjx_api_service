@@ -793,3 +793,20 @@ message Position { // 要削除🟥 このPositionが他に存在すればいら
     // 高度
     float altitude = 4;
 }
+
+message Waypoint {
+    // 位置情報
+    trajectory.trjx_api_service.Position position = 1;
+
+    // 名称
+    optional string name = 2;
+
+    // プロジェクトID
+    optional ProjectID project_id = 3;
+
+    // 機体ID
+    optional UAVID uav_id = 4;
+
+    // クリアランス
+    optional float clearance = 5;
+}
