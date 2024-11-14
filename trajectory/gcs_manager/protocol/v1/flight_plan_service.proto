@@ -2,16 +2,10 @@
 
 /*
  * <機能概要>
- * GCS Manager(以降GMと記載)は、TRJXのUSS機能とGCSとのインタfエーサーとして、
- * サービス提供を行います。
- * 本飛行計画サービスは、WPで指定したルートから、地形・障害物・リスクを考慮した
- * 安全はルートを生成し、他機との衝突回避のため、飛行経路を空間予約します。
- *
- * <アクセス方法>
- * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
- * "x-grpc-service": "GcsManager"
- * "username": システムユーザID
- * "token": アクセストークン
+ * 飛行計画は、WPで指定した座標群から、地形・障害物・リスクを考慮した
+ * 安全はルートを生成し、離陸地点から飛行ルート、着陸地点までの飛行経路
+ * を空間予約します。
+ *　本サービスは、飛行計画を操作するAPIサービスを提供します。
  */
 
 syntax = "proto3";
@@ -30,6 +24,7 @@ service FlightPlanService {
 
     /*
      * 飛行計画の生成
+     * - 機体位置に関係ない飛行ルートのみ指定
      */
     rpc CreateFlightPlan(CreateFlightPlanRequest) returns (CreateFlightPlanResponse);
 
@@ -49,13 +44,14 @@ service FlightPlanService {
     rpc ListFlightPlans(ListFlightPlansRequest) returns (stream ListFlightPlansResponse);
 
     /*
-     * 飛行計画の更新
-     * 更新可能なパラメータ
-     *  - 飛行ルート、離着陸設定の有効時刻
-     *  - 飛行ルート(再作成)
-     *  - 離発着設定のポートスポット、離陸位置
+     * 飛行計画に機体位置・ポートを割り付け
      */
-    rpc UpdateFlightPlans(UpdateFlightPlanRequest) returns (UpdateFlightPlanResponse);
+    rpc UpdateUavPositionToFlightPlan(UpdateUavPositionToFlightPlanRequest) returns (UpdateUavPositionToFlightPlanResponse);
+
+     /*
+     * 飛行計画の時刻更新
+     */
+    rpc UpdateTimeToFlightPlans(UpdateTimeToFlightPlanRequest) returns (google.protobuf.Empty);
 
 }
 
@@ -64,153 +60,185 @@ service FlightPlanService {
  * 飛行計画の作成リクエスト
  */
 message CreateFlightPlanRequest{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    FlightPlan plan = 2;                    // 飛行計画
+    LandingMode mode = 1;                   // 着陸モード(着陸ポートに実ポート指定時は無視)
+    float clearance = 2;                    // クリアランス(m) 機体の大きさ(機体を覆う球体の半径)を指定
+    repeated FlightPath paths = 3;          // 飛行ルート
+    optional trjx_api_service.TimeStamp start_time = 4;// 飛行ルート有効期間始点
+    optional trjx_api_service.TimeStamp end_time = 5;  // 飛行ルート有効期間終点
 }
 
 /*
  * 飛行計画の作成レスポンス
  */
 message CreateFlightPlanResponse{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    uint32 status = 2;                      // code
-    string message = 3;                     // メッセージ
-    FlightPlan plan = 4;                    // 飛行計画
+    uint32 status = 1;                      // code
+    string message = 2;                     // メッセージ
+    FlightPlan plan = 3;                    // 飛行計画
+}
+
+/*
+ * 機体位置を割り付けリクエスト
+ */
+message UpdateUavPositionToFlightPlanRequest{
+    string flight_plan_id = 1;              // 飛行計画ID
+    TakeoffPosition takeoff = 2;            // 離陸設定(機体位置・ポート設定)
+    LandingPosition landing = 3;            // 着陸設定(ポート設定)
+    optional trjx_api_service.TimeStamp start_time = 4;// 有効期間始点
+    optional trjx_api_service.TimeStamp end_time = 5;  // 有効期間終点
+}
+
+/*
+ * 機体位置を割り付けレスポンス
+ */
+ message UpdateUavPositionToFlightPlanResponse{
+    uint32 status = 1;                      // code
+    string message = 2;                     // メッセージ
+    FlightPlan plan = 3;                    // 飛行計画    
 }
 
 /*
  * 飛行計画の削除リクエスト
  */
 message DeleteFlightPlanRequest{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    string flight_plan_id = 2;              // 飛行計画ID
-}
-
-/*
- * 飛行計画の削除レスポンス
- */
-message DeleteFlightPlanResponse{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-
+    string flight_plan_id = 1;              // 飛行計画ID
 }
 
 /*
  * 飛行計画のID取得リクエスト
  */
 message GetFlightPlanRequest{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
+    string flight_plan_id = 1;              // 飛行計画ID
     google.protobuf.FieldMask mask = 2;     // 取得マスク(指定されたフィールドのみ取得)
-    string flight_plan_id = 3;              // 飛行計画ID
 }
 
 /*
  * 飛行計画のID取得レスポンス
  */
 message GetFlightPlanResponse{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    FlightPlan plan = 2;                    // 飛行計画
+    FlightPlan plan = 1;                    // 飛行計画
 }
 
 /*
  * 飛行計画のリスト取得リクエスト
  */
 message ListFlightPlansRequest{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
+    optional trjx_api_service.SearchBox box = 1; // 検索ボックス
     google.protobuf.FieldMask mask = 2;     // 取得マスク(指定されたフィールドのみ取得)
-    optional trjx_api_service.SearchBox box = 3; // 検索ボックス
-    optional string uav_id = 4;             // 機体ID(文字列)
 }
 
 /*
  * 飛行計画のリスト取得レスポンス
  */
 message ListFlightPlansResponse{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    repeated FlightPlan plan = 2;           // 飛行計画
+    repeated FlightPlan plan = 1;           // 飛行計画
 }
 
 /*
- * 飛行計画の更新リクエスト
+ * 飛行計画の時刻更新リクエスト
  */
-message UpdateFlightPlanRequest{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    google.protobuf.FieldMask mask = 2;     // 更新マスク(指定されたフィールドのみ更新)
-    FlightPlan plan = 3;                    // 飛行計画
-
+message UpdateTimeToFlightPlanRequest{
+    string flight_plan_id = 1;              // 飛行計画ID
+    optional trjx_api_service.TimeStamp start_time = 2;// 飛行ルート有効期間始点
+    optional trjx_api_service.TimeStamp end_time = 3;  // 飛行ルート有効期間終点
 }
 
 /*
- * 飛行計画の更新レスポンス
+ * 飛行計画入力パス
  */
-message UpdateFlightPlanResponse{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    uint32 status = 2;                      // code
-    string message = 3;                     // メッセージ
-    FlightPlan plan = 4;                    // 飛行計画
+ message FlightPath {
+    Position start = 1;                     // パスの始点Waypoint
+    Position end = 2;                       // 入力の終点Waypoint
+    PlanMethod method = 3;                  // 飛行経路生成方式(推奨/登録)
+}
+
+/*
+ * 離陸設定(機体位置・ポート)
+ */
+message TakeoffPosition{
+    oneof position {
+        Port port = 1;                      // 離陸ポート
+        UavPosition uav_position = 2;       // 離陸機体位置
+    }
+}
+
+/*
+ * 着陸設定(ポート)
+ */
+ message LandingPosition {
+    optional Port port = 1;                 // 着陸ポート(着陸モードが実ポート時のみ有効)
+}
+
+/*
+ * 離陸機体位置
+ */
+ message UavPosition {
+    Position uav_position = 1;              // 離陸機体位置
+    Altitude takeoff_altitude = 2;          // 離陸上昇高度(m)
+}
+
+// ポート・スポット
+message Port {
+    int64 port_id = 1;                      // ポートID
+    int64 spot_id = 2;                      // スポットID
 }
 
 
 /*
- * 飛行計画パラメータ
+ * 飛行計画オブジェクト
  */
 message FlightPlan {
-    bool has_value = 1;                     // メッセージの有効性(true/false)
     string flight_plan_id = 2;              // 飛行計画ID(生成時は空文字)
     trjx_api_service.UavId uav_id = 3;      // 機体識別子(文字列)
     LandingMode mode = 4;                   // 着陸モード(着陸ポートに実ポート指定時は無視)
     float clearance = 5;                    // クリアランス(m) 機体の大きさ(機体を覆う球体の半径)を指定
-    Route route = 11;                       // 飛行ルート
-    Takeoff takeoff = 12;                   // 離陸設定
-    Landing landing = 13;                   // 着陸設定
+    float cost = 6;                         // 飛行経路のトータルコスト値(出力)
+    Route route = 7;                        // 飛行ルート
+    Takeoff takeoff = 8;                    // 離陸設定
+    Landing landing = 9;                    // 着陸設定
 
     // 飛行ルート
     message Route {
-        bool has_value = 1;                 // メッセージの有効性(true/false)
-        trjx_api_service.TimeStamp start_time = 2;// 有効期間始点
-        trjx_api_service.TimeStamp end_time = 3;  // 有効期間終点
-        float cost = 21;                    // 飛行経路のコスト値(出力)
-        repeated FlightPath paths = 22;     // 飛行ルート(出力)
+        float cost = 1;                     // 飛行経路のコスト値(出力)
+        repeated ResultFlightPath paths = 2;// 飛行ルート(出力)
+        trjx_api_service.TimeStamp start_time = 3;// 有効期間始点
+        trjx_api_service.TimeStamp end_time = 4;  // 有効期間終点
     }
 
     // 離陸ルート
     message Takeoff{
-        bool has_value = 1;                 // メッセージの有効性(true/false)
-        trjx_api_service.TimeStamp start_time = 2;// 有効期間始点
-        trjx_api_service.TimeStamp end_time = 3;  // 有効期間終点
-        Altitude takeoff_altitude = 4;      // 離陸上昇高度(m)
+        float cost = 1;                     // 飛行経路のコスト値(出力)
+        Position closest_potition = 2;      // 最近接点(出力)
+        repeated ResultFlightPath paths = 3;// 離陸ルート(ターミナル)(出力)
         oneof position {
-            PortSpot port = 5;              // 離陸実ポート
-            Position uav_positon = 6;       // 離陸機体位置
+            PortSpot port = 4;              // 離陸ポート
+            UavPosition uav_positon = 5;    // 離陸機体位置
         }
-        float cost = 21;                    // 飛行経路のコスト値(出力)
-        Position closest_potition = 22;     // 最近接点(出力)
-        repeated FlightPath paths = 23;     // 離陸ルート(ターミナル)(出力)
+        trjx_api_service.TimeStamp start_time = 6;// 有効期間始点
+        trjx_api_service.TimeStamp end_time = 7;  // 有効期間終点
     }
 
     // 着陸ルート
     message Landing {
-        bool has_value = 1;                 // メッセージの有効性(true/false)
-        trjx_api_service.TimeStamp start_time = 2;// 有効期間始点
-        trjx_api_service.TimeStamp end_time = 3;  // 有効期間終点
-        optional PortSpot port = 4;         // 着陸実ポート(ポート指定なし時は着陸モード(mode)に従う)
-        float cost = 21;                    // 飛行経路のコスト値(出力)
-        Position closest_potition = 22;     // 最近接点(出力)
-        repeated FlightPath paths = 23;     // 着陸ルート(ターミナル)(出力)
+        float cost = 1;                     // 飛行経路のコスト値(出力)
+        Position closest_potition = 2;      // 最近接点(出力)
+        repeated ResultFlightPath paths = 3;// 着陸ルート(ターミナル)(出力)
+        PortSpot port = 4;                  // 着陸ポート(着陸モードが実ポート時のみ有効)
+        trjx_api_service.TimeStamp start_time = 5;// 有効期間始点
+        trjx_api_service.TimeStamp end_time = 6;  // 有効期間終点
     }
 
     // 飛行経路
-    message FlightPath {
-        bool has_value = 1;                 // メッセージの有効性(true/false)
-        Position start = 2;                 // パスの始点Waypoint
-        Position end = 3;                   // 入力の終点Waypoint
-        PlanMethod method = 4;              // 飛行経路生成方式(推奨/登録)
-        float cost = 21;                    // 飛行経路のコスト値(出力)
+    message ResultFlightPath {
+        float cost = 1;                     // 飛行経路のコスト値(出力)
         oneof result {
-            Path path = 22;                 // 生成飛行経路(出力)
-            InBarrierError in_barrier = 23; // 障害物の突入するパス
-            InNoDataError in_nodata = 24;   // データが存在せずにパス生成不可
-            NoPathError no_path = 25;       // 全て障害物やパスで埋められてパスが生成できない
+            Path path = 2;                  // 生成飛行経路(出力)
+            InBarrierError in_barrier = 3;  // 障害物の突入するパス
+            InNoDataError in_nodata = 4;    // データが存在せずにパス生成不可
+            NoPathError no_path = 5;        // 全て障害物やパスで埋められてパスが生成できない
         }
+        Position start = 6;                 // パスの始点Waypoint
+        Position end = 7;                   // 入力の終点Waypoint
+        PlanMethod method = 8;              // 飛行経路生成方式(推奨/登録)
 
         // パス
         message Path {
@@ -237,51 +265,46 @@ message FlightPlan {
             bool has_value = 1;             // メッセージの有効性(true/false)
             repeated Position danger = 2;   // 存在しないパス
         }
+    }    
+}
 
-        // 飛行経路生成方式
-        enum PlanMethod {
-            PLAN_METHOD_RECOMMEND = 0;      // 推奨ルート(バリアやリスクを考慮)
-            PLAN_METHOD_INPUTWP = 1;        // 入力WPルート(WP直線で結ぶ) 
-        }
+/*
+ * 飛行経路生成方式
+ */
+enum PlanMethod {
+    PLAN_METHOD_RECOMMEND = 0;              // 推奨ルート(バリアやリスクを考慮)
+    PLAN_METHOD_INPUTWP = 1;                // 入力WPルート(WP直線で結ぶ) 
+}
+
+/*
+ * ポート・スポット
+ */
+message PortSpot {
+    int64 port_id = 1;                      // ポートID
+    string name = 2;                        // 名称
+    Spot spot = 3;                          // スポット
+
+    // スポット
+    message Spot{
+        int64 spot_id = 1;                  // スポットID
+        float spot_size = 2;                // スポットの半径(m)
+        Position center = 3;                // スポット中心座標            
     }
+}
 
-    // ポート・スポット
-    message PortSpot {
-        bool has_value = 1;                 // メッセージの有効性(true/false)
-        Port port = 2;                      // ポート
-
-        // ポート
-        message Port {
-            bool has_value = 1;             // メッセージの有効性(true/false)
-            int64 port_id = 2;              // ポートID
-            string name = 3;                // 名称
-            Spot spot = 4;                  // スポット
-
-        }
-        // スポット
-        message Spot{
-            bool has_value = 1;             // メッセージの有効性(true/false)
-            int64 spot_id = 2;              // スポットID
-            float spot_size = 3;            // スポットの半径(m)
-            Position center = 4;            // スポット中心座標            
-        }
-
-    }
-
-    // 着陸モード
-    enum LandingMode {
-        LANDING_CURRENT = 0;                // 最終WP着陸(Current) default
-        LANDING_RTL = 1;                    // ホームポジション帰還(RTL)
-        LANDING_TAKEOFF = 2;                // 離陸地点帰還(TakeOff)
-        LANDING_TRACKING = 3;               // 移動式ドローンポート(Tracking) -未サポート-
-    }
+/*
+ * 着陸モード
+ */
+enum LandingMode {
+    LANDING_CURRENT = 0;                    // 最終WP着陸(Current) default
+    LANDING_RTL = 1;                        // ホームポジション帰還(RTL)
+    REAL_PORT = 2;                          // 実ポート
 }
 
 /*
  * 位置情報
  */
 message Position {
-    bool has_value = 1;                     // メッセージの有効性(true/false)
     string tag = 2 ;                        // タグ
     double latitude = 3;                    // 緯度
     double longitude = 4;                   // 経度
@@ -292,7 +315,6 @@ message Position {
  * 高度
  */
 message Altitude{
-    bool has_value = 1;                     // メッセージの有効性(true/false)
     float altitude = 2;                     // 高度(m)
     AltitudeAttr altitudeAttr = 3;          // 高度属性
 
