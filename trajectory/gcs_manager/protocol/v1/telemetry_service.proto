@@ -2,7 +2,9 @@
 
 /*
  * <機能概要>
- * GCS Manager(以降GMと記載)は、
+ * GCS向けテレメトリサービスは、機体の位置,姿勢,システム情報などをTRJXに送信することで
+ * 衝突検知, 飛行ルート逸脱検知(飛行計画送信時のみ), フライトログ保存といった安全支援機能を有効化します。
+ * 本APIでは機体テレメトリAPIを提供します。
  *
  * <アクセス方法>
  * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
@@ -18,39 +20,61 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/gcs";
  
 import "trajectory/type/telemetry.proto";
 
-// テレメトリーサービス
+// テレメトリサービス
+// このサービスで提供するAPIは全て機体ごとのstreamです(1:1関係)。
 service TelemetryService {
 
-    // 外部GCSがテレメトリを送信する
-    rpc UpdateTelemetry(stream UpdateTelemetryRequest) returns (stream UpdateTelemetryResponse);
+    // 機体テレメトリをgRPC bidirectional streamで送信する
+    // クライアントはテレメトリを送信し、サーバからはエラーは逐次返却し、処理を継続します。
+    // ただし、初回リクエスト時にエラーが発生した場合にはエラー返却後にstreamが切断されます。
+    // errors:
+    // - InvalidArgument: 必須データが送られていない、または不正な場合。
+    // - AlreadyExists: 該当機体のテレメトリがすでにTRJXシステム上にある場合(UTMテレメトリーサービスに同じ機体のテレメトリを送信している時)
+    rpc UpdateTelemetry(stream TelemetryRequest) returns (stream TelemetryResponse);
+
+    // 機体テレメトリをgRPC client streamで送信する
+    // エラー返却時に、処理が終了しstreamが切断されます。
+    // errors:
+    // - InvalidArgument: 必須データが送られていない、または不正な場合。
+    // - AlreadyExists: 該当機体のテレメトリがすでにTRJXシステム上にある場合(UTMテレメトリーサービスに同じ機体のテレメトリを送信している時)
+    rpc SendTelemetry(stream TelemetryRequest) returns (TelemetryResponse);
+
+    // 機体テレメトリをMAVLINKメッセージで送信する
+    // 基本的な送信内容はUpdateTelemetryに同じです
+    rpc UpdateMavlinkTelemetry(stream MavlinkTelemetry) returns (UpdateMavlinkTelemetryResponse);
 
 }
 
 
 // 外部GCSがテレメトリを送信するリクエスト
-message UpdateTelemetryRequest {
+message TelemetryRequest {
     oneof request {
         trjx_api_service.UavBasic initialize = 1;   // テレメトリ送信開始通知(TRJXのテレメトリシステムに機体を認識させる)
         Telemetry telemetry = 2;                    // テレメトリ通知(Initializeメッセージを受信するまでテレメトリは破棄する)
-        trjx_api_service.UavBasic terminate = 3;    // テレメトリ送信終了通知(Terminate通知以降、テレメトリ受信は破棄する)
     }
-}  
+}
 
 // 外部GCSがテレメトリを送信するレスポンス
-message UpdateTelemetryResponse {
+message TelemetryResponse {
     uint32 code = 1;                        // ステータスコード
     string message = 2;                     // メッセージ
-    oneof uav {                             // 機体識別子(必須)
-        string remote_id = 3;               // リモートID
-        string uav_id = 4;                  // 機体ID(組織単位で一意のIDを指定)
-    }
-    Request request = 5;                    // リクエスト種別
+    Request request = 3;                    // リクエスト種別
     enum Request {
         INITIALIZE = 0;                     // Initialize応答
         TELEMETRY = 1;                      // Telemetry応答
-        TERMINATE = 2;                      // Terinate応答
     }
-}  
+}
+
+// Mavlinkでテレメトリ送信するメッセージ
+message MavlinkTelemetry {
+    bytes mavlink_message = 1;
+}
+
+// 外部GCSがテレメトリを送信するレスポンス
+message UpdateMavlinkTelemetryResponse {
+    uint32 code = 1;                        // ステータスコード
+    string message = 2;                     // メッセージ
+}
 
 // テレメトリ情報メッセージ
 message Telemetry {
