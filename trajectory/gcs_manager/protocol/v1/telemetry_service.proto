@@ -78,10 +78,17 @@ message UpdateMavlinkTelemetryResponse {
 
 // テレメトリ情報メッセージ
 message Telemetry {
-    trjx_api_service.UavBasic uav = 1;              // テレメトリ基本情報(機体情報)
-    trjx_api_service.UavPosition position = 2;      // テレメトリ位置情報
-    trjx_api_service.UavAttitude attitude = 3;      // テレメトリ姿勢情報
-    trjx_api_service.UavBattery battery = 4;        // テレメトリバッテリー情報
-    trjx_api_service.UavStatus status = 5;          // テレメトリステータス情報
-    trjx_api_service.TelemetrySource source = 6;    // テレメトリ受信経路情報}
+    // テレメトリ送信中機体の飛行情報
+    trjx_api_service.FlightId flight_id = 1;
+    // テレメトリ位置情報
+    trjx_api_service.UavPosition position = 2;
+    // テレメトリ姿勢情報
+    // UavBasicで指定したAbilityのattitude_report=true時は必須
+    optional trjx_api_service.UavAttitude attitude = 3;
+    // テレメトリバッテリー情報
+    // UavBasicで指定したAbilityのbattery_status_report=true時は必須
+    optional trjx_api_service.UavBattery battery = 4;
+    // テレメトリステータス情報
+    // UavBasicで指定したAbilityのattitude_report=true時は必須
+    optional trjx_api_service.UavStatus status = 5;
 }

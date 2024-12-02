@@ -5,21 +5,31 @@ syntax = "proto3";
 package trajectory.trjx_api_service;
 option go_package = "github.com/trajectoryjp/trjx_api_service/type";
 
+import "trajectory/type/resource.proto";
+
 // テレメトリ機体基本情報メッセージ
 // 基本リモートIDを通知。リモートIDを通知できない場合は、GCS/USSの独自機体IDを通知
 message UavBasic {
-    oneof uav {                             // 機体識別子(必須)
-        string remote_id = 2;               // リモートID
-        string uav_id = 3;                  // 機体ID(組織単位で一意のIDを指定)
-    }
-    optional string name = 4;               // 機体表示名(選択)
-    oneof flight_id {                       // 飛行ID(選択)
+    UavId uav = 1;                   // 機体識別子(必須) リモートIDまたは組織単位で一意のIDを指定
+    optional string name = 2;        // 機体表示名
+    FlightId flight_id = 3;          // 飛行ID
+    UavAbility uav_abilities = 4;    // 利用機能
+}
+
+// 機体が持つ能力
+// trueとした場合optionalとなっている一部テレメトリパラメータの入力が必須になる
+message UavAbility {
+    bool port_control = 1;              // テレメトリの位置情報で離発着ポート制御を利用できる機能を持つか否か(true:有/false:無)
+    bool battery_status_report = 2;     // 機体のバッテリ状態を通知できるか否か(true:有/false:無)
+    bool system_status_report = 3;      // 機体のシステム状態を通知できるか否か(true:有/false:無)
+    bool attitude_report = 4;           // 機体の姿勢情報を通知できるか否か(true:有/false:無)
+}
+
+// 飛行する空間予約ID
+message FlightId {
+    oneof flight_id {
         string flight_plan_id = 5;          // 飛行計画ID
         string flight_space_id = 6;         // 飛行空間ID
-    }
-    Functions used_fuctions = 7;            // 利用機能
-    message Functions {
-        bool port_control = 8;              // テレメトリの位置情報で離発着ポート制御を利用できる機能を持つか否か(true:有/false:無)
     }
 }
 
@@ -27,35 +37,25 @@ message UavBasic {
 // 緯度、経度、高度(高度属性)、機首方位は必須
 message UavPosition {
     // -- 位置情報 必須 一定時間情報通知されない場合クリア
-    double latitude = 1;                    // 機体位置の緯度
-    double longitude = 2;                   // 機体位置の経度
-    double altitude = 3;                    // 機体位置の高度(m)
-    AltitudeAttribute altitude_attribute = 4;// 高度属性
+    Position position = 1;                  // 機体位置 高度属性はMSLかELLIPSOIDEのみ指定可能
     float heading = 5;                      // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
 
-    // -- GBS誤差範囲 オプショナル　一定時間情報通知されない場合クリア
+    // -- GBS誤差範囲 オプショナル 一定時間情報通知されない場合クリア
     optional float error_distance = 6;      // 誤差距離（GPS誤差）
 
-    // -- 速度情報 オプショナル　一定時間情報通知されない場合クリア
-    optional float velocity_x = 7;          // 東方向速度 (m/s)    
+    // -- 速度情報 オプショナル 一定時間情報通知されない場合クリア
+    optional float velocity_x = 7;          // 東方向速度 (m/s)
     optional float velocity_y = 8;          // 北方向速度 (m/s)
     optional float velocity_z = 9;          // 上昇速度 (m/s)
 
-    // -- タグ情報 ポート機能利用時は必須　一定時間情報通知されない場合クリア
-    optional string next_wp_tag = 10;       // 機体が次に向かうWPのタグ名(UavBasicのenabled_port=true時は必ず指定)
-
-    // 高度属性(0:楕円球体高, 3:海抜高度(MSL)のみ指定可能)
-    enum AltitudeAttribute {
-        ALTITUDE_ATTRIBUTE_ELIPSOIDE = 0 ;  // 楕円球体高
-        ALTITUDE_ATTRIBUTE_RELATIVE = 1;    // 離陸地点を基準とする相対高度(未対応)
-        ALTITUDE_ATTRIBUTE_AGL = 2 ;        // 地表面高度(未対応)
-        ALTITUDE_ATTRIBUTE_MSL = 3;         // 海抜高度（標高）
-    }
+    // -- タグ情報 ポート機能利用時は必須 一定時間情報通知されない場合クリア
+    optional string next_wp_tag = 10;       // 機体が次に向かうWPのタグ名(Abilityのport_control=true時は必ず指定)
 }
 
 // 機体姿勢情報
+// Abilityのattitude_report=true時は必須
 message UavAttitude{
-    // -- 姿勢情報 選択　一定時間情報通知されない場合クリア
+    // -- 姿勢情報 一定時間情報通知されない場合クリア
     optional float roll = 1;                // ロール(radian)
     optional float pitch = 2;               // ピッチ(radian)
     optional float yaw = 3;                 // ヨー(radian) North=0 時計回り
@@ -63,24 +63,26 @@ message UavAttitude{
     optional float pitch_speed = 5;         // ピッチ速度(rad/sec)
     optional float yaw_speed = 6;           // ヨー速度(rad/sec)
 
-    // -- 速度情報 選択　一定時間情報通知されない場合クリア
+    // -- 速度情報 一定時間情報通知されない場合クリア
     optional float speed = 7;               // 機首方向スピード(m/sec)　※COG速度ではない
-    optional float slip_speed = 8;          // 機体横方向の移動速度(m/sec) 
+    optional float slip_speed = 8;          // 機体横方向の移動速度(m/sec)
     optional float descent_speed = 9;       // 機体降下速度(m/sec)
 
-    // -- 対地上速度情報 選択　一定時間情報通知されない場合クリア
+    // -- 対地上速度情報 一定時間情報通知されない場合クリア
     optional float cog_speed = 10;          // 対地上速さ(m/sec)
     optional float cog = 11;                // 対地上進行方向(degree) North=0 時計回り
 }
 
 // バッテリー情報  一定時間情報通知されない場合クリア
+// Abilityのbattery_status_report=true時は必須
 message UavBattery {
     float Remaining = 1;                    // バッテリー残容量(0〜1) 1=100%(必須)
     optional float voltage_battery = 2;     // バッテリー電圧[V]
     optional float current_battery = 3;     // 電流量[A]
 }
 
-// ステータス情報
+// 機体ステータス情報
+// Abilityのsystem_status_report=true時は必須
 message UavStatus {
     string message = 2;                     // メッセージ
 
@@ -156,12 +158,3 @@ message UavStatus {
     }
 }
 
-// テレメトリソース情報
-message TelemetrySource {
-    SOURCE source = 1;                      // データソース
-    enum SOURCE {
-        SOURCE_UNSPECIFIED = 0;             // 未設定
-        SOURCE_REMOTE_ID = 1;               // リモートID
-        SOURCE_TELEMETRY = 2;               // テレメトリ
-    }
-}
