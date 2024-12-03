@@ -29,18 +29,19 @@ service TelemetryService {
     // ただし、初回リクエスト時にエラーが発生した場合にはエラー返却後にstreamが切断されます。
     // errors:
     // - InvalidArgument: 必須データが送られていない、または不正な場合。
-    // - AlreadyExists: 該当機体のテレメトリがすでにTRJXシステム上にある場合(UTMテレメトリーサービスに同じ機体のテレメトリを送信している時)
-    rpc UpdateTelemetry(stream TelemetryRequest) returns (stream TelemetryResponse);
+    // rpc UpdateTelemetry(stream TelemetryRequest) returns (stream TelemetryResponse);
 
     // 機体テレメトリをgRPC client streamで送信する
-    // エラー返却時に、処理が終了しstreamが切断されます。
+    // streamは以下の契機で切断します。(再開には再度接続・Initializeリクエストが必要)
+    // - Initializeリクエスト時にエラーが返却時された場合。(サーバによって切断されます)
+    // - flightIdなどのInitializeパラメータ変更を行う場合(クライアントから切断する必要があります)
+    // - サーバとの接続異常時(ネットワーク起因)
     // errors:
-    // - InvalidArgument: 必須データが送られていない、または不正な場合。
-    // - AlreadyExists: 該当機体のテレメトリがすでにTRJXシステム上にある場合(UTMテレメトリーサービスに同じ機体のテレメトリを送信している時)
-    rpc SendTelemetry(stream TelemetryRequest) returns (TelemetryResponse);
+    // - InvalidArgument: Initializeリクエスト時に必須データが送られていない、または不正な場合。(Telmetryリクエスト時の不正データは破棄のみ行いエラーは返さない)
+    rpc UpdateTelemetry(stream TelemetryRequest) returns (TelemetryResponse);
 
     // 機体テレメトリをMAVLINKメッセージで送信する
-    // 基本的な送信内容はUpdateTelemetryに同じです
+    // 基本的な送信内容はSendTelemetryに同じです
     rpc UpdateMavlinkTelemetry(stream MavlinkTelemetry) returns (UpdateMavlinkTelemetryResponse);
 
 }
@@ -49,7 +50,9 @@ service TelemetryService {
 // 外部GCSがテレメトリを送信するリクエスト
 message TelemetryRequest {
     oneof request {
-        trjx_api_service.UavBasic initialize = 1;   // テレメトリ送信開始通知(TRJXのテレメトリシステムに機体を認識させる)
+        // テレメトリ送信開始通知(TRJXのテレメトリシステムに機体を認識させる)
+        // stream開始後の初回リクエストは必ずこのメッセージである必要があります
+        trjx_api_service.UavBasic initialize = 1;
         Telemetry telemetry = 2;                    // テレメトリ通知(Initializeメッセージを受信するまでテレメトリは破棄する)
     }
 }
@@ -65,7 +68,7 @@ message TelemetryResponse {
     }
 }
 
-// Mavlinkでテレメトリ送信するメッセージ
+// 外部GCSからMavlinkでテレメトリ送信するメッセージ
 message MavlinkTelemetry {
     bytes mavlink_message = 1;
 }
@@ -78,17 +81,15 @@ message UpdateMavlinkTelemetryResponse {
 
 // テレメトリ情報メッセージ
 message Telemetry {
-    // テレメトリ送信中機体の飛行情報
-    trjx_api_service.FlightId flight_id = 1;
-    // テレメトリ位置情報
-    trjx_api_service.UavPosition position = 2;
-    // テレメトリ姿勢情報
+    // テレメトリ位置情報(必須)
+    trjx_api_service.UavPosition position = 1;
+    // テレメトリ姿勢情報(オプショナル)
     // UavBasicで指定したAbilityのattitude_report=true時は必須
-    optional trjx_api_service.UavAttitude attitude = 3;
-    // テレメトリバッテリー情報
+    optional trjx_api_service.UavAttitude attitude = 2;
+    // テレメトリバッテリー情報(オプショナル)
     // UavBasicで指定したAbilityのbattery_status_report=true時は必須
-    optional trjx_api_service.UavBattery battery = 4;
-    // テレメトリステータス情報
+    optional trjx_api_service.UavBattery battery = 3;
+    // テレメトリステータス情報(オプショナル)
     // UavBasicで指定したAbilityのattitude_report=true時は必須
-    optional trjx_api_service.UavStatus status = 5;
+    optional trjx_api_service.UavStatus status = 4;
 }

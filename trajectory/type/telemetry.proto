@@ -19,7 +19,7 @@ message UavBasic {
 // 機体が持つ能力
 // trueとした場合optionalとなっている一部テレメトリパラメータの入力が必須になる
 message UavAbility {
-    bool port_control = 1;              // テレメトリの位置情報で離発着ポート制御を利用できる機能を持つか否か(true:有/false:無)
+    bool wp_tag_report = 1;             // テレメトリの位置情報と共に次に向かうWPのタグを通知できるか否か(true:有/false:無)
     bool battery_status_report = 2;     // 機体のバッテリ状態を通知できるか否か(true:有/false:無)
     bool system_status_report = 3;      // 機体のシステム状態を通知できるか否か(true:有/false:無)
     bool attitude_report = 4;           // 機体の姿勢情報を通知できるか否か(true:有/false:無)
@@ -34,26 +34,34 @@ message FlightId {
 }
 
 // 機体位置情報
-// 緯度、経度、高度(高度属性)、機首方位は必須
+// 緯度、経度、高度(高度属性)は必須
+// wp_tag_report=trueの際はnext_wp_tagも必須
 message UavPosition {
-    // -- 位置情報 必須 一定時間情報通知されない場合クリア
-    Position position = 1;                  // 機体位置 高度属性はMSLかELLIPSOIDEのみ指定可能
-    float heading = 5;                      // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
+    // 機体位置 必須 一定時間情報通知されない場合クリア
+    // 高度属性はMSLかELLIPSOIDEのみ指定可能
+    Position position = 1;
+    // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
+    optional float heading = 2;
 
-    // -- GBS誤差範囲 オプショナル 一定時間情報通知されない場合クリア
-    optional float error_distance = 6;      // 誤差距離（GPS誤差）
+    // GBS誤差距離(m) オプショナル 一定時間情報通知されない場合クリア
+    optional float error_distance = 3;
 
     // -- 速度情報 オプショナル 一定時間情報通知されない場合クリア
-    optional float velocity_x = 7;          // 東方向速度 (m/s)
-    optional float velocity_y = 8;          // 北方向速度 (m/s)
-    optional float velocity_z = 9;          // 上昇速度 (m/s)
+    // 東方向速度 (m/s)
+    optional float velocity_x = 4;
+    // 北方向速度 (m/s)
+    optional float velocity_y = 5;
+    // 上昇速度 (m/s)
+    optional float velocity_z = 6;
 
     // -- タグ情報 ポート機能利用時は必須 一定時間情報通知されない場合クリア
-    optional string next_wp_tag = 10;       // 機体が次に向かうWPのタグ名(Abilityのport_control=true時は必ず指定)
+    // 機体が次に向かうWPのタグ名
+    // UavAbilityのwp_tag_report=true時は必ず指定
+    optional string next_wp_tag = 7;
 }
 
 // 機体姿勢情報
-// Abilityのattitude_report=true時は必須
+// UavAbilityのattitude_report=true時は最低1つ以上のフィールドを設定する
 message UavAttitude{
     // -- 姿勢情報 一定時間情報通知されない場合クリア
     optional float roll = 1;                // ロール(radian)
@@ -74,35 +82,27 @@ message UavAttitude{
 }
 
 // バッテリー情報  一定時間情報通知されない場合クリア
-// Abilityのbattery_status_report=true時は必須
 message UavBattery {
-    float Remaining = 1;                    // バッテリー残容量(0〜1) 1=100%(必須)
-    optional float voltage_battery = 2;     // バッテリー電圧[V]
-    optional float current_battery = 3;     // 電流量[A]
+    // バッテリー残容量(0〜1) 1=100%
+    // UavAbilityのbattery_status_report=true時は必須
+    float remaining = 1;
+    // (任意)バッテリー電圧[V]
+    optional float voltage_battery = 2;
+    // (任意)電流量[A]
+    optional float current_battery = 3;
 }
 
 // 機体ステータス情報
-// Abilityのsystem_status_report=true時は必須
+// UavAbilityのsystem_status_report=true時は必須
 message UavStatus {
-    string message = 2;                     // メッセージ
+    optional string message = 1;                     // 下記のステータス詳細以外に指定するメッセージ(任意)
 
     // -- ステータス詳細 選択 一定時間通知されない場合クリア
+    // UavAbilityのsystem_status_report=true時は必須
     oneof status_detail {
         UavSystemStatus system = 3;         // 機体状態
         UavFlightStatus flight = 4;         // 飛行状態
         UavArmStatus status = 5;            // ARMステータス
-    }
-
-    // 機体複合状態
-    enum UavSignal {
-        SIGNAL_WHITE = 0;                   // 初期状態、未設定状態
-        SIGNAL_RED = 1;                     // 緊急状態（緊急対処を実施）
-	    SIGNAL_ORANGE = 2;                  // 危険状態（回復策を実施）
-        SIGNAL_YELLOW_BLINK = 3;            // 注意状態（運用に注意）。処理実行中。
-	    SIGNAL_YELLOW = 4;                  // 注意状態（運用に注意）
-        SIGNAL_GREEN_BLINK = 5;             // 正常状態処理実行中
-	    SIGNAL_GREEN = 6;                   // 正常状態
-        SIGNAL_NONE = 99;                   // Singnalパラメータ無効（変化なし）
     }
 
     // 機体状態
@@ -133,7 +133,7 @@ message UavStatus {
             STATUS_FLIGHT = 1;              // 飛行中
             STATUS_TAKE_OFF = 2;            // 離陸中
             STATUS_LANDING = 3;             // 着陸中
-            STATUS_LANDED = 4;              // 着陸状態(LANDINGMODEで垂直着陸中)
+            STATUS_LANDED = 4;              // 着陸状態
             STATUS_UNREGIST = 5;            // 着陸
             STATUS_UNKNOWN = 6;             // 未知
         }
