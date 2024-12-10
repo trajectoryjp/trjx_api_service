@@ -51,14 +51,19 @@ service FlightPlanService {
     /*
      * 飛行計画に着陸設定を割り付け
      */
-     rpc UpdateLandingUavPosition(UpdateLandingUavPositionRequest) returns (UpdateLandingUavPositionResponse);
+    rpc UpdateLandingUavPosition(UpdateLandingUavPositionRequest) returns (UpdateLandingUavPositionResponse);
 
     /*
      * 飛行計画の時刻更新
      */
     rpc UpdateFlightTime(UpdateFlightTimeRequest) returns (google.protobuf.Empty);
 
-}
+    /*
+     * 飛行計画の飛行パス更新
+     */
+     rpc UpdateFlightPath(UpdateFlightPathRequest) returns (UpdateFlightPathResponse);
+
+    }
 
     
 /*
@@ -175,6 +180,25 @@ message UpdateFlightTimeRequest{
 }
 
 /*
+ * 飛行計画の飛行パス更新リクエスト
+ */
+ message UpdateFlightPathRequest{
+    string flight_plan_id = 1;              // 飛行計画ID
+    FlightPath paths = 3;                   // 飛行入力WPパスリスト
+    optional trjx_api_service.TimeStamp start_time = 4;// 飛行ルート有効期間始点
+    optional trjx_api_service.TimeStamp end_time = 5;  // 飛行ルート有効期間終点
+}
+
+/*
+ * 飛行計画の飛行パス更新レスポンス
+ */
+ message UpdateFlightPathResponse{
+    uint32 status = 1;                      // code
+    string message = 2;                     // メッセージ
+    FlightPlan.Route route = 3;             // 飛行ルート
+}
+
+/*
  * 飛行入力WPパスリスト
  */
  message FlightPath {
@@ -189,13 +213,31 @@ message UpdateFlightTimeRequest{
 }
 
 /*
+ * ポート内離着陸WPパスリスト
+ * ※入力WPパス生成(WPを直線で結ぶパスを生成)
+ */
+ message TerminalPath {
+    repeated Path path = 1;                 // 飛行パス
+
+    // 終端パス
+    message Path{
+        Position start = 1;                 // パスの始点Waypoint
+        Position end = 2;                   // 入力の終点Waypoint
+    }
+}
+
+
+/*
  * 離陸設定(機体位置・ポート)
  */
 message TakeoffPosition{
-    Position uav_position = 1;              // 離陸機体位置
-    optional Port port = 2;                 // 離陸ポート(実ポート利用時に指定)
-    optional Altitude takeoff_altitude = 3; // 仮設ポート(実ポート以外)時の離陸上昇高度(m)
-    Position nearest_waypoint = 4;          // 離陸地点直近のWP(第一WP)
+    Position takeoff_uav_position = 1;      // 離陸機体位置
+    oneof terminal {
+        Port port = 2;                      // 実ポート指定(実ポート利用時に指定)
+        Altitude takeoff_altitude = 3;      // 仮設ポート(実ポート以外)時の離陸上昇高度(m)
+        TerminalPath paths = 4;             // 離陸WPパスリスト(飛行経路生成方式が入力WPパス生成のみ利用可能)    
+    }
+    Position nearest_waypoint = 5;          // 離陸地点直近のWP(第一WP)
 }
 
 /*
@@ -203,8 +245,12 @@ message TakeoffPosition{
  */
  message LandingPosition {
     LandingMode mode = 1;                   // 着陸モード
-    optional Port port = 2;                 // 着陸ポート(着陸モードが実ポート時のみ有効)
-    Position nearest_waypoint = 3;          // 着陸地点直近のWP(最終WP)
+    oneof terminal {
+        Position takeoff_uav_position = 2;  // 離陸機体位置(着陸陸モードがRTLの場合のみ有効)
+        Port port = 3;                      // 着陸ポート(着陸モードが実ポート時のみ有効)
+        TerminalPath paths = 4;             // 着陸WPパスリスト(着陸モードが着陸パスWP指定時のみ有効)
+    }
+    Position nearest_waypoint = 5;          // 着陸地点直近のWP(最終WP)
 }
 
 /*
@@ -231,7 +277,6 @@ message FlightPlan {
     message Route {
         float cost = 1;                     // 飛行経路のコスト値(出力)
         repeated ResultFlightPath route = 2;// 飛行ルート(出力)
-        FlightPath paths = 3;               // 飛行入力WPパスリスト
         trjx_api_service.TimeStamp start_time = 4;// 有効期間始点
         trjx_api_service.TimeStamp end_time = 5;  // 有効期間終点
     }
@@ -241,7 +286,6 @@ message FlightPlan {
         float cost = 1;                     // 飛行経路のコスト値(出力)
         Position closest_potition = 2;      // 最近接点(出力)
         repeated ResultFlightPath paths = 3;// 離陸ルート(ターミナル)(出力)
-        TakeoffPosition takeoff = 4;        // 離陸設定(機体位置・ポート)
         trjx_api_service.TimeStamp start_time = 5;// 有効期間始点
         trjx_api_service.TimeStamp end_time = 6;  // 有効期間終点
     }
@@ -251,7 +295,6 @@ message FlightPlan {
         float cost = 1;                     // 飛行経路のコスト値(出力)
         Position closest_potition = 2;      // 最近接点(出力)
         repeated ResultFlightPath paths = 3;// 着陸ルート(ターミナル)(出力)
-        LandingPosition landing = 4;        // 着陸設定(ポート)
         trjx_api_service.TimeStamp start_time = 5;// 有効期間始点
         trjx_api_service.TimeStamp end_time = 6;  // 有効期間終点
     }
@@ -298,8 +341,8 @@ message FlightPlan {
  * 飛行経路生成方式
  */
 enum PathMethod {
-    PATH_METHOD_RECOMMEND = 0;              // 推奨ルート(バリアやリスクを考慮)
-    PATH_METHOD_INPUTWP = 1;                // 入力WPルート(WP直線で結ぶ) 
+    PATH_METHOD_RECOMMEND = 0;              // 推奨パス生成(バリアやリスクを考慮)
+    PATH_METHOD_INPUTWP = 1;                // 入力WPパス生成(WP直線で結ぶパスを生成) 
 }
 
 /*
@@ -322,27 +365,28 @@ message PortSpot {
  * 着陸モード
  */
 enum LandingMode {
-    LANDING_CURRENT = 0;                    // 最終WP着陸(Current) default
-    LANDING_RTL = 1;                        // ホームポジション帰還(RTL)
-    LANDING_PORT = 2;                       // 実ポート
+    LANDING_MODE_CURRENT = 0;               // 最終WP着陸(Current) default
+    LANDING_MODE_RTL = 1;                   // ホームポジション帰還(RTL)
+    LANDING_MODE_PORT = 2;                  // 実ポート
+    LANDING_MODE_PATH = 3;                  // 着陸パスWP指定
 }
 
 /*
  * 位置情報
  */
 message Position {
-    string tag = 2 ;                        // タグ
-    double latitude = 3;                    // 緯度
-    double longitude = 4;                   // 経度
-    Altitude altitude = 5;                  // 高度
+    string tag = 1 ;                        // タグ
+    double latitude = 2;                    // 緯度
+    double longitude = 3;                   // 経度
+    Altitude altitude = 4;                  // 高度
 }
 
 /*
  * 高度
  */
 message Altitude{
-    float altitude = 2;                     // 高度(m)
-    AltitudeAttr altitudeAttr = 3;          // 高度属性
+    float altitude = 1;                     // 高度(m)
+    AltitudeAttr altitudeAttr = 2;          // 高度属性
 
     // 高度属性
     enum AltitudeAttr {
