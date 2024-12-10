@@ -205,3 +205,12 @@ message UavStatus {
     }
 }
 
+// テレメトリソース情報
+message TelemetrySource {
+    SOURCE source = 1;                      // データソース
+    enum SOURCE {
+        SOURCE_UNSPECIFIED = 0;             // 未設定
+        SOURCE_REMOTE_ID = 1;               // リモートID
+        SOURCE_TELEMETRY = 2;               // テレメトリ
+    }
+}
