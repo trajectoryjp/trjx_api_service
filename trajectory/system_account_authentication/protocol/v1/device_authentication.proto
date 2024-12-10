@@ -1,0 +1,37 @@
+/***　Copyright © 2024 Trajectory. All rights reserved. ***/
+
+/*
+ * <機能概要>
+ * Device Authenticationは、TRJXが連携デバイスの認証するための機能です。
+ * 登録したデバイスIDとパスワードで認証を行います。
+ * 許可されたデバイスの場合、デバイストークンを生成して返却します。
+ *
+ * <アクセス方法>
+ * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
+ * "x-grpc-service": "SystemAccountAuthentication"
+ */
+
+ syntax = "proto3";
+
+ package trajectory.system_account_authentication.protocol.v1;
+ option go_package = "github.com/trajectoryjp/trjx_api_service/auth";
+ 
+ // Trajectory Device認証サービス
+ service DeviceAuthenticationService {
+     // デバイスアクセストークン取得
+     //  1)トークンが存在しない場合、新規にトークンを生成して返す。
+     //  2)トークンが存在する場合は、既存のトークンを返す。
+     rpc GetDeviceToken(GetDeviceTokenRequest) returns (DeviceToken){}
+ }
+ 
+ // デバイスアクセストークン取得リクエスト
+ message GetDeviceTokenRequest {
+     string device_id = 1;             // デバイスID
+     string password = 2;              // パスワード
+ }
+ 
+ // デバイスアクセストークン
+ message DeviceToken{
+     string token = 1;                 // デバイストークン
+ }
+ 
