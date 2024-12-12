@@ -5,24 +5,19 @@ syntax = "proto3";
 package trajectory.trjx_api_service;
 option go_package = "github.com/trajectoryjp/trjx_api_service/type";
 
-// リモートID位置情報
-// ASTM Designation: F3411 − 19 Standard Specification for Remote ID and Tracking を参照
-message RemoteIdPosition {
-    string serial_number = 1;                           // シリアルナンバー
-    string caa_assigned_registration_id = 2;            // リモートID
-    string utm_assigned_uuid = 3;                       // UTM割当UUID
-    float track_direction = 4;                          // Direction expressed as the route course measured clockwise from true north.
-    float speed = 5;                                    // Ground Speed in m/s
-    float vertical_speed = 6;                           // Vertical Speed m/s (+ up, – down) Multiplier = 0.5
-    double latitude = 7;                                // Latitude of UA
-    double longitude = 8;                               // Longitude of UA
-    float pressure_altitude = 9;                        // Pressure Altitude (Ref 29.92 inHg, 1013.24 mb)
-    float geodetic_altitude = 10;                       // WGS-84 HAE 
-    float height = 11;                                  // Height above takeoff location or Height above ground 
-    bytes holizontal_vertical_accuracy = 12;            // Horizontal and vertical accuracy in bits
-    bytes baro_altitude_accuracy_speed_accuracy = 13;   // Baro altitude and accuracy and speed accuracy in bits
-    int64 timestamp = 14;                               // Time of applicability expressed in 1/10ths of seconds since the last hour
-    bytes reserved_timestamp_accuracy = 15;             // Reserved bits and timestamp accuracy in bits
+import "trajectory/type/resource.proto";
+
+
+/*
+ * リモートID位置情報
+ */
+ message RemoteIdPosition {
+    string caa_assigned_registration_id = 1;            // リモートID
+    double latitude = 2;                                // 緯度(十進経緯度)
+    double longitude = 3;                               // 経度(十進経緯度)
+    optional Altitude altitude = 4;                     // 高度(m)
+    optional float track_direction = 5;                 // Direction expressed as the route course measured clockwise from true north(deg).
+    optional float speed = 6;                           // Ground Speed in m/s
+    optional float vertical_speed = 7;                  // Vertical Speed m/s (+ up, – down) Multiplier = 0.5
+    int64 timestamp = 8;                                // タイムスタンプ(UNIX時刻)
 }
-
-
