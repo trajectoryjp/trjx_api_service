@@ -61,3 +61,13 @@ enum UserType{
     TYPE_TRAIN = 8;                             // 電車
     TYPE_UAV = 9;                               // UAV
 }
+
+/*
+ * 機体ID
+ */
+ message UavId {
+    oneof uav{
+        string uav_id = 1;                  // 機体ID(文字列)
+        string remote_id = 2;               // リモートID(文字列)
+    }
+}
