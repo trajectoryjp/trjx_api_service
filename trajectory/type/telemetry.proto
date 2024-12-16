@@ -5,102 +5,153 @@ syntax = "proto3";
 package trajectory.trjx_api_service;
 option go_package = "github.com/trajectoryjp/trjx_api_service/type";
 
+import "trajectory/type/resource.proto";
+
 // テレメトリ機体基本情報メッセージ
 // 基本リモートIDを通知。リモートIDを通知できない場合は、GCS/USSの独自機体IDを通知
 message UavBasic {
-    oneof uav {                             // 機体識別子(必須)
-        string remote_id = 2;               // リモートID
-        string uav_id = 3;                  // 機体ID(組織単位で一意のIDを指定)
-    }
-    optional string name = 4;               // 機体表示名(選択)
-    oneof flight_id {                       // 飛行ID(選択)
-        string flight_plan_id = 5;          // 飛行計画ID
-        string flight_space_id = 6;         // 飛行空間ID
-    }
-    Functions used_fuctions = 7;            // 利用機能
-    message Functions {
-        bool port_control = 8;              // テレメトリの位置情報で離発着ポート制御を利用できる機能を持つか否か(true:有/false:無)
+    UavId uav = 1;                   // 機体識別子(必須) リモートIDまたは組織単位で一意のIDを指定
+    optional string name = 2;        // 機体表示名
+    FlightId flight_id = 3;          // 飛行ID
+    UavAbility uav_abilities = 4;    // 利用機能
+
+    // 飛行する空間予約ID
+    message FlightId {
+        oneof flight_id {
+            string flight_plan_id = 5;          // 飛行計画ID
+            string flight_space_id = 6;         // 飛行空間ID
+        }
     }
 }
 
+// 機体が持つ能力
+// trueとした場合optionalとなっている一部テレメトリパラメータの一定時間以内入力が必須になるが、パラメータに対応するTRJXの各種支援機能を有効化できる
+// ここで必須になったパラメータを一定時間以内に送信しない場合、TRJX上でテレメトリ異常の警告が発生する
+// falseにしたAbilityに対応するパラメータを送信した場合、そのパラメータ情報は破棄される
+message UavAbility {
+    // テレメトリの位置情報と共に次に向かうWPのタグを通知できるか否か(true:有/false:無)
+    // ポート離発着制御機能, 衝突アラート機能, ルート逸脱アラート機能を有効化する
+    bool wp_tag_report = 1;
+    // 機首の向きを通知できるか否か(true:有/false:無)
+    // 衝突アラート機能, ルート逸脱アラート機能の精度を上げる(機能有効化はwp_tag_reportで行う)
+    bool uav_heading_report = 2;
+    // 機体の速度を通知できるか否か(true:有/false:無)
+    // 衝突アラート機能, ルート逸脱アラート機能の精度を上げる(機能有効化はwp_tag_reportで行う)
+    bool uav_velocity_report = 3;
+    // 機体のバッテリ状態を通知できるか否か(true:有/false:無)
+    // UI表示(TRJX登録機体のみ), 着陸優先順位制御機能(未実装)を有効化する
+    bool battery_status_report = 4;
+    // 機体のシステム状態を通知できるか否か(true:有/false:無)
+    // UI表示(TRJX登録機体のみ), 着陸優先順位制御機能(未実装)を有効化する
+    bool system_status_report = 5;
+    // 機体の姿勢情報を通知できるか否か(true:有/false:無)
+    // 衝突アラート機能, ルート逸脱アラート機能の精度を上げる(機能有効化はwp_tag_reportで行う)
+    bool attitude_report = 6;
+}
+
 // 機体位置情報
-// 緯度、経度、高度(高度属性)、機首方位は必須
+// 緯度、経度、高度(高度属性)は必須
+// wp_tag_report=trueの際はnext_wp_tagも必須
 message UavPosition {
-    // -- 位置情報 必須 一定時間情報通知されない場合クリア
-    double latitude = 1;                    // 機体位置の緯度
-    double longitude = 2;                   // 機体位置の経度
-    double altitude = 3;                    // 機体位置の高度(m)
-    AltitudeAttribute altitude_attribute = 4;// 高度属性
-    float heading = 5;                      // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
+    // 機体位置 必須 一定時間情報通知されない場合クリア
+    // 高度属性はMSLかELLIPSOIDEのみ指定可能
+    Position position = 1;
+    // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
+    // UavAbilityのuav_heading_report=true時は必須
+    optional float heading = 2;
 
-    // -- GBS誤差範囲 オプショナル　一定時間情報通知されない場合クリア
-    optional float error_distance = 6;      // 誤差距離（GPS誤差）
+    // GPS誤差距離(m) オプショナル 一定時間情報通知されない場合クリア
+    optional float error_distance = 3;
 
-    // -- 速度情報 オプショナル　一定時間情報通知されない場合クリア
-    optional float velocity_x = 7;          // 東方向速度 (m/s)    
-    optional float velocity_y = 8;          // 北方向速度 (m/s)
-    optional float velocity_z = 9;          // 上昇速度 (m/s)
+    // -- 速度情報 オプショナル 一定時間情報通知されない場合クリア
+    // UavAbilityのuav_velocity_report=true時は必須
+    optional UavVelocity uav_velocity = 4;
 
-    // -- タグ情報 ポート機能利用時は必須　一定時間情報通知されない場合クリア
-    optional string next_wp_tag = 10;       // 機体が次に向かうWPのタグ名(UavBasicのenabled_port=true時は必ず指定)
+    // -- タグ情報 一定時間情報通知されない場合クリア
+    // 機体が次に向かうWPのタグ名
+    // UavAbilityのwp_tag_report=true時は必ず指定
+    optional string next_wp_tag = 7;
 
-    // 高度属性(0:楕円球体高, 3:海抜高度(MSL)のみ指定可能)
-    enum AltitudeAttribute {
-        ALTITUDE_ATTRIBUTE_ELIPSOIDE = 0 ;  // 楕円球体高
-        ALTITUDE_ATTRIBUTE_RELATIVE = 1;    // 離陸地点を基準とする相対高度(未対応)
-        ALTITUDE_ATTRIBUTE_AGL = 2 ;        // 地表面高度(未対応)
-        ALTITUDE_ATTRIBUTE_MSL = 3;         // 海抜高度（標高）
+    // 速度情報
+    message UavVelocity {
+        // 東方向速度 (m/s)
+        float velocity_x = 1;
+        // 北方向速度 (m/s)
+        float velocity_y = 2;
+        // 上昇速度 (m/s)
+        float velocity_z = 3;
+        // 速度基準
+        VelocityStandard standard = 4;
+        enum VelocityStandard {
+            // 速度基準不明
+            VELOCITY_STANDARD_UNSPECIFIED = 0;
+            // 対地速度
+            VELOCITY_STANDARD_GROUNDSPEED = 1;
+            // 対気速度
+            VELOCITY_STANDARD_AIRSPEED = 2;
+        }
     }
 }
 
 // 機体姿勢情報
+// UavAbilityのattitude_report=true時は最低1つ以上のフィールドを設定する
+// 機体座標  x:機首方向 y:右方向 z:下方向 (右手系)
 message UavAttitude{
-    // -- 姿勢情報 選択　一定時間情報通知されない場合クリア
-    optional float roll = 1;                // ロール(radian)
-    optional float pitch = 2;               // ピッチ(radian)
-    optional float yaw = 3;                 // ヨー(radian) North=0 時計回り
-    optional float roll_speed = 4;          // ロール速度(rad/sec)
-    optional float pitch_speed = 5;         // ピッチ速度(rad/sec)
-    optional float yaw_speed = 6;           // ヨー速度(rad/sec)
+    // -- 姿勢情報 一定時間情報通知されない場合クリア
+    optional AircraftAngle aircraft_angle = 1;
+    // 機体角度
+    message AircraftAngle {
+        float roll = 1;                // x軸回転角 ロール(radian) 時計回り
+        float pitch = 2;               // y軸回転角 ピッチ(radian) 時計回り
+        float yaw = 3;                 // z軸回転角 ヨー(radian) North=0 時計回り
+    }
+    // 機体角速度
+    optional AircraftAngularVelocity angular_velocity = 2;
+    message AircraftAngularVelocity {
+        float roll_speed = 1;          // ロール速度(rad/sec) 時計回り方向が+
+        float pitch_speed = 2;         // ピッチ速度(rad/sec) 時計回り方向が+
+        float yaw_speed = 3;           // ヨー速度(rad/sec) 時計回り方向が+
+    }
 
-    // -- 速度情報 選択　一定時間情報通知されない場合クリア
-    optional float speed = 7;               // 機首方向スピード(m/sec)　※COG速度ではない
-    optional float slip_speed = 8;          // 機体横方向の移動速度(m/sec) 
-    optional float descent_speed = 9;       // 機体降下速度(m/sec)
+    // -- 機首方向速度情報 一定時間情報通知されない場合クリア
+    // 対地速度に限る
+    optional AircraftSpeed ground_speed = 3;
+    message AircraftSpeed {
+        float speed = 1;               // 機首方向スピード(m/sec)　※COG速度ではない
+        float slip_speed = 2;          // 機体横方向の移動速度(m/sec) 右方向が+
+        float descent_speed = 3;       // 機体降下速度(m/sec)
+    }
 
-    // -- 対地上速度情報 選択　一定時間情報通知されない場合クリア
-    optional float cog_speed = 10;          // 対地上速さ(m/sec)
-    optional float cog = 11;                // 対地上進行方向(degree) North=0 時計回り
+    // -- 対地上速度(Course over Ground: COG)情報 一定時間情報通知されない場合クリア
+    message AircraftCogSpeed{
+        float cog_speed = 10;          // 機体進行方向における対地上速さ(m/sec)
+        float cog = 11;                // 対地上機体進行方向(degree) North=0 時計回り
+    }
 }
 
 // バッテリー情報  一定時間情報通知されない場合クリア
 message UavBattery {
-    float Remaining = 1;                    // バッテリー残容量(0〜1) 1=100%(必須)
-    optional float voltage_battery = 2;     // バッテリー電圧[V]
-    optional float current_battery = 3;     // 電流量[A]
+    // バッテリー残容量(0〜1) 1=100%
+    // エンジン機の場合は燃料の残容量を送信する
+    // UavAbilityのbattery_status_report=true時は必須
+    float remaining = 1;
+    // (任意)バッテリー電圧[V]
+    optional float voltage_battery = 2;
+    // (任意)電流量[A]
+    optional float current_battery = 3;
 }
 
-// ステータス情報
+// 機体ステータス情報
+// UavAbilityのsystem_status_report=true時は必須
 message UavStatus {
-    string message = 2;                     // メッセージ
+    optional string message = 1;                     // 下記のステータス詳細以外に指定するメッセージ(任意)
 
     // -- ステータス詳細 選択 一定時間通知されない場合クリア
+    // UavAbilityのsystem_status_report=true時は必須
     oneof status_detail {
         UavSystemStatus system = 3;         // 機体状態
         UavFlightStatus flight = 4;         // 飛行状態
         UavArmStatus status = 5;            // ARMステータス
-    }
-
-    // 機体複合状態
-    enum UavSignal {
-        SIGNAL_WHITE = 0;                   // 初期状態、未設定状態
-        SIGNAL_RED = 1;                     // 緊急状態（緊急対処を実施）
-	    SIGNAL_ORANGE = 2;                  // 危険状態（回復策を実施）
-        SIGNAL_YELLOW_BLINK = 3;            // 注意状態（運用に注意）。処理実行中。
-	    SIGNAL_YELLOW = 4;                  // 注意状態（運用に注意）
-        SIGNAL_GREEN_BLINK = 5;             // 正常状態処理実行中
-	    SIGNAL_GREEN = 6;                   // 正常状態
-        SIGNAL_NONE = 99;                   // Singnalパラメータ無効（変化なし）
     }
 
     // 機体状態
@@ -129,11 +180,9 @@ message UavStatus {
         enum STATUS {
             STATUS_UNSPECIFIED = 0;         // 未設定
             STATUS_FLIGHT = 1;              // 飛行中
-            STATUS_TAKE_OFF = 2;            // 離陸中
+            STATUS_TAKING_OFF = 2;          // 離陸中
             STATUS_LANDING = 3;             // 着陸中
-            STATUS_LANDED = 4;              // 着陸状態(LANDINGMODEで垂直着陸中)
-            STATUS_UNREGIST = 5;            // 着陸
-            STATUS_UNKNOWN = 6;             // 未知
+            STATUS_LANDED = 4;              // 着陸状態
         }
         enum MODE {
             MODE_UNSPECIFIED = 0;           // 未設定
