@@ -13,11 +13,12 @@ import "trajectory/type/resource.proto";
  */
  message RemoteIdPosition {
     string caa_assigned_registration_id = 1;            // リモートID
-    double latitude = 2;                                // 緯度(十進経緯度)
-    double longitude = 3;                               // 経度(十進経緯度)
-    optional Altitude altitude = 4;                     // 高度(m)
-    optional float track_direction = 5;                 // Direction expressed as the route course measured clockwise from true north(deg).
-    optional float speed = 6;                           // Ground Speed in m/s
-    optional float vertical_speed = 7;                  // Vertical Speed m/s (+ up, – down) Multiplier = 0.5
-    int64 timestamp = 8;                                // タイムスタンプ(UNIX時刻)
+    string serial_number = 2;                           // シリアルナンバー
+    double latitude = 3;                                // 緯度(十進経緯度)
+    double longitude = 4;                               // 経度(十進経緯度)
+    optional Altitude altitude = 5;                     // 高度(m)
+    optional float track_direction = 6;                 // Direction expressed as the route course measured clockwise from true north(deg).
+    optional float speed = 7;                           // Ground Speed in m/s
+    optional float vertical_speed = 8;                  // Vertical Speed m/s (+ up, – down) Multiplier = 0.5
+    int64 timestamp = 9;                                // タイムスタンプ(UNIX時刻)
 }
