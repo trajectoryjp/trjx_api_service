@@ -35,9 +35,7 @@ message AuthenticateDeviceRequest {
  
 // デバイス認証レスポンス
 message AuthenticateDeviceResponse{
-    oneof response {
-        string token = 1;             // デバイストークン
-        string password = 2;          // デバイスパスワード(TRJXがペアリング状態の場合にパスワードが発行される)    
-    }
+    string token = 1;                // デバイストークン
+    optional string password = 2;    // デバイスパスワード(TRJXがペアリング状態の場合にパスワードが発行される)
 }
  
