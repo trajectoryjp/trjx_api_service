@@ -71,9 +71,9 @@ service FlightPlanService {
  */
 message CreateFlightPlanRequest{
     UavProperty uav = 1;                    // UAV設定プロパティ
-    ChannelProperty channel = 2;            // 航路設定プロパティ(航路飛行時に指定)
-    FlightPath paths = 3;                   // 飛行入力WPパスリスト
-    RealPortProperty ports = 4;             // 実ポート指定(実ポート離発着の場合指定)
+    optional AirwayProperty airway = 2;     // 航路設定プロパティ(航路飛行時に指定)
+    FlightPath paths = 3;                   // 飛行入力WPパスリスト(現状航路予約ID指定時は空指定)
+    optional RealPortProperty ports = 4;    // 実ポート指定(実ポート離発着の場合指定)
     optional trjx_api_service.TimeStamp start_time = 6;// 飛行ルート有効期間始点
     optional trjx_api_service.TimeStamp end_time = 7;  // 飛行ルート有効期間終点
 
@@ -83,14 +83,14 @@ message CreateFlightPlanRequest{
     }
     
     // 航路設定プロパティ
-    message ChannelProperty{
-        string channel_id = 1;              // 航路ID
+    message AirwayProperty{
+        string airway_reservation_id = 1;   // 航路予約ID
     }
     
     // 実ポート離発着設定プロパティ
     message RealPortProperty{
-        Port takeoff = 1;                   // 離陸ポート(実ポートからの離陸する場合に指定(オプショナル)) 
-        Port landing = 2;                   // 着陸ポート(実ポートに着陸する場合に指定(オプショナル)) 
+        optional int64 takeoff_port_id = 1; // 離陸ポート(実ポートからの離陸する場合に指定(オプショナル))
+        optional int64 landing_port_id = 2; // 着陸ポート(実ポートに着陸する場合に指定(オプショナル))
     }
 }
 
@@ -117,7 +117,7 @@ message CreateTakeoffUavPositionRequest{
 /*
  * 飛行計画への離陸機体位置設定(更新)レスポンス
  */
- message CreateTakeoffUavPositionResponse{
+message CreateTakeoffUavPositionResponse{
     uint32 status = 1;                      // code
     string message = 2;                     // メッセージ
     FlightPlan.Takeoff takeoff = 3;         // 離陸情報    
@@ -126,7 +126,7 @@ message CreateTakeoffUavPositionRequest{
 /*
  * 飛行計画への着陸設定(更新)リクエスト
  */
- message CreateLandingUavPositionRequest{
+message CreateLandingUavPositionRequest{
     string flight_plan_id = 1;              // 飛行計画ID
     LandingPosition landing = 2;            // 着陸設定(ポート設定)
     optional trjx_api_service.TimeStamp start_time = 3;// 有効期間始点
@@ -136,7 +136,7 @@ message CreateTakeoffUavPositionRequest{
 /*
  * 飛行計画への着陸設定(更新)レスポンス
  */
- message CreateLandingUavPositionResponse{
+message CreateLandingUavPositionResponse{
     uint32 status = 1;                      // code
     string message = 2;                     // メッセージ
     FlightPlan.Landing landing = 3;         // 着陸情報    
@@ -200,7 +200,7 @@ message UpdateFlightTimeRequest{
 /*
  * 飛行計画の飛行パス更新リクエスト
  */
- message UpdateFlightPathRequest{
+message UpdateFlightPathRequest{
     string flight_plan_id = 1;              // 飛行計画ID
     FlightPath paths = 3;                   // 飛行入力WPパスリスト
     optional trjx_api_service.TimeStamp start_time = 4;// 飛行ルート有効期間始点
@@ -210,7 +210,7 @@ message UpdateFlightTimeRequest{
 /*
  * 飛行計画の飛行パス更新レスポンス
  */
- message UpdateFlightPathResponse{
+message UpdateFlightPathResponse{
     uint32 status = 1;                      // code
     string message = 2;                     // メッセージ
     FlightPlan.Route route = 3;             // 飛行ルート
@@ -219,7 +219,7 @@ message UpdateFlightTimeRequest{
 /*
  * 飛行入力WPパスリスト
  */
- message FlightPath {
+message FlightPath {
     repeated Path path = 1;                 // 飛行パス
 
     // 飛行パス
@@ -234,7 +234,7 @@ message UpdateFlightTimeRequest{
  * ポート内離着陸WPパスリスト
  * ※入力WPパス生成(WPを直線で結ぶパスを生成)
  */
- message TerminalPath {
+message TerminalPath {
     repeated Path path = 1;                 // 飛行パス
 
     // 終端パス
@@ -247,6 +247,7 @@ message UpdateFlightTimeRequest{
 
 /*
  * 離陸設定(機体位置・ポート)
+ * 離陸直前に機体位置を指定して要求すること
  */
 message TakeoffPosition{
     Position takeoff_uav_position = 1;      // 離陸機体位置
@@ -261,7 +262,7 @@ message TakeoffPosition{
 /*
  * 着陸設定(ポート)
  */
- message LandingPosition {
+message LandingPosition {
     oneof terminal {
         LandingModeCurrent current = 1;     // 最終WP着陸(Current)の設定
         LandingModeRtl rtl = 2;             // ホームポジション帰還(RTL)の設定
