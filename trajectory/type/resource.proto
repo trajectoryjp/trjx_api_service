@@ -5,6 +5,8 @@ syntax = "proto3";
 package trajectory.trjx_api_service;
 option go_package = "github.com/trajectoryjp/trjx_api_service/type";
 
+import "google/protobuf/timestamp.proto";
+
 // 空間ID uasの定義を参照する
 //message SpatialIdentification {
 //    string id = 1 ; // z/f/x/y
@@ -70,4 +72,21 @@ enum UserType{
         string uav_id = 1;                  // 機体ID(文字列)
         string remote_id = 2;               // リモートID(文字列)
     }
+}
+
+/*
+ * 検索Box
+ */
+message SearchBox {
+    bool has_value = 1;                     // メッセージの有効性(true/false)
+    Position min = 2;                       // 最小キー
+    Position max = 3;                       // 最大キー
+}
+
+/*
+ * オプショナルの時刻
+ */
+message TimeStamp {
+    bool has_value = 1; // 値を持っているか否か。time_stampが無い場合はhas_value=falseです
+    google.protobuf.Timestamp time_stamp = 2; // 時刻
 }
