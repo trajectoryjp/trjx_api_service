@@ -497,7 +497,7 @@ message PortHeader {
     int64 organizations_id = 1;                  
     
     // グループID
-    int64 group_id = 2;                              
+    int64 group_id = 2 [deprecated = true];
     
     // 機体ID(文字列)
     string uav_id = 3;                                  
@@ -517,8 +517,8 @@ message Port {
     // 組織ID
     int64 organizations_id = 2;                         
 
-    // グループID
-    int64 group_id = 3;                                 
+    // グループID ※利用不可
+    int64 group_id = 3 [deprecated = true];
 
     // ポートの種別 true:private false:public   
     bool is_private = 4;              
