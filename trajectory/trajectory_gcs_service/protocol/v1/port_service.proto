@@ -46,8 +46,8 @@ message ListPortsRequest {
     // 組織ID(所有組織)　true:自組織のみ false: 他組織を含める
     bool own_organization = 2;
 
-     // グループID
-    optional int64 group_id = 3;                       
+     // グループID 利用不可
+    optional int64 group_id = 3 [deprecated = true];
 
     // TODO: UI再審議
     // ポートの種別 true:private false:public

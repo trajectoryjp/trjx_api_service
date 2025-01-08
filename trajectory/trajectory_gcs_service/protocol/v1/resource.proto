@@ -100,6 +100,10 @@ message Mission {
     repeated ROI roi_groups = 12;
     // Missionを生成したアプリケーション。未設定はすべてのMissionItemを解釈できるアプリケーション。未設定時はsubsetMission=falseとして解釈する。本パラメータは読み取り専用、編集禁止。
     ApplicationAttr app = 20;
+    // 飛行計画ID CreateMission時は無効
+    optional string flight_plan_id = 21 ;
+    // 航路予約ID　※航路使用時のみ使用
+    optional string airway_reservation_id = 22 ;
 }
 
 // MissionItem（ミッションの構成要素）
@@ -153,6 +157,7 @@ message MissionItem {
 }
 
 message PortZone { // ドローンボックスと区別するための名称
+    // 0は非許容
     int64 port_id = 1 ;
 
     // 離陸：指定なしの場合は機体を置いた位置から離陸する。機体を置いた周辺のスポットが予約されている時はエラー。
@@ -295,6 +300,14 @@ message ItemParameterWaypoint {
         ROAD_ROI = 1;
     }
     Type waypoint_type = 21;
+
+    enum WaypointSpaceAttribute {
+        // 航路不使用時
+        FREE_SPACE = 0 ;
+        // 航路使用時に設定
+        AIRWAY = 1 ;
+    }
+    WaypointSpaceAttribute waypoint_attr = 22;
     
 }
 
@@ -497,7 +510,7 @@ message PortHeader {
     int64 organizations_id = 1;                  
     
     // グループID
-    int64 group_id = 2;                              
+    int64 group_id = 2 [deprecated = true];
     
     // 機体ID(文字列)
     string uav_id = 3;                                  
@@ -517,8 +530,8 @@ message Port {
     // 組織ID
     int64 organizations_id = 2;                         
 
-    // グループID
-    int64 group_id = 3;                                 
+    // グループID ※利用不可
+    int64 group_id = 3 [deprecated = true];
 
     // ポートの種別 true:private false:public   
     bool is_private = 4;              
