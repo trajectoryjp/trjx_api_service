@@ -40,6 +40,7 @@ message MobilityPosition {
     float distance = 4 ; // 3D距離 (m)
     XYZPosition relative_position = 5 ; // GetMobilityPositionsの場合はreference_positionを原点とした相対位置。GetCollidingMobilitysUseAreaの場合はmobility_aから見たmobility_bの相対位置。GetCollidingMobilitysUseUAVの場合はmobility_idに対応する機体からmobilityの相対位置。
     AbsolutePosition absolute_position = 6 ; // 絶対位置
+    repeated XYZPosition unit_vector = 7; // ステルス機体の方向を示す単位ベクトル
 }
 
 message Approaching {
