@@ -788,6 +788,15 @@ message ApproachingPort {
     optional int64 spot_id = 2;
 }
 
+message GroundRiskArea {
+    int64 area_id = 1;                // FCのSolidModelIdとSPのObjectIdと同じもの
+    string name = 2;                  // グランドリスク名
+    string description = 3;           // 説明
+    float ground_risk_value= 4;       // グランドリスク値
+    double clearance  = 5;            // クリアランス値
+    SolidModel ground_risk_area = 6;  // グランドリスクエリア
+}
+
 message Position { // 要削除🟥 このPositionが他に存在すればいらない 🟥
     // 高度属性
     AltitudeAttr altitudeAttr = 1; // TR_DEV-1047

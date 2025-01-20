@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+
+// グランドリスクエリアの操作
+service GroundRiskAreaService {
+    // グランドリスクエリアの登録
+    rpc CreateGroundRiskArea(CreateGroundRiskAreaRequest) returns (GroundRiskArea);
+    // グランドリスクエリアの取得
+    rpc GetGroundRiskArea(GetGroundRiskAreaRequest) returns (GroundRiskArea);
+    // グランドリスクエリアのリスト取得
+    rpc ListGroundRiskAreas(ListGroundRiskAreasRequest) returns (ListGroundRiskAreasResponse);
+    // グランドリスクエリアの削除
+    rpc DeleteGroundRiskArea(DeleteGroundRiskAreaRequest) returns (google.protobuf.Empty);
+    // グランドリスクエリアの更新
+    rpc UpdateGroundRiskArea(UpdateGroundRiskAreaRequest) returns (GroundRiskArea);
+}
+
+// グランドリスクエリア登録リクエスト
+message CreateGroundRiskAreaRequest {
+    string name = 1;
+    string description = 2;
+    float ground_risk_value = 3;
+    double clearance= 4;
+    SolidModel ground_risk_area = 5;
+}
+
+// グランドリスクエリア取得リクエスト
+message GetGroundRiskAreaRequest {
+    int64 area_id =1 ;
+}
+
+// グランドリスクエリア取得レスポンス
+message GetGroundRiskAreaResponse {
+    GroundRiskArea ground_risk_area =1 ;
+}
+
+// グランドリスクエリア一覧取得リクエスト
+message ListGroundRiskAreasRequest {
+    optional SearchSpace box = 1;  // 検索ボックス 検索範囲の制限を設ける
+}
+
+// グランドリスクエリア一覧取得レスポンス
+message ListGroundRiskAreasResponse {
+    repeated GroundRiskArea ground_risk_areas =1 ;
+}
+
+// グランドリスクエリア削除リクエスト
+message DeleteGroundRiskAreaRequest {
+    int64 area_id =1 ;
+}
+
+// グランドリスクエリア更新リクエスト
+message UpdateGroundRiskAreaRequest {
+    int64 area_id =1 ;
+    string name = 2 ;
+    string description = 3;
+    float ground_risk_value = 4;
+    double clearance= 5;
+    SolidModel ground_risk_area = 6;
+}
