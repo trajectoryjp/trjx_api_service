@@ -793,3 +793,12 @@ message Position { // 要削除🟥 このPositionが他に存在すればいら
     // 高度
     float altitude = 4;
 }
+
+message XYZPosition {
+    // 経度方向距離(m)　北＋
+     double y = 1;   
+    // 緯度方向距離(m)　東＋
+    double x = 2;
+    // 高さ距離(m) 右手系 上+
+    double z = 3;
+}
