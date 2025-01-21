@@ -806,3 +806,38 @@ message Position { // 要削除🟥 このPositionが他に存在すればいら
     // 高度
     float altitude = 4;
 }
+
+/*
+ * 管制エリア
+ */
+message ControlArea {
+    // エリアID(ユニーク)
+    int64 id = 1;
+    
+    // エリア名
+    string name = 2;
+    
+    // 所有者(所有組織=組織ID)
+    int64 owner_id = 3;
+    
+    // 管制エリア範囲
+    oneof area {
+        // 円指定(当面円だけサポート)
+        Circle circle = 5;
+    }
+
+    // 円
+    message Circle {
+        // 中心位置
+        Position2D center = 1;
+        // 半径
+        double radius = 2;
+
+        message Position2D {
+            // 緯度
+            double latitude = 1;
+             // 経度
+            double longitude = 2;
+        }
+    }
+}
