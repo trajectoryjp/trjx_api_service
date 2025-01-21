@@ -18,24 +18,11 @@ service TelemetryService {
 
 
 message GetMobilityPositionsRequest {
-    oneof ReferencePosition { // 検知距離の基準位置
-        UAVID uav_id = 1; // 時組織機体ID　他組織を指定した場合はエラー
-        int32 user_index = 2; // publish positionで通知されるID
-        trajectory.trjx_api_service.Position position = 3; // 座標
+    oneof reference_position{ // 領域の中心点
+        AbsolutePosition fixed_point = 1 ; // 固定位置
+        string mobility_id = 2 ; // 機体位置
     }
-
-    trajectory.trjx_api_service.Standard output_altitude = 6; // 出力位置の高度属性
-    
-    oneof DetectionMethod {
-        float horizontal_distance = 11; // 水平距離(m)
-        DetectThreeDimensions three_dimensions = 12; // 3D距離
-    }
-    
-    enum OutputRange { // 要削除🟥 spec249_1-BG設計書のToDo(2) WideGetPositionにoutputRangeキャッシュ機能実装済みのため追加して良いか？ 🟥
-        OUTPUT_RANGE_UNSPECIFIED = 0; // 自組織・他組織の機体
-        EXCLUDE_OWN_ORGANIZATION = 1; // 他組織の機体のみ
-    }
-    optional OutputRange output_range = 4; // 出力対象　省略した場合、自組織・他組織の機体
+    float radius = 3; // 領域の半径(m)
 }
 
 message DetectThreeDimensions {
@@ -44,15 +31,12 @@ message DetectThreeDimensions {
 }
 
 message MobilityPosition {
-    ReferencePosition reference_position = 1; // 基準座標
-    string public_uav_id = 2; // 指定範囲条件に一致する外部機体ID
-    string uav_name = 3; // 機体名
-    optional string remote_id = 4; // リモートID
-    float distance = 5; // 距離(m)
-    bool collisionCourse = 6; // 衝突コースの場合、true
-    Approaching approach = 7; // 相対位置および速度
-    AbsolutePosition collisionPoint = 8;
-    float heading = 9;
+    string mobility_id= 1; // 条件にマッチした機体の識別子。uavの場合は属性機体ID
+    optional float heading = 2 ; //　機首方向。度。北が0度。
+    float cog = 3 ; //COG。度。北が0度。
+    float distance = 4 ; // 3D距離 (m)
+    XYZPosition relative_position = 5 ; // GetMobilityPositionsの場合はreference_positionを原点とした相対位置。GetCollidingMobilitysUseAreaの場合はmobility_aから見たmobility_bの相対位置。GetCollidingMobilitysUseUAVの場合はmobility_idに対応する機体からmobilityの相対位置。
+    AbsolutePosition absolute_position = 6 ; // 絶対位置
 }
 
 message Approaching {
