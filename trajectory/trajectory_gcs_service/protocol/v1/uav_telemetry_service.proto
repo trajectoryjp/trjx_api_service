@@ -9,6 +9,9 @@ service UAVTelemetryService {
 
     // GetMobilityPositions2: 対象範囲にある機体の位置情報を取得する
     rpc GetMobilityPositions2(GetMobilityPositions2Request) returns (stream GetMobilityPositions2Response) {}
+    
+    // UpdateMobilityPosition: モビリティ位置情報通知(アプリ(BG経由)からの航空機位置情報)
+    rpc UpdateMobilityPosition(UpdateMobilityPositionRequest) returns (UpdateMobilityPositionResponse);
 }
 
 message GetMobilityPositions2Request {
@@ -27,4 +30,17 @@ message GetMobilityPositions2Response {
     float distance = 4 ; // 3D距離 (m)
     v1.Position absolute_position = 6 ; // 絶対位置
     XYZPosition relative_position = 7; // 機体の相対位置
+}
+
+// モビリティ位置情報通知リクエスト
+message UpdateMobilityPositionRequest{
+    Position my_position = 2;                               // モビリティ位置情報(AltitudeAttr=MSLのみ設定可能)
+    optional float heading = 3;                             // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
+    optional float speed = 4;                               // 対地スピード(m/sec)
+    optional float error_distance = 5;                      // 誤差距離（GPS誤差）(m)
+}
+
+// モビリティ位置情報通知レスポンス
+message UpdateMobilityPositionResponse{
+    Position position = 1;        // モビリティ位置情報
 }
