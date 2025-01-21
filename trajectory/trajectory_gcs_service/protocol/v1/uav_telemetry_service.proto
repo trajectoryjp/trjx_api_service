@@ -3,6 +3,7 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
+import "trajectory/type/resource.proto";
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
 
 service UAVTelemetryService {
@@ -14,7 +15,7 @@ service UAVTelemetryService {
 message GetMobilityPositions2Request {
     oneof reference_position{ // 領域の中心点
 
-        v1.Position fixed_point = 1 ; // 固定位置
+        trajectory.trjx_api_service.Position fixed_point = 1 ; // 固定位置
         string mobility_id = 2 ; // 機体位置
     }
     float radius = 3; // 領域の半径(m)
@@ -25,6 +26,6 @@ message GetMobilityPositions2Response {
     optional float heading = 2 ; //　機首方向。度。北が0度。
     float cog = 3 ; //COG。度。北が0度。
     float distance = 4 ; // 3D距離 (m)
-    v1.Position absolute_position = 6 ; // 絶対位置
+    trajectory.trjx_api_service.Position absolute_position = 6 ; // 絶対位置
     XYZPosition relative_position = 7; // 機体の相対位置
 }

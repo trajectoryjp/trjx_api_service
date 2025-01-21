@@ -3,7 +3,7 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
-
+import "trajectory/type/resource.proto";
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
 
 service FlightPredictorService {
@@ -13,19 +13,19 @@ service FlightPredictorService {
 }
 
 message GetCollidingMobilitiesWithinAreaRequest {
-    Position fixed_point = 1 ; // 領域の中心: 座標
+    trajectory.trjx_api_service.Position fixed_point = 1 ; // 領域の中心: 座標
     float radius = 2; // 領域の半径(m)
 }
 
 message CollidingMobilitiesWithinArea { // 相対的な位置などの機体基準の情報はMobilityPositionで得る
     MobilityPosition mobility_a= 1; // 機体　A
     MobilityPosition mobility_b= 2; // 機体B
-    Position collision_point = 3; // 衝突予測位置
+    trajectory.trjx_api_service.Position collision_point = 3; // 衝突予測位置
     int64 collision_time = 4; // 衝突予測時間（秒）
 
     message MobilityPosition {
         string uav_id = 1; // 機体ID
-        Position position = 2; // 位置情報
+        trajectory.trjx_api_service.Position position = 2; // 位置情報
         optional XYZPosition relative_position = 3; // 機体の相対位置
     }
 }
