@@ -24,12 +24,12 @@ import "google/protobuf/empty.proto";
     /*
      * 管制エリアの絞り込み検索・リスト取得
      */
-    rpc ListControlAreas(ListControlAreaRequest) returns (stream ListControlAreaResponse);
+    rpc ListControlAreas(ListControlAreaRequest) returns (ListControlAreaResponse);
 
     /*
      * 管制エリアの更新
      */
-    rpc UpdateControlArea(UpdateControlAreaRequest) returns (ControlArea);
+    rpc UpdateControlArea(OverrideControlAreaRequest) returns (ControlArea);
 
     /*
      * 管制エリアの削除
@@ -74,12 +74,12 @@ message GetControlAreaRequest {
 message ListControlAreaRequest {
     // 検索ボックス
     optional SearchBox2D box = 1;
-    
+
     // エリア名(部分一致)
     optional string name = 2;
-    
+
     // 所有者(所有組織=組織ID)
-    optional int64 organizations_id = 3;
+    optional int64 owner_organization_id = 3;
     
     // // 公開種別
     // //  - 指定なし(nil) : 全て(パブリック/プライベート)
@@ -112,19 +112,24 @@ message ListControlAreaResponse {
     repeated ControlArea areas = 2;
 }
 
-
 /*
- * 管制エリアの更新リクエスト
+ * 管制エリアの上書きリクエスト
  */
-message UpdateControlAreaRequest {
-    // 更新対象のエリアID
+message OverrideControlAreaRequest {
+    // エリアID(ユニーク)
     int64 id = 1;
 
     // エリア名
     string name = 2;
     
     // // 所有者(所有組織=組織ID)
-    // int64 owner_id = 3;
+    // int64 owner_organization_id = 3;
+
+    // // 公開種別
+    // //  - 指定なし(nil) : 全て(パブリック/プライベート)
+    // //  - false指定 : パブリック管制エリア
+    // //  - true : プライベート管制エリア
+    // optional bool is_private = 4;
     
     // 管制エリア範囲
     oneof area {

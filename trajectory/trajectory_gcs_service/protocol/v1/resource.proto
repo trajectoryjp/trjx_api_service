@@ -818,7 +818,13 @@ message ControlArea {
     string name = 2;
     
     // 所有者(所有組織=組織ID)
-    int64 owner_id = 3;
+    int64 owner_organization_id = 3;
+
+    // // 公開種別
+    // //  - 指定なし(nil) : 全て(パブリック/プライベート)
+    // //  - false指定 : パブリック管制エリア
+    // //  - true : プライベート管制エリア
+    // optional bool is_private = 4;
     
     // 管制エリア範囲
     oneof area {
