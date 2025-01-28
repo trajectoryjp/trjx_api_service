@@ -817,8 +817,8 @@ message ControlArea {
     // エリア名
     string name = 2;
     
-    // 所有者(所有組織=組織ID)
-    int64 owner_organization_id = 3;
+    // true:組織が所有　false:他組織が
+    bool is_our_organization_owner = 3;
 
     // // 公開種別
     // //  - 指定なし(nil) : 全て(パブリック/プライベート)
