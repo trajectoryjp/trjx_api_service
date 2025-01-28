@@ -10,7 +10,9 @@ import "trajectory/type/resource.proto";
 service TelemetryService {
 
     // GetMobilityPositions: 対象範囲にある機体の位置情報を取得する
-    rpc GetMobilityPositions(GetMobilityPositionsRequest) returns (stream MobilityPosition) {}
+    rpc GetMobilityPositions(GetMobilityPositionsRequest) returns (stream MobilityPosition) {
+        option deprecated = true;
+    }
 
     // UAVのルート逸脱状態通知
     rpc NotifyDeviation(NotifyDeviationRequest) returns (stream NotifyDeviationResponse) {}
