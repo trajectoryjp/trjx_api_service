@@ -22,6 +22,16 @@ service ApproachService {
 
     // 飛行中飛行計画ID取得
     rpc GetCurrentFlightPlanId(GetCurrentFlightPlanIdRequest) returns (stream CurrentFlightPlanId);
+
+    /*
+       飛行中離発着申請状態取得
+       ・離陸申請前(離陸許可無し) → NotFoundエラー
+       ・離陸申請後(離陸許可有り) → [ landing == nil 且つ takeoff.is_completed = false ]
+       ・離陸完了後             → [ landing == nil 且つ takeoff.is_completed = true  ]
+       ・着陸申請後(離陸許可無し) → [ landing != nil 且つ landing.is_completed = false ]
+       ・着陸完了後             → NotFoundエラー
+    */
+    rpc GetTakeOffAndLandingApplyStatus(GetTakeOffAndLandingApplyStatusRequest) returns (TakeOffAndLandingApplyStatus);
 }
 
 // 離陸申請リクエスト
@@ -98,5 +108,31 @@ message CurrentFlightPlanId {
     string flight_plan_id = 2;
     optional ApproachingPort approaching_takeoff_port = 3;
     optional ApproachingPort approaching_landing_port = 4;
+}
+
+//  飛行中離発着申請状態取得リクエスト
+message GetTakeOffAndLandingApplyStatusRequest {
+    string uav_id = 1;                         // 機体ID(文字列)
+    // optional int64 organizations_id = 2;    // 組織ID(所有組織)
+    string flight_plan_id = 3;                 // 飛行計画ID
+}
+
+// 離発着申請状態
+message TakeOffAndLandingApplyStatus {
+    ApplyInfo takeoff = 1;
+    optional ApplyInfo landing = 2;
+
+    message ApplyInfo {
+        int64 apply_id = 1;                                 // 申請ID
+        string flight_plan_id = 2;                          // 飛行計画ID
+        // int64 orgnaizations_id = 3;                         // 組織ID
+        // int64 group_id = 4;                                 // グループID
+        string uav_id = 5;                                  // 機体ID(文字列)
+        // int32 interval = 6;                                 // 離発着種別(1:=離陸 / 2:着陸)
+        int64 start_time = 7;                               // 有効期間開始時刻
+        int64 end_time = 8;                                 // 有効期間終了時刻
+        int64 reception_time = 9;                           // 受付時刻
+        bool is_completed = 10;                             // 完了フラグ(完了通知実行時にtrue)
+    }
 }
 
