@@ -4,20 +4,19 @@ package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+import "trajectory/type/resource.proto";
 
 service UAVTelemetryService {
 
     // GetMobilityPositions2: 対象範囲にある機体の位置情報を取得する
     rpc GetMobilityPositions2(GetMobilityPositions2Request) returns (stream GetMobilityPositions2Response) {}
-    
-    // UpdateMobilityPosition: モビリティ位置情報通知(アプリ(BG経由)からの航空機位置情報)
-    rpc UpdateMobilityPosition(UpdateMobilityPositionRequest) returns (UpdateMobilityPositionResponse);
+
 }
 
 message GetMobilityPositions2Request {
     oneof reference_position{ // 領域の中心点
 
-        v1.Position fixed_point = 1 ; // 固定位置
+        trjx_api_service.Position fixed_point = 1 ; // 固定位置
         string mobility_id = 2 ; // 機体位置
     }
     float radius = 3; // 領域の半径(m)
@@ -28,19 +27,6 @@ message GetMobilityPositions2Response {
     optional float heading = 2 ; //　機首方向。度。北が0度。
     float cog = 3 ; //COG。度。北が0度。
     float distance = 4 ; // 3D距離 (m)
-    v1.Position absolute_position = 6 ; // 絶対位置
+    trjx_api_service.Position absolute_position = 6 ; // 絶対位置
     XYZPosition relative_position = 7; // 機体の相対位置
-}
-
-// モビリティ位置情報通知リクエスト
-message UpdateMobilityPositionRequest{
-    Position my_position = 2;                               // モビリティ位置情報(AltitudeAttr=MSLのみ設定可能)
-    optional float heading = 3;                             // 機首方位（°） 0-360 North=0 時計回り UAVAttitudeのyaw(North=0)に同じ
-    optional float speed = 4;                               // 対地スピード(m/sec)
-    optional float error_distance = 5;                      // 誤差距離（GPS誤差）(m)
-}
-
-// モビリティ位置情報通知レスポンス
-message UpdateMobilityPositionResponse{
-    Position position = 1;        // モビリティ位置情報
 }
