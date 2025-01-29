@@ -15,16 +15,16 @@ import "google/protobuf/field_mask.proto";
     /*
      * 管制エリアの作成
      */
-    rpc CreateControlArea(CreateControlAreaRequest) returns (ControlArea);
+    rpc CreateControlArea(CreateControlAreaRequest) returns (ControlAreaResponse);
 
     /*
      * 管制エリアの取得
      */
-    rpc GetControlArea(GetControlAreaRequest) returns (ControlArea);
+    rpc GetControlArea(GetControlAreaRequest) returns (ControlAreaResponse);
 
     /*
      * 管制エリアの絞り込み検索・リスト取得
-     * 取得上限:100件
+     * 取得上限:1000件
      * 取得上限以上のエリアがヒットした場合はgrpcエラー(ResourceExhausted)で返却
      */
     rpc ListControlAreas(ListControlAreasRequest) returns (ListControlAreasResponse);
@@ -32,7 +32,7 @@ import "google/protobuf/field_mask.proto";
     /*
      * 管制エリアの更新
      */
-    rpc UpdateControlArea(UpdateControlAreaRequest) returns (ControlArea);
+    rpc UpdateControlArea(UpdateControlAreaRequest) returns (ControlAreaResponse);
 
     /*
      * 管制エリアの削除
@@ -82,7 +82,8 @@ message ListControlAreasRequest {
     optional string name = 2;
 
     // true:自組織のみ false:他組織を含める
-    bool own_organization = 3;
+    bool only_own_organization = 3;
+    
     
     // // 公開種別
     // //  - 指定なし(nil) : 全て(パブリック/プライベート)
@@ -112,7 +113,7 @@ message ListControlAreasRequest {
  */
 message ListControlAreasResponse {
     // 管制エリアリスト
-    repeated ControlArea areas = 2;
+    repeated ControlAreaResponse control_area_responses = 2;
 }
 
 /*
@@ -156,7 +157,7 @@ message UpdateControlAreaRequest {
     }
 
     // クエリフィールド(指定されたカラムのみ取得)
-    google.protobuf.FieldMask fields = 9;
+    google.protobuf.FieldMask update_mask = 9;
 }
 
 /*
@@ -165,4 +166,11 @@ message UpdateControlAreaRequest {
 message DeleteControlAreaRequest {
     // 管制エリアID
     int64 id = 1;
+}
+
+
+message ControlAreaResponse {
+    ControlArea control_area =1 ;
+    // true:組織が所有　false:他組織が所有
+    bool is_owned = 2 ;
 }

@@ -816,9 +816,6 @@ message ControlArea {
     
     // エリア名
     string name = 2;
-    
-    // true:組織が所有　false:他組織が所有
-    bool is_our_organization_owner = 3;
 
     // // 公開種別
     // //  - 指定なし(nil) : 全て(パブリック/プライベート)
