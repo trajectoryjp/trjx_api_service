@@ -815,3 +815,41 @@ message XYZPosition {
     // 高さ距離(m) 右手系 上+
     double z = 3;
 }
+
+/*
+ * 管制エリア
+ */
+message ControlArea {
+    // エリアID(ユニーク)
+    int64 id = 1;
+    
+    // エリア名
+    string name = 2;
+
+    // // 公開種別
+    // //  - 指定なし(nil) : 全て(パブリック/プライベート)
+    // //  - false指定 : パブリック管制エリア
+    // //  - true : プライベート管制エリア
+    // optional bool is_private = 4;
+    
+    // 管制エリア範囲
+    oneof area {
+        // 円指定(当面円だけサポート)
+        Circle circle = 5;
+    }
+
+    // 円
+    message Circle {
+        // 中心位置
+        Position2D center = 1;
+        // 半径
+        double radius = 2;
+
+        message Position2D {
+            // 緯度
+            double latitude = 1;
+             // 経度
+            double longitude = 2;
+        }
+    }
+}
