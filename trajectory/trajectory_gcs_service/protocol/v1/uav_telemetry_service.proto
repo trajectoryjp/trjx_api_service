@@ -11,6 +11,9 @@ service UAVTelemetryService {
     // GetMobilityPositions2: 対象範囲にある機体の位置情報を取得する
     rpc GetMobilityPositions2(GetMobilityPositions2Request) returns (stream GetMobilityPositions2Response) {}
 
+    // 認証不要版GetMobilityPositions2
+    rpc GetMobilityPositions2NoAuth(GetMobilityPositions2Request) returns (stream GetMobilityPositions2Response) {}
+
 }
 
 message GetMobilityPositions2Request {
