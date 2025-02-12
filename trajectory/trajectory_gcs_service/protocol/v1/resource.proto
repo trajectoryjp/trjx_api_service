@@ -853,3 +853,27 @@ message ControlArea {
         }
     }
 }
+
+
+
+message TakeOffAndLandingUAVStatus{
+
+    oneof status {
+     TakingOffStatus takeoff_status = 2; // 離陸機体状態
+     LandingStatus landing_status = 3; // 着陸機体状態
+    }
+
+    enum TakingOffStatus {
+     TAKING_OFF_STATUS_UNSPECIFIED = 0;
+     TAKING_OFF_STATUS_QUEUING = 1; // 離陸キュー(申請中)状態
+     TAKING_OFF_STATUS_WAITING_FOR_TAKE_OFF = 2; // 離陸前状態
+     TAKING_OFF_STATUS_TAKING_OFF = 3; // 離陸中状態
+    }
+
+    enum LandingStatus {
+     LANDING_STATUS_UNSPECIFIED = 0;
+     LANDING_STATUS_QUEUING = 1; // 着陸キュー(申請中)状態
+     LANDING_STATUS_WAITING_FOR_LANDING = 2; // 着陸前状態
+     LANDING_STATUS_LANDING = 3; // 着陸中状態
+    }
+}
