@@ -856,7 +856,7 @@ message ControlArea {
 
 
 // 離発着機体状態
-message TakeOffAndLandingUAVStatus {
+message TakingOffAndLandingUAVStatus {
 
     oneof status {
      TakingOffStatus takeoff_status = 2; // 離陸機体状態

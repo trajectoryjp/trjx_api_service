@@ -24,7 +24,7 @@ service ApproachService {
     rpc GetCurrentFlightPlanId(GetCurrentFlightPlanIdRequest) returns (stream CurrentFlightPlanId);
 
     // 離発着機体状態取得
-    rpc WatchTakingOffAndLandingUAVStatus(WatchTakeOffAndLandingUAVStatusRequest) returns (stream WatchTakeOffAndLandingUAVStatusResponse);
+    rpc WatchTakingOffAndLandingUAVStatus(WatchTakingOffAndLandingUAVStatusRequest) returns (stream WatchTakingOffAndLandingUAVStatusResponse);
 }
 
 // 離陸申請リクエスト
@@ -103,12 +103,10 @@ message CurrentFlightPlanId {
     optional ApproachingPort approaching_landing_port = 4;
 }
 
-message WatchTakeOffAndLandingUAVStatusResponse {
-    TakeOffAndLandingUAVStatus status = 1; // 離発着機体状態
+message WatchTakingOffAndLandingUAVStatusResponse {
+    TakingOffAndLandingUAVStatus status = 1; // 離発着機体状態
 }
 
-
-message WatchTakeOffAndLandingUAVStatusRequest {
+message WatchTakingOffAndLandingUAVStatusRequest {
     string uav_id = 1; // 機体ID
 }
-
