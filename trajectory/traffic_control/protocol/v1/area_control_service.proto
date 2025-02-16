@@ -1,0 +1,83 @@
+/*
+ * <アクセス方法>
+ * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
+ * “x-grpc-service”: “AreaControlService”
+ * “username”: システムユーザID
+ * “token”: アクセストークン
+ */
+ 
+syntax = "proto3";
+
+package Trajectory.TrafficControl.Protocol.v1;
+
+import "github.com/trajectoryjp/trjx_api_service/traffic_control/protocol/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/traffic_control/proto_go;traffic_control";
+
+// エリア管制バックエンドサービス
+service AreaControlService {
+    // エリア一覧取得
+    rpc ListAreas(ListAreasRequest) returns (AreaListItem) {} 
+    // エリア詳細取得
+    rpc GetAreaDetails(GetAreaDetailsRequest) returns (AreaDetails) {} 
+
+    // 状態リストを取得
+    // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
+    // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
+    // area/<area_id>/status/status_list
+    rpc GetAreaStatusList(GetAreaStatusListRequest) returns (stream AreaStatusList) {} 
+}
+
+message ListAreasRequest {
+}
+
+message AreaListItem {
+    repeated AreaItem items = 1;
+}
+
+message AreaItem {
+    int64 area_id = 1;
+    string area_name = 2;
+}
+
+message GetAreaDetailsRequest {
+    int64 area_id = 1;
+}
+
+message AreaDetails {
+    int64 area_id = 1;
+    string area_name = 2;
+}
+
+// 状態リスト取得リクエスト
+message GetAreaStatusListRequest {
+    int64 port_id = 1;
+}
+
+// 状態リスト
+message AreaStatusList {
+    repeated AreaStatusItem items = 1;
+}
+
+// 状態
+message AreaStatusItem {
+    AreaStatusItemType item_type = 1;
+
+    enum AreaStatusItemType {
+        AREA_STATUS_ITEM_TYPE_UNKNOWN = 0;
+        //衝突検知
+        COLLISION = 1;
+        //経路逸脱など（今後追加の可能性あり）
+    }
+
+    oneof status {
+        Collision collision = 2;
+    }
+    message Collision {
+        string uav_id1 = 1;
+        string uav_id2 = 2;
+        AbsolutePosition collision_point = 3;// 衝突予測位置
+        google.protobuf.Timestamp collision_at = 6;// 衝突予測時刻
+    }
+}

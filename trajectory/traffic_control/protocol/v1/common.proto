@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package Trajectory.TrafficControl.Protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/traffic_control/proto_go;traffic_control";
+
+message AbsolutePosition{
+    double latitude = 1;
+    double longitude = 2;
+    double altitude = 3;
+    string tag = 4; //ミッション識別子。GetETAで利用している。
+}
