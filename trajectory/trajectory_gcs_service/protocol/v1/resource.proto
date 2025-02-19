@@ -879,7 +879,7 @@ message TakingOffAndLandingUAVStatus {
 }
 
 
-// 飛行中申請リスト(離陸申請受付後から着陸完了通知を受付前の申請情報を取得できる)
+// 申請セット(離陸申請受付後から着陸完了通知を受付前の申請情報を取得できる)
 message ApplySet {
     ApplyModel takeoff = 1;                             // 離陸申請(離陸申請実施後通知)
     optional ApplyModel landing = 2;                    // 着陸申請(着陸申請済の情報を通知)

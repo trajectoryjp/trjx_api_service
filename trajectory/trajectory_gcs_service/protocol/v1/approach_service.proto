@@ -115,9 +115,9 @@ message WatchTakingOffAndLandingUAVStatusRequest {
 }
 
 message CurrentApplySetRequest{
-    string uav_id = 1 ;
+    UAVID uav_id = 1 ; // 機体ID
 }
 
 message CurrentApplySetResponse{
-    ApplySet apply_set = 1 ;
+    ApplySet apply_set = 1 ; // 申請セット
 }
