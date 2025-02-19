@@ -877,3 +877,17 @@ message TakingOffAndLandingUAVStatus {
      LANDING_STATUS_LANDING = 3; // 着陸中状態
     }
 }
+
+
+// 飛行中申請リスト(離陸申請受付後から着陸完了通知を受付前の申請情報を取得できる)
+message ApplySet {
+    ApplyModel takeoff = 1;                             // 離陸申請(離陸申請実施後通知)
+    optional ApplyModel landing = 2;                    // 着陸申請(着陸申請済の情報を通知)
+}
+
+// 申請モデル
+message ApplyModel {
+    int64 approach_id = 1;                                 // 申請ID
+    // string flight_plan_id = 2;                          // 飛行計画ID
+    // bool is_completed = 10;                          // 完了フラグ(完了通知実行時にtrue)
+}

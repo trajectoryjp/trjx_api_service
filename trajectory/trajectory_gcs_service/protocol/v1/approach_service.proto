@@ -25,6 +25,9 @@ service ApproachService {
 
     // 離発着機体状態取得
     rpc WatchTakingOffAndLandingUAVStatus(WatchTakingOffAndLandingUAVStatusRequest) returns (stream WatchTakingOffAndLandingUAVStatusResponse);
+
+    // 飛行中申請状態取得
+    rpc GetCurrentApplySet(CurrentApplySetRequest)returns (CurrentApplySetResponse);
 }
 
 // 離陸申請リクエスト
@@ -109,4 +112,12 @@ message WatchTakingOffAndLandingUAVStatusResponse {
 
 message WatchTakingOffAndLandingUAVStatusRequest {
     string uav_id = 1; // 機体ID
+}
+
+message CurrentApplySetRequest{
+    string uav_id = 1 ;
+}
+
+message CurrentApplySetResponse{
+    ApplySet apply_set = 1 ;
 }
