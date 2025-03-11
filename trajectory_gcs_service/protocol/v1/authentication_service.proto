@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/user_account_service.proto";
+
+service AuthenticationService {
+    // Login and get token
+    rpc SignIn(SignInRequest) returns (SignInResponse){}
+
+    // Login and get token for system access User.
+    rpc ExternalSignIn(SignInRequest) returns (SignInResponse){}
+}
+
+message SignInRequest {
+    string user_id = 1; // TRJX Username
+    string password = 2; // password
+  }
+  
+  message SignInResponse {
+    string token = 1;
+    string expire_date = 2;
+    string organizations_id = 3;
+    string api_key = 4;
+    UserPermission user_permission = 5;
+  }
