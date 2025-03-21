@@ -1,0 +1,10 @@
+services:
+  dev:
+    container_name: "trjx_api_service-dev"
+    build:
+      context: ../
+      dockerfile: ./Dockerfile
+    working_dir: /proto_root
+    volumes:
+        - ../:/proto_root/github.com/trajectoryjp/trjx_api_service
+    tty: true

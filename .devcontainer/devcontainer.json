@@ -1,0 +1,23 @@
+{
+    "name": "trjx_api_service-dev",
+    "dockerComposeFile": ["./compose.yaml"],
+    "service": "dev",
+    "workspaceFolder": "/proto_root",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "bufbuild.vscode-buf",
+                "zxh404.vscode-proto3",
+                "streetsidesoftware.code-spell-checker",
+                "tamasfe.even-better-toml",
+                "golang.go"
+            ],
+            "settings": {
+                "editor.formatOnSave": true,
+                "[proto3]": {
+                    "editor.defaultFormatter": "bufbuild.vscode-buf"
+                }
+            }
+        }
+    }
+}
