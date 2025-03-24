@@ -3,7 +3,7 @@
 syntax = "proto3";
 
 package trajectory.trjx_api_service;
-option go_package = "github.com/trajectoryjp/trjx_api_service/type";
+option go_package = "github.com/trajectoryjp/trjx_api_service_go/type";
 
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
 

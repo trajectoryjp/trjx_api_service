@@ -14,7 +14,7 @@
 syntax = "proto3";
 
 package trajectory.system_account_authentication.protocol.v1;
-option go_package = "github.com/trajectoryjp/trjx_api_service/auth";
+option go_package = "github.com/trajectoryjp/trjx_api_service_go/auth";
  
 
 // Trajectory Device認証サービス

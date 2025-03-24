@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package uas.airmobility.v2 ;
 
-option go_package = "github.com/trajectoryjp/trjx_api_service/spatial" ;
+option go_package = "github.com/trajectoryjp/trjx_api_service_go/spatial" ;
 
 import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto" ;
 

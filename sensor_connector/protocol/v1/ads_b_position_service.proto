@@ -15,7 +15,7 @@
  syntax = "proto3";
 
  package trajectory.sensor_connector.protocol.v1;
- option go_package = "github.com/trajectoryjp/trjx_api_service/sensor";
+ option go_package = "github.com/trajectoryjp/trjx_api_service_go/sensor";
  
  import "github.com/trajectoryjp/trjx_api_service/type/ads_b_position.proto";
  

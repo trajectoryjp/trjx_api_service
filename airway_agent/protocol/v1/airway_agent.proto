@@ -11,7 +11,7 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 
 package Trajectory.AirwayAgent.Protocol.v1;
-option go_package = "github.com/trajectoryjp/trjx_api_service/airway_agent";
+option go_package = "github.com/trajectoryjp/trjx_api_service_go/airway_agent";
 
 // 航路システム対向バックエンド
 // 認証用の注意事項を追記　HTTPヘッダの必要事項

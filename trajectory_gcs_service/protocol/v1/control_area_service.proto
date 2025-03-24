@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package trajectory.trajectory_gcs_service.protocol.v1;
-option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+option go_package = "github.com/trajectoryjp/trjx_api_service_go/trajectory_gcs";
 
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 import "google/protobuf/empty.proto";

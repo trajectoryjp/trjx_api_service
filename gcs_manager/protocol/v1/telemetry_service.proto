@@ -16,7 +16,7 @@
 syntax = "proto3";
 
 package trajectory.gcs_manager.protocol.v1;
-option go_package = "github.com/trajectoryjp/trjx_api_service/gcs";
+option go_package = "github.com/trajectoryjp/trjx_api_service_go/gcs";
  
 import "github.com/trajectoryjp/trjx_api_service/type/telemetry.proto";
 

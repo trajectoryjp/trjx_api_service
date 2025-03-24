@@ -13,7 +13,7 @@ package Trajectory.TrafficControl.Protocol.v1;
 import "github.com/trajectoryjp/trjx_api_service/traffic_control/protocol/v1/common.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/trajectoryjp/trjx_api_service/traffic_control/proto_go;traffic_control";
+option go_package = "github.com/trajectoryjp/trjx_api_service_go/traffic_control/proto_go;traffic_control";
 
 // エリア管制バックエンドサービス
 service AreaControlService {
