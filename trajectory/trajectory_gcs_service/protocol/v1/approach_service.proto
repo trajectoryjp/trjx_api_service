@@ -137,6 +137,7 @@ message CancelTakeoffApplyRequest {
     離陸申請取消レスポンス
 */
 message CancelTakeoffApplyResponse {
+    string message = 1;
 }
 
 // 離着陸経過レスポンス
