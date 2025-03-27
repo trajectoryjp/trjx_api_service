@@ -56,7 +56,7 @@ cd cmd
 
 3. モジュール作成<br>
 ```sh
-cd build/github.com/trajectoryjp/trjx_api_service
+cd github.com/trajectoryjp/trjx_api_service
 go mod init github.com/trajectoryjp/trjx_api_service
 ```
 

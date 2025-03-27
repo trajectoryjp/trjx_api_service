@@ -8,8 +8,8 @@ package uas.airmobility.v2 ;
 
 option go_package = "github.com/trajectoryjp/trjx_api_service/spatial" ;
 
-import "uas/airmobility/v2/object_a.proto" ;
-import "uas/generic/v2/sdsp_g.proto" ;
+import "github.com/trajectoryjp/trjx_api_service/uas/airmobility/v2/object_a.proto" ;
+import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto" ;
 
 // エアモビリティ向け空間情報基盤
 // GenericAPIのConnectServerで得たトークンをheaderにuseridと共に設定する
