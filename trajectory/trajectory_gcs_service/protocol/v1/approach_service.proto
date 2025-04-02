@@ -28,8 +28,8 @@ service ApproachService {
     // 着陸完了通知
     rpc CompleteLanding(CompleteLandingRequest) returns (CompleteLandingResponse);
 
-    // 離陸申請取消
-    rpc CancelTakeoffApply(CancelTakeoffApplyRequest) returns(CancelTakeoffApplyResponse);
+    // 離陸取消
+    rpc CancelTakeoff(CancelTakeoffRequest) returns(CancelTakeoffResponse);
 
     // 飛行中飛行計画ID取得
     rpc GetCurrentFlightPlanId(GetCurrentFlightPlanIdRequest) returns (stream CurrentFlightPlanId);
@@ -129,14 +129,14 @@ message CompleteLandingResponse {
 /*
     離陸申請取消リクエスト
 */
-message CancelTakeoffApplyRequest {
+message CancelTakeoffRequest {
     string uav_id = 1;
 }
 
 /*
     離陸申請取消レスポンス
 */
-message CancelTakeoffApplyResponse {
+message CancelTakeoffResponse {
     string message = 1;
 }
 
