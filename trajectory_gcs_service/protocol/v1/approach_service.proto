@@ -17,8 +17,19 @@ service ApproachService {
     // 着陸申請
     rpc ApplyLanding(ApplyLandingRequest) returns (ApplyLandingResponse);
 
-    // 離着陸経過
-    rpc NotifyApproachProgress(NotifyApproachProgressRequest) returns (ApplyResponse);
+    // 離着陸経過 ※このRPCは非推奨です
+    rpc NotifyApproachProgress(NotifyApproachProgressRequest) returns (ApplyResponse){
+        option deprecated = true;
+    };
+
+    // 離陸完了(ポート離脱)通知
+    rpc CompleteTakeoff(CompleteTakeOffRequest) returns (CompleteTakeOffResponse);
+
+    // 着陸完了通知　
+    rpc CompleteLanding(CompleteLandingRequest) returns (CompleteLandingResponse);
+
+    // 離陸申請または離陸許可を取り消す
+    rpc CancelTakeoff(CancelTakeoffRequest) returns(CancelTakeoffResponse);
 
     // 飛行中飛行計画ID取得
     rpc GetCurrentFlightPlanId(GetCurrentFlightPlanIdRequest) returns (stream CurrentFlightPlanId);
@@ -84,6 +95,49 @@ message NotifyApproachProgressRequest {
         Progress_COMPLETE = 2;      // 離着陸完了
         Progress_CANCELL = 3;       // キャンセル
     }
+}
+
+
+/*
+    離陸完了リクエスト
+*/
+message CompleteTakeOffRequest {
+   string uav_id = 1;
+}
+
+/*
+    離陸完了レスポンス
+*/
+message CompleteTakeOffResponse {
+    string message = 1;
+}
+
+/*
+    着陸完了リクエスト
+*/
+message CompleteLandingRequest {
+    string uav_id = 1;
+}
+
+/*
+    着陸完了レスポンス
+*/
+message CompleteLandingResponse {
+    string message = 1;
+}
+
+/*
+    離陸申請取消リクエスト
+*/
+message CancelTakeoffRequest {
+    string uav_id = 1;
+}
+
+/*
+    離陸申請取消レスポンス
+*/
+message CancelTakeoffResponse {
+    string message = 1;
 }
 
 // 離着陸経過レスポンス
