@@ -5,8 +5,8 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "google/protobuf/duration.proto";
 
-import "trajectory/type/resource.proto";
-import "trajectory/trajectory_gcs_service/protocol/v1/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 
 
 
