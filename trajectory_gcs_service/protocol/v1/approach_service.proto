@@ -162,5 +162,6 @@ message WatchTakingOffAndLandingUAVStatusResponse {
 }
 
 message WatchTakingOffAndLandingUAVStatusRequest {
-    string uav_id = 1; // 機体ID
+    string uav_id = 1;         // 機体ID
+    string flight_plan_id = 2; // 飛行計画ID
 }
