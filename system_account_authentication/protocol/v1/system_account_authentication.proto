@@ -35,6 +35,7 @@ message GetTokenRequest {
     string user_id = 1;               // TRJXシステムユーザID
     string password = 2;              // パスワード
     bool update =3;                   // アップデートフラグ(true:アップデートあり/false:アップデートなし)
+    bool disable_expire_date=4;       // トークン有効期限無効化フラグ(true:期限なし/false:期限あり)
 }
 
 // アクセストークン
