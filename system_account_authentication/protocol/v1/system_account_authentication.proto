@@ -21,7 +21,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/auth";
 
 // Trajectory API 認証サービス
 service SystemAccountAuthenticationService {
-    // アクセストークン取得
+    //  アクセストークン取得
     //  1)トークンが存在しない場合、新規にトークンを生成して返す。
     //  2)トークンが存在する場合は、既存のトークンを返す。
     //  3)updateフラグにtrueを指定した場合、既存トークンが存在する場合は
@@ -35,7 +35,7 @@ message GetTokenRequest {
     string user_id = 1;               // TRJXシステムユーザID
     string password = 2;              // パスワード
     bool update =3;                   // アップデートフラグ(true:アップデートあり/false:アップデートなし)
-    bool disable_expire_date=4;       // トークン有効期限無効化フラグ(true:期限なし/false:期限あり)
+    bool disable_expire_date = 4;       // トークン有効期限無効化フラグ(true:期限なし/false:期限あり)
 }
 
 // アクセストークン
