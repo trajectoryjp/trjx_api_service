@@ -68,8 +68,9 @@ service FlightPlanService {
  * 飛行計画の作成リクエスト
  */
 message CreateFlightPlanRequest {
+  reserved 2;
+
   UavProperty uav = 1; // UAV設定プロパティ
-  optional AirwayProperty airway = 2; // 航路設定プロパティ(航路飛行時に指定)
   FlightPath paths = 3; // 飛行入力WPパスリスト(現状航路予約ID指定時は空指定)
   optional RealPortProperty ports = 4; // 実ポート指定(実ポート離発着の場合指定)
   optional trjx_api_service.TimeStamp start_time = 6; // 飛行ルート有効期間始点
@@ -78,11 +79,6 @@ message CreateFlightPlanRequest {
   // 機体プロパティ
   message UavProperty {
     float clearance = 1; // クリアランス(m) 機体の大きさ(機体を覆う球体の半径)を指定
-  }
-
-  // 航路設定プロパティ
-  message AirwayProperty {
-    string airway_reservation_id = 1; // 航路予約ID
   }
 
   // 実ポート離発着設定プロパティ
@@ -229,29 +225,16 @@ message FlightPath {
 }
 
 /*
- * ポート内離着陸WPパスリスト
- * ※入力WPパス生成(WPを直線で結ぶパスを生成)
- */
-message TerminalPath {
-  repeated Path path = 1; // 飛行パス
-
-  // 終端パス
-  message Path {
-    Position start = 1; // パスの始点Waypoint
-    Position end = 2; // 入力の終点Waypoint
-  }
-}
-
-/*
  * 離陸設定(機体位置・ポート)
  * 離陸直前に機体位置を指定して要求すること
  */
 message TakeoffPosition {
+  reserved 4;
+
   Position takeoff_uav_position = 1; // 離陸機体位置
   oneof terminal {
     Port port = 2; // 実ポート指定(実ポート利用時に指定)
     Altitude takeoff_altitude = 3; // 仮設ポート(実ポート以外)時の離陸上昇高度(m)
-    TerminalPath paths = 4; // 離陸WPパスリスト(飛行経路生成方式が入力WPパス生成のみ利用可能)
   }
   Position nearest_waypoint = 5; // 離陸地点直近のWP(第一WP)
 }
@@ -260,11 +243,12 @@ message TakeoffPosition {
  * 着陸設定(ポート)
  */
 message LandingPosition {
+  reserved 4;
+
   oneof terminal {
     LandingModeCurrent current = 1; // 最終WP着陸(Current)の設定
     LandingModeRtl rtl = 2; // ホームポジション帰還(RTL)の設定
     LandingModePort port = 3; // 実ポート着陸時の設定
-    LandingModePath path = 4; // 指定着陸WP着陸時の設定
   }
   Position nearest_waypoint = 5; // 着陸地点直近のWP(最終WP)
 
@@ -277,10 +261,6 @@ message LandingPosition {
   // 実ポート着陸時の設定
   message LandingModePort {
     Port port = 3; // 着陸ポート(着陸モードが実ポート時のみ有効)
-  }
-  // 指定着陸WP着陸時の設定
-  message LandingModePath {
-    TerminalPath paths = 4; // 着陸WPパスリスト(着陸モードが着陸パスWP指定時のみ有効)
   }
 }
 
