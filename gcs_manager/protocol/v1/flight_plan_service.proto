@@ -54,6 +54,11 @@ service FlightPlanService {
   rpc CreateLandingUavPosition(CreateLandingUavPositionRequest) returns (CreateLandingUavPositionResponse);
 
   /*
+   * 飛行計画への離陸位置調整
+   */
+  rpc SetTakeoffUavPosition(SetTakeoffUavPositionRequest) returns (SetTakeoffUavPositionResponse);
+
+  /*
    * 飛行計画の時刻更新
    */
   rpc UpdateFlightTime(UpdateFlightTimeRequest) returns (google.protobuf.Empty);
@@ -270,6 +275,22 @@ message LandingPosition {
 message Port {
   int64 port_id = 1; // ポートID
   int64 spot_id = 2; // スポットID
+}
+
+/*
+ * 飛行計画への離陸位置調整リクエスト
+ */
+message SetTakeoffUavPositionRequest {
+  Position uav_position = 1; // 離陸機体位置
+}
+
+/*
+ * 飛行計画への離陸位置調整レスポンス
+ */
+message SetTakeoffUavPositionResponse {
+  // 着陸設定の結果、中間ルートや着陸ルートなどが再生成される場合があるため飛行計画全体を返す
+  // e.g) 着陸モードがRTLの場合に離陸位置を変更した場合
+  FlightPlan flight_plan = 1; // 飛行計画
 }
 
 /*
