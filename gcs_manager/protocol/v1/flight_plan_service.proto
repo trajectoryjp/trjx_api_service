@@ -46,12 +46,12 @@ service FlightPlanService {
   /*
    * 飛行計画への離陸機体位置設定(更新)
    */
-  rpc CreateTakeoffUavPosition(CreateTakeoffUavPositionRequest) returns (CreateTakeoffUavPositionResponse);
+  rpc UpdateTakeoff(UpdateTakeoffRequest) returns (UpdateTakeoffResponse);
 
   /*
    * 飛行計画への着陸設定(更新)
    */
-  rpc CreateLandingUavPosition(CreateLandingUavPositionRequest) returns (CreateLandingUavPositionResponse);
+  rpc UpdateLanding(UpdateLandingRequest) returns (UpdateLandingResponse);
 
   /*
    * 飛行計画への離陸位置調整
@@ -106,17 +106,36 @@ message CreateFlightPlanResponse {
 /*
  * 飛行計画への離陸機体位置設定(更新)リクエスト
  */
-message CreateTakeoffUavPositionRequest {
+message UpdateTakeoffRequest {
   string flight_plan_id = 1; // 飛行計画ID
-  TakeoffPosition takeoff = 2; // 離陸設定(機体位置・ポート設定)
-  optional trjx_api_service.TimeStamp start_time = 3; // 有効期間始点
-  optional trjx_api_service.TimeStamp end_time = 4; // 有効期間終点
+  oneof setting {
+    // 仮設ポート設定
+    TemporaryPortSetting temporary_port_setting = 2;
+
+    // 実ポート設定
+    FixedPortSetting fixed_port_setting = 3;
+  }
+
+  optional trjx_api_service.TimeStamp start_time = 4; // 有効期間始点
+  optional trjx_api_service.TimeStamp end_time = 5; // 有効期間終点
+
+  // 仮設ポート利用時の設定
+  message TemporaryPortSetting {
+    Position position = 1; // 離陸機体位置
+    Altitude takeoff_altitude = 2; // 離陸時の上昇高度(m)
+  }
+
+  // 実ポート利用時の設定
+  message FixedPortSetting {
+    int64 port_id = 1;
+    int64 spot_id = 2;
+  }
 }
 
 /*
  * 飛行計画への離陸機体位置設定(更新)レスポンス
  */
-message CreateTakeoffUavPositionResponse {
+message UpdateTakeoffResponse {
   uint32 status = 1; // code
   string message = 2; // メッセージ
   FlightPlan.Takeoff takeoff = 3; // 離陸情報
@@ -125,17 +144,40 @@ message CreateTakeoffUavPositionResponse {
 /*
  * 飛行計画への着陸設定(更新)リクエスト
  */
-message CreateLandingUavPositionRequest {
+message UpdateLandingRequest {
   string flight_plan_id = 1; // 飛行計画ID
   LandingPosition landing = 2; // 着陸設定(ポート設定)
   optional trjx_api_service.TimeStamp start_time = 3; // 有効期間始点
   optional trjx_api_service.TimeStamp end_time = 4; // 有効期間終点
+
+  // 着陸設定
+  message LandingPosition {
+    oneof landing {
+      LandingModeCurrent current = 1; // 最終WP着陸(Current)
+      LandingModeRtl rtl = 2; // ホームポジション帰還(RTL)
+      LandingModeFixedPort fixed_port = 3; // 実ポート着陸時
+    }
+
+    // 最終WP着陸(Current)の設定
+    message LandingModeCurrent {}
+
+    // ホームポジション帰還(RTL)の設定
+    message LandingModeRtl {
+      Position takeoff_uav_position = 1; // 離陸機体位置(着陸陸モードがRTLの場合のみ有効)
+    }
+
+    // 実ポート着陸時の設定
+    message LandingModeFixedPort {
+      int64 port_id = 1;
+      int64 spot_id = 2;
+    }
+  }
 }
 
 /*
  * 飛行計画への着陸設定(更新)レスポンス
  */
-message CreateLandingUavPositionResponse {
+message UpdateLandingResponse {
   uint32 status = 1; // code
   string message = 2; // メッセージ
   FlightPlan.Landing landing = 3; // 着陸情報
@@ -242,31 +284,6 @@ message TakeoffPosition {
     Altitude takeoff_altitude = 3; // 仮設ポート(実ポート以外)時の離陸上昇高度(m)
   }
   Position nearest_waypoint = 5; // 離陸地点直近のWP(第一WP)
-}
-
-/*
- * 着陸設定(ポート)
- */
-message LandingPosition {
-  reserved 4;
-
-  oneof terminal {
-    LandingModeCurrent current = 1; // 最終WP着陸(Current)の設定
-    LandingModeRtl rtl = 2; // ホームポジション帰還(RTL)の設定
-    LandingModePort port = 3; // 実ポート着陸時の設定
-  }
-  Position nearest_waypoint = 5; // 着陸地点直近のWP(最終WP)
-
-  // 最終WP着陸(Current)の設定(空のメッセージ指定)
-  message LandingModeCurrent {}
-  // ホームポジション帰還(RTL)の設定
-  message LandingModeRtl {
-    Position takeoff_uav_position = 1; // 離陸機体位置(着陸陸モードがRTLの場合のみ有効)
-  }
-  // 実ポート着陸時の設定
-  message LandingModePort {
-    Port port = 3; // 着陸ポート(着陸モードが実ポート時のみ有効)
-  }
 }
 
 /*
