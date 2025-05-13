@@ -99,8 +99,7 @@ message CreateFlightPlanRequest {
 message CreateFlightPlanResponse {
   uint32 status = 1; // code
   string message = 2; // メッセージ
-  string flight_plan_id = 3; // 飛行計画ID
-  FlightPlan.Route route = 4; // 飛行ルート
+  FlightPlan plan = 3; // 飛行ルート
 }
 
 /*
@@ -138,7 +137,7 @@ message UpdateTakeoffRequest {
 message UpdateTakeoffResponse {
   uint32 status = 1; // code
   string message = 2; // メッセージ
-  FlightPlan.Takeoff takeoff = 3; // 離陸情報
+  FlightPlan flight_plan = 3; // 飛行計画
 }
 
 /*
@@ -180,7 +179,7 @@ message UpdateLandingRequest {
 message UpdateLandingResponse {
   uint32 status = 1; // code
   string message = 2; // メッセージ
-  FlightPlan.Landing landing = 3; // 着陸情報
+  FlightPlan flight_plan = 3; // 飛行計画
 }
 
 /*
@@ -254,7 +253,7 @@ message UpdateFlightPathRequest {
 message UpdateFlightPathResponse {
   uint32 status = 1; // code
   string message = 2; // メッセージ
-  FlightPlan.Route route = 3; // 飛行ルート
+  FlightPlan flight_plan = 3; // 飛行計画
 }
 
 /*
