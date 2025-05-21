@@ -318,8 +318,8 @@ message FlightPlan {
   float clearance = 5; // クリアランス(m) 機体の大きさ(機体を覆う球体の半径)を指定
   float cost = 6; // 飛行経路のトータルコスト値(出力)
   Route route = 7; // 飛行ルート
-  Takeoff takeoff = 8; // 離陸設定
-  Landing landing = 9; // 着陸設定
+  optional Takeoff takeoff = 8; // 離陸設定
+  optional Landing landing = 9; // 着陸設定
 
   // 飛行ルート
   message Route {
