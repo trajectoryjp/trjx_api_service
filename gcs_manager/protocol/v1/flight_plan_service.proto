@@ -99,7 +99,7 @@ message CreateFlightPlanRequest {
 message CreateFlightPlanResponse {
   uint32 status = 1; // code
   string message = 2; // メッセージ
-  FlightPlan plan = 3; // 飛行ルート
+  FlightPlan flight_plan = 3; // 飛行ルート
 }
 
 /*
@@ -201,7 +201,7 @@ message GetFlightPlanRequest {
  * 飛行計画のID取得レスポンス
  */
 message GetFlightPlanResponse {
-  FlightPlan plan = 1; // 飛行計画
+  FlightPlan flight_plan = 1; // 飛行計画
 }
 
 /*
@@ -216,7 +216,7 @@ message ListFlightPlansRequest {
  * 飛行計画のリスト取得レスポンス
  */
 message ListFlightPlansResponse {
-  repeated FlightPlan plan = 1; // 飛行計画
+  repeated FlightPlan flight_plan = 1; // 飛行計画
 }
 
 /*
