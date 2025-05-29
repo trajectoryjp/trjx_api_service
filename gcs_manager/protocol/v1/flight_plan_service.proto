@@ -297,7 +297,8 @@ message Port {
  * 飛行計画への離陸位置調整リクエスト
  */
 message SetTakeoffUavPositionRequest {
-  Position uav_position = 1; // 離陸機体位置
+  string flight_plan_id = 1; // 飛行計画ID
+  Position uav_position = 2; // 離陸機体位置
 }
 
 /*
