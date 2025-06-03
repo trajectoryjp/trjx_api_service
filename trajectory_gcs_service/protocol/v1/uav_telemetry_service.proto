@@ -32,4 +32,5 @@ message GetMobilityPositions2Response {
     float distance = 4 ; // 3D距離 (m)
     trajectory.trjx_api_service.Position absolute_position = 6 ; // 絶対位置
     XYZPosition relative_position = 7; // 機体の相対位置
+    trajectory.trjx_api_service.MobilityType mobility_type = 8; // 移動体種別
 }

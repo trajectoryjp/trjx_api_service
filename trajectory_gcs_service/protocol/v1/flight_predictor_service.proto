@@ -27,5 +27,6 @@ message CollidingMobilitiesWithinArea { // 相対的な位置などの機体基�
         string uav_id = 1; // 機体ID
         trajectory.trjx_api_service.Position position = 2; // 位置情報
         optional XYZPosition relative_position = 3; // 機体の相対位置
+        trajectory.trjx_api_service.MobilityType mobility_type = 4; // 移動体種別
     }
 }
