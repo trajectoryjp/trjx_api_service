@@ -53,6 +53,8 @@ message Coordinate {
 
 //ユーザ属性
 enum UserType{
+    option deprecated = true;
+
     TYPE_UNSPECIFIED = 0;                       // 未設定
     TYPE_CAR = 2;                               // 車
     TYPE_SHIP = 3;                              // 船
