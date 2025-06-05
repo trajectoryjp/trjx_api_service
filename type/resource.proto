@@ -69,16 +69,17 @@ enum UserType{
 // 移動体種別
 enum MobilityType{
     MOBILITY_TYPE_UNSPECIFIED = 0;                       // 未設定
-    MOBILITY_TYPE_CAR = 1;                               // 車
-    MOBILITY_TYPE_SHIP = 2;                              // 船
-    MOBILITY_TYPE_AIRPLANE =3;                           // 航空機
-    MOBILITY_TYPE_HELICOPTER =4;                         // ヘリコプター
-    MOBILITY_TYPE_MARKER =5;                             // マーカー
-    MOBILITY_TYPE_URBAN_AIR_MOBILITY = 6;                // エア・モビリティ(UAM)
-    MOBILITY_TYPE_TRAIN = 7;                             // 電車
-    MOBILITY_TYPE_UAV = 8;                               // UAV
-    MOBILITY_TYPE_MAN = 9;                               // 人間
-    MOBILITY_TYPE_UNMANNED_VEHICLE = 10;                 // 無人車両
+    MOBILITY_TYPE_CAR = 2;                               // 車
+    MOBILITY_TYPE_SHIP = 3;                              // 船
+    MOBILITY_TYPE_AIRPLANE =4;                           // 航空機
+    MOBILITY_TYPE_HELICOPTER =5;                         // ヘリコプター
+    MOBILITY_TYPE_MARKER =6;                             // マーカー
+    MOBILITY_TYPE_URBAN_AIR_MOBILITY = 7;                // エア・モビリティ(UAM)
+    MOBILITY_TYPE_TRAIN = 8;                             // 電車
+    MOBILITY_TYPE_UAV = 9;                               // UAV
+    MOBILITY_TYPE_MAN = 10;                              // 人間
+    MOBILITY_TYPE_UNMANNED_VEHICLE = 11;                 // 無人車両
+
 }
 
 /*
