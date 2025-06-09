@@ -14,7 +14,7 @@ service MissionService {
     rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
 
     // CreateMissionRecord: ミッションをデータベースに追加する
-    rpc CreateMissionRecord(CreateMissionRecordRequest) returns (MissionID) {}
+    rpc CreateMissionRecord(MissionRecord) returns (MissionID) {}
 
     // GetMissionRecord: ミッションの取得
     rpc GetMissionRecord(MissionID) returns (MissionRecord) {}
@@ -59,15 +59,6 @@ message CreateMissionResponse {
     repeated string reserved_route_ids = 3 ; // 予約ID
 }
 
-message CreateMissionRecordRequest {
-    Mission mission = 1; // MissionItemのリスト
-    string name = 2; // 保存名
-    ProjectID project_id = 3; // 所有組織
-    TransactionID transaction_id = 4;
-    UAVID uav_id = 5;
-    ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
-}
-
 message MissionRecord {
     Mission mission = 1; // MissionItemのリスト
     string name = 2; // 保存名
@@ -75,7 +66,7 @@ message MissionRecord {
     TransactionID transaction_id = 4;
     UAVID uav_id = 5;
     ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
-    Timestamps timestamps = 7; // ミッションの作成/更新日時
+    optional Timestamps timestamps = 7; // ミッションの作成/更新日時　リクエスト時は設定しない
 }
 
 
