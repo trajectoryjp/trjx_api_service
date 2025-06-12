@@ -4,6 +4,7 @@ package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
@@ -58,7 +59,6 @@ message CreateMissionResponse {
     repeated string reserved_route_ids = 3 ; // 予約ID
 }
 
-
 message MissionRecord {
     Mission mission = 1; // MissionItemのリスト
     string name = 2; // 保存名
@@ -66,6 +66,7 @@ message MissionRecord {
     TransactionID transaction_id = 4;
     UAVID uav_id = 5;
     ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
+    optional Timestamps timestamps = 7; // ミッションの作成/更新日時　リクエスト時は設定しない
 }
 
 
@@ -85,4 +86,13 @@ message ListMissionIDRecordsResponse {
 message MissionIDRecord {
     MissionID mission_id = 1;
     string name = 2;
+    Timestamps timestamps = 3; // ミッションの作成/更新日時
+}
+
+// ミッションの作成/更新日時
+message Timestamps {
+    // 作成日時
+    google.protobuf.Timestamp create_time = 1;
+    // 更新日時
+    google.protobuf.Timestamp update_time = 2;
 }
