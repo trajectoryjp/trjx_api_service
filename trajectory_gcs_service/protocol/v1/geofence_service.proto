@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+service GeofenceService {
+    // ジオフェンスの登録
+    rpc CreateGeofence(CreateGeofenceRequest) returns (Geofence);
+
+    // ジオフェンスの取得
+    rpc GetGeofence(GetGeofenceRequest) returns (Geofence);
+
+    // ジオフェンスのリスト取得
+    rpc ListGeofences(ListGeofencesRequest) returns (stream ListGeofencesResponse);
+
+    // ジオフェンスの削除
+    rpc DeleteGeofence(DeleteGeofenceRequest) returns (google.protobuf.Empty);
+
+    // ジオフェンスの更新
+    rpc UpdateGeofence(UpdateGeofenceRequest) returns (Geofence);
+}
+
+// ジオフェンス登録リクエスト
+message CreateGeofenceRequest {
+    // 登録ジオフェンス
+    Geofence geofence = 1;
+}
+
+// ジオフェンス取得リクエスト
+message GetGeofenceRequest {
+    // ジオフェンスID
+    int64 id = 1;
+}
+
+// ジオフェンス一覧取得・フィルタリング検索リクエスト
+message ListGeofencesRequest {
+    // 検索ボックス 検索範囲の制限を設ける
+    SearchSpace search_space = 1;
+
+    // 組織ID(所有組織)　true:自組織のみ false: 他組織を含める
+    bool own_organization = 2;
+
+    // グループID
+    optional int64 group_id = 3;
+
+    // ジオフェンスの種別 true:private false:public
+    optional bool is_private = 4;
+
+    // 名称
+    optional string name = 5;
+
+    // タグ
+    optional string tag = 6;
+}
+
+// ジオフェンス一覧取得・フィルタリング検索レスポンス
+message ListGeofencesResponse {
+    // ジオフェンス
+    repeated Geofence geofences = 1;
+
+    // // リスト全体の項目数
+    // int32 total_count = 2;
+
+    // // 次のページを取得するトークン
+    // string next_page_token = 3;
+}
+
+// ジオフェンス更新リクエスト
+message UpdateGeofenceRequest {
+    // ジオフェンス（指定した内容で上書き）
+    Geofence geofence = 1;
+}
+
+// ジオフェンス削除リクエスト
+message DeleteGeofenceRequest {
+    int64 id = 1;  // ジオフェンスID
+}

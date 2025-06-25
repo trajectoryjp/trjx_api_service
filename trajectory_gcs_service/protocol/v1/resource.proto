@@ -562,6 +562,39 @@ message Port {
 
 }
 
+// ジオフェンス
+message Geofence {
+    // ジオフェンスID(Create時は設定不要)
+    int64 id = 1;                         
+    
+    // 組織ID
+    int64 organizations_id = 2;                         
+
+    // グループID
+    int64 group_id = 3;
+
+    // ポートの種別 true:private false:public   
+    bool is_private = 4;              
+    
+    // 名称
+    optional string name = 5;                  
+    
+     // タグ
+    optional string tag = 6;                          
+    
+    // ジオフェンス形状をSolidModeで登録(角柱(PolygonalPillar)のみ登録可能), ジオフェンスの高度はSolidModelのOriginで指定
+    SolidModel solid_model = 7;
+
+    // 有効期間始点
+    google.protobuf.Timestamp  start_time = 8;   
+    
+    // 有効期間終点
+    google.protobuf.Timestamp  end_time = 9;                        
+
+    // 説明文
+    string description = 10;
+}
+
 message SearchSpace {
 
     //　TODO: 座標系に変更する
