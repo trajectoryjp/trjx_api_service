@@ -44,7 +44,7 @@ message GetCollidingMobilitiesIntoMobilityRequest{
 message CollidingMobilitiesIntoMobility{
     optional MobilityPosition mobility= 1; // 衝突してくる相手機体
     trajectory.trjx_api_service.Position collision_point = 2; // 衝突予測位置
-    int64 collision_time = 3; // 衝突予測時間（秒）
+    optional int64 collision_time = 3; // 衝突予測時間（秒）
 
     message MobilityPosition {
         string uav_id = 1; // 機体ID
