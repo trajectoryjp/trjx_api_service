@@ -57,4 +57,6 @@ message Aircraft {
     string tat = 48;                        // outer/static air temperature (C) and total air temperature (C) are calculated from mach number and true airspeed (typically somewhat inaccurate at lower altitudes / mach numbers below 0.5, calculation is inhibited for mach < 0.395)
     string acas_ra = 49;                    // experimental, subject to change, see format here
     string gps_ok_before = 50;              // experimental, subject to change: aircraft lost GPS / GPS heavily degraded, it was working well before this timestamp, only displayed for 15 min after GPS is lost / degraded
+    string generated_date = 51;             // Date message generated (YYYY/MM/DD)
+	string generated_time = 52;             // Time message generated (hh:mm:ss.sss)
 }
