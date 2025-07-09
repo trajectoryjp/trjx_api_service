@@ -21,10 +21,10 @@ message GetCollidingMobilitiesWithinAreaRequest {
 }
 
 message CollidingMobilitiesWithinArea { // 相対的な位置などの機体基準の情報はMobilityPositionで得る
-    MobilityPosition mobility_a= 1; // 機体　A
-    MobilityPosition mobility_b= 2; // 機体B
+    optional MobilityPosition mobility_a= 1; // 機体　A
+    optional MobilityPosition mobility_b= 2; // 機体B
     trajectory.trjx_api_service.Position collision_point = 3; // 衝突予測位置
-    int64 collision_time = 4; // 衝突予測時間（秒）
+    optional int64 collision_time = 4; // 衝突予測時間（秒）
 
     message MobilityPosition {
         string uav_id = 1; // 機体ID
@@ -37,10 +37,16 @@ message CollidingMobilitiesWithinArea { // 相対的な位置などの機体基�
 }
 
 message GetCollidingMobilitiesIntoMobilityRequest{
-    string mobility_id= 1; // 衝突を検知する機体ID。（自組織UAVのみ）
-    float radius = 2; // 領域の半径(m)
+    // 衝突を検知する機体ID。
+    // 自組織機体のみ、他組織の場合はエラー
+    // UAV以外についてはサポート対象外　今後追加予定
+    string mobility_id= 1;
+    // 領域の半径(m) 
+    float radius = 2; 
 }
 
+// 指定したMobilityに対するMoblityの衝突を通知する
+// 一部機体ではmobility・collision_timeの設定なし
 message CollidingMobilitiesIntoMobility{
     optional MobilityPosition mobility= 1; // 衝突してくる相手機体
     trajectory.trjx_api_service.Position collision_point = 2; // 衝突予測位置
