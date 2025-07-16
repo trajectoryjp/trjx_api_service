@@ -5,15 +5,72 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 
-
 service UavControlService {
     // Mission Interface：指定した座標に向かう
+    // アクセス権限: operator
     rpc Goto(GotoRequest) returns (stream GotoResponse) {}
+
+    // 機体にアサインされているミッションを消去する
+    // アクセス権限: operator
+    rpc ClearMission(ClearMissionRequest) returns (ClearMissionResponse){}
+
+    // 指定した機体のミッションを開始する ※事前にミッションのアサインが必要
+    // アクセス権限: operator
+    rpc ExecuteMission(ExecuteMissionRequest) returns (ExecuteMissionResponse){}
+
+    // カメラ機能を実行する
+    // アクセス権限: operator
+    rpc Camera(CameraRequest) returns (CameraResponse){}    
+
+    // カメラの除隊を取得する
+    // アクセス権限: operator
+    rpc GetCameraStatus(GetCameraStatusRequest) returns (GetCameraStatusResponse) {} 
+
+    // カメラの各機能の使用可否を取得する
+    // アクセス権限: operator
+    rpc GetCameraAbility(GetCameraAbilityRequest) returns (GetCameraAbilityResponse) {}
+
+    // ミッションを中止して緊急着陸させる
+    // アクセス権限: operator
+    rpc Land(LandResponse) returns (LandRequest){}
+
+    // ミッションを中断し一時停止(ホバリング)させる
+    // アクセス権限: operator
+    rpc Pause(PauseRequest) returns (PauseResponse){}
+
+    // 中断したミッションを再開させる（ミッション実行=AUTOモードへ変更する）
+    // アクセス権限: operator
+    rpc Resume(ResumeRequest) returns (ResumeResponse){}
+
+    // 飛行中にミッションを更新する
+    // アクセス権限: operator
+    rpc UpdateMissionAtFlying(UpdateMissionAtFlyingRequest) returns (stream UpdateMissionAtFlyingResponse){} 
+
+    // 飛行中にミッションを再計算する
+    // アクセス権限: operator
+    rpc Redesign(RedesignRequest) returns (stream RedesignResponse){}
+
+    // 飛行中の経路変更をさせる ※他機体の経路は維持する
+    // アクセス権限: operator
+    rpc Reroute(RerouteRequest) returns (stream RerouteResponse){}
+
+    // ReroutingおよびGotoをキャンセルする
+    // アクセス権限: operator
+    rpc CancelReroute(CancelRerouteRequest) returns (CancelRerouteResponse){}
+
+    // RTL(Return To Launch)させる
+    // アクセス権限: operator
+    rpc RTL(RTLRequest) returns (RTLResponse){}
+
+    // ルートを計算してRTLさせる
+    // アクセス権限: operator
+    rpc SafeRTL(SafeRTLRequest) returns (stream SafeRTLResponse){}
 }
+
 
 // Goto指定パラメータ
 message GotoRequest {
-    UAVID uav_id = 1;   // UAVID
+    string uav_id = 1; // uav_id
     ItemParameterWaypoint point = 2 ; // 目的地点座標
     ROI roi = 3 ; // 対象物座標
     enum ReturnMode { // 目標地点到達後の戻り位置
@@ -33,6 +90,210 @@ message GotoResponse {
         GotoProgress    goto_progress = 2 ;
     }
     uint32 progress = 3;    // 各経過状態の経過量（0-100）
-    Mission mission = 4; // ルート計算を行った結果のミッションのリスト
-    string detail = 10; // 詳細情報
+    Mission mission = 4;  // ルート計算を行った結果のミッションのリスト
+    string detail = 10;  // 詳細情報
+}
+
+
+message ClearMissionRequest{
+    string uav_id = 1;
+}
+
+message ClearMissionResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+}
+
+message ExecuteMissionRequest{
+    string uav_id = 1;
+}
+
+message ExecuteMissionResponse {
+    ExecuteMissionResultStatus result = 1; // 実行結果
+    optional ExecuteMissionErrorCode error_code = 2; // resultがERRORの場合の具体的なエラー原因
+    string detail = 3;
+}
+
+
+enum ExecuteMissionResultStatus {
+    EXECUTE_MISSION_RESULT_STATUS_UNSPECIFIED = 0;
+    EXECUTE_MISSION_RESULT_STATUS_SUCCESS = 1;
+    EXECUTE_MISSION_RESULT_STATUS_ERROR = 2;
+}
+
+enum ExecuteMissionErrorCode {
+    EXECUTE_MISSION_ERROR_CODE_UNSPECIFIED = 0;
+    // EXECUTE_MISSION_ERROR_CODE_InvalidUav = 4; // 無効なuav_id DEPRICATED
+    EXECUTE_MISSION_ERROR_CODE_INTERNAL_ERROR = 1 ;
+    EXECUTE_MISSION_ERROR_CODE_PARAMETER = 2 ; // UAVコマンドエラー
+    EXECUTE_MISSION_ERROR_CODE_UNSTABLE = 3 ; // 飛行可能状態でない
+    EXECUTE_MISSION_ERROR_CODE_EMPTY_MISSION = 4 ; // 指定したミッションが空
+    // EXECUTE_MISSION_ERROR_CODE_FCBusy = 15 ;
+    EXECUTE_MISSION_ERROR_CODE_FLIGHT_PATH_STRATA_CONFIG = 5;
+    EXECUTE_MISSION_ERROR_CODE_FLIGHT_PATH_NOT_FOUND_AREA = 6;
+    EXECUTE_MISSION_ERROR_CODE_FLIGHT_PATH_NOT_FOUND_MODEL = 7;
+    EXECUTE_MISSION_ERROR_CODE_FLIGHT_PATH_OUT_OF_AREA = 8;
+    EXECUTE_MISSION_ERROR_CODE_FLIGHT_PATH_ILLEGAL_POSITION = 9; 
+    // EXECUTE_MISSION_ERROR_CODE_CommunicationFC = 60; 
+    EXECUTE_MISSION_ERROR_CODE_FLIGHT_PATH_UNKNOWN = 10 ;
+}
+
+message CameraRequest{
+    string uav_id = 1;
+    CameraControl camera_command = 2;
+}
+
+message CameraResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果　　　　　
+}
+
+message GetCameraStatusRequest{
+    string uav_id = 1;
+}
+
+message GetCameraStatusResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+    repeated CameraControl status = 2 ;
+}
+
+message GetCameraAbilityRequest{
+    string uav_id = 1;
+}
+
+message GetCameraAbilityResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+    CameraAbility camera_ability = 2; // カメラ各機能の使用可否
+}
+
+message LandRequest{
+    string uav_id = 1;
+}
+
+message LandResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+}
+
+message PauseRequest{
+    string uav_id = 1;
+}
+
+message PauseResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+}
+
+message ResumeRequest{
+    string uav_id = 1;
+}
+
+message ResumeResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+}
+
+message UpdateMissionAtFlyingRequest{
+    string uav_id = 1;
+    Mission mission = 2;
+}
+
+message UpdateMissionAtFlyingResponse{
+    ReroutingResponse rerouting_response = 1;
+}
+
+message RedesignRequest{
+    string uav_id = 1;  
+}
+
+message RedesignResponse{
+   ReroutingResponse rerouting_response = 1;
+}
+
+message RerouteRequest{
+    string uav_id = 1;
+    string transit_from_tag = 2; // 変更経路に分岐するWaypointのTag
+    optional string transit_to_tag = 3; // 戻りのWaypointのTag
+    Mission mission = 4; // 変更するミッション（分岐後のミッション）のリスト　※MissionのTagの名前は重複及びCancelRerouteしたMissionのTag名の利用も不可
+ 
+    enum Attr {
+        ATTR_UNSPECIFIED = 0 ;
+        ATTR_AUTOMATIC = 1 ;   // Fromを超えていたらImmediately、超えていなければBackground
+        ATTR_IMMEDIATELY = 2;  //  Goto。現在地点からすぐにmissionのポイントへ向かう
+        ATTR_BACKGROUND = 3 ;  // Reroute。Fromに近い場合はPAUSEする。
+    }
+ 
+    Attr invoke = 5 ;// 起動タイミング
+}
+
+message RerouteResponse{
+    ReroutingResponse rerouting_response = 1;
+}
+
+message CancelRerouteRequest{
+    string uav_id = 1;
+}
+
+message CancelRerouteResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+}
+ 
+message RTLRequest{
+    string uav_id = 1;
+}
+
+message RTLResponse{
+    UAVControllerExecutionResult result = 1;  // 処理結果
+}
+
+message SafeRTLRequest{
+    string uav_id = 1;
+}
+
+message SafeRTLResponse{
+    ReroutingResponse rerouting_response = 1;
+}
+
+message ReroutingResponse{
+    ReroutingProgress progress_state = 1; // 経過状態
+    uint32 progress = 2;  // 各経過状態の経過量（0-100）
+    Mission mission = 3;  // ルート計算を行った結果のミッションのリスト
+    string info = 4 ;     // 詳細情報
+}
+
+enum ReroutingProgress {
+    REROUTING_PROGRESS_UNSPECIFIED = 0;
+    REROUTING_PROGRESS_CALCULATING = 1;
+    REROUTING_PROGRESS_QUEUEING = 2; // WP転送中
+    REROUTING_PROGRESS_SETTING = 3; // WP転送中
+    REROUTING_PROGRESS_CHANGING = 4; // ルート変更指示中
+    REROUTING_PROGRESS_COMPLETE = 5; // 完了
+    REROUTING_PROGRESS_CANCELED = 6; // ミッション変更キャンセル
+    REROUTING_PROGRESS_VOID = 7 ; // リルート無効（通り過ぎたなど） RM#192
+    REROUTING_PROGRESS_ERROR = 8; // エラー終了
+    REROUTING_PROGRESS_ERROR_COMMAND = 9 ; // UAVコマンドエラー
+    REROUTING_PROGRESS_ERROR_DUPLICATE = 10 ; // 指定したWPが重複
+    REROUTING_PROGRESS_ERROR_UNSTABLE = 11 ; // リルート可能状態でない
+    REROUTING_PROGRESS_ERROR_EMPTY_MISSION = 12 ; // 指定したミッションが空
+    REROUTING_PROGRESS_ERROR_FLIGHT_PATH_STRATA_CONFIG = 13;
+    REROUTING_PROGRESS_ERROR_FLIGHT_PATH_NOT_FOUND_AREA = 14;
+    REROUTING_PROGRESS_ERROR_FLIGHT_PATH_NOT_FOUND_MODEL = 15;
+    REROUTING_PROGRESS_ERROR_FLIGHT_PATH_OUT_OF_AREA = 16;
+    REROUTING_PROGRESS_ERROR_FLIGHT_PATH_ILLEGAL_POSITION = 17;
+    REROUTING_PROGRESS_ERROR_FLIGHT_PATH_UNKNOWN = 18 ;
+    REROUTING_PROGRESS_INTERNAL_ERROR = 99 ;
+}
+
+// カメラ各機能の使用可否
+message CameraAbility{
+    enum Attr {
+        ATTR_UNSPECIFIED = 0 ;
+        ATTR_AVAILABLE = 1 ;
+        ATTR_UNAVAILABLE = 2 ;
+    }
+
+    Attr movie = 1 ;        // 開始停止制御
+    Attr picture = 2 ;      // シャッター制御
+    Attr visible = 3 ;      // 可視光カメラ
+    Attr infrared = 4 ;     // 赤外線光カメラ
+    Attr pitch = 5 ;        // ピッチの切り替え可否
+    Attr yaw = 6 ;          // ヨーの切り替え可否
+    Attr zoom = 7 ;         // ズーム倍率の切り替え可否
+    Attr imageChange = 8 ;  // movie/pictureの切り替え可否
+    Attr rayChange = 9 ;    // visible/infraredの切り替え可否
 }

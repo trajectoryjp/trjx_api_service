@@ -877,3 +877,26 @@ message TakingOffAndLandingUAVStatus {
      LANDING_STATUS_LANDING = 3; // 着陸中状態
     }
 }
+
+message UAVControllerExecutionResult {
+    UAVControllerCommandExecutionResultStatus result = 1; // 実行結果
+    optional UAVControllerCommandExecutionErrorCode error_code = 2; // resultがFAILUREの場合の具体的なエラー原因
+    string detail = 3;
+}
+
+
+enum UAVControllerCommandExecutionResultStatus {
+    UAV_CONTROLLER_EXECUTION_RESULT_STATUS_UNSPECIFIED = 0;
+    UAV_CONTROLLER_EXECUTION_RESULT_STATUS_SUCCESS = 1;
+    UAV_CONTROLLER_EXECUTION_RESULT_STATUS_FAILURE = 2;
+}
+
+enum UAVControllerCommandExecutionErrorCode {
+    UAV_CONTROLLER_EXECUTION_ERROR_CODE_UNSPECIFIED = 0;
+    UAV_CONTROLLER_EXECUTION_ERROR_CODE_GENERAL = 1;
+    UAV_CONTROLLER_EXECUTION_ERROR_CODE_NOT_ENOUGH =2;
+    UAV_CONTROLLER_EXECUTION_ERROR_CODE_PARAMETER_ERROR =3;
+    UAV_CONTROLLER_EXECUTION_ERROR_CODE_NO_EXIST = 4;
+    UAV_CONTROLLER_EXECUTION_ERROR_CODE_UNREGISTERED =5;
+    UAV_CONTROLLER_EXECUTION_ERROR_CODE_UNSTABLE =6;
+}
