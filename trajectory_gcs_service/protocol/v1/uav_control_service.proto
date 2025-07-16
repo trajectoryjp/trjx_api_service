@@ -9,11 +9,53 @@ import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol
 service UavControlService {
     // Mission Interface：指定した座標に向かう
     rpc Goto(GotoRequest) returns (stream GotoResponse) {}
+
+    // 機体にアサインされているミッションを消去する
+    rpc ClearMission(ClearMissionRequest) returns (ClearMissionResponse){}
+
+    // 指定した機体のミッションを開始する ※事前にミッションのアサインが必要
+    rpc ExecuteMission(ExecuteMissionRequest) returns (ExecuteMissionResponse){}
+
+    // カメラ機能を実行する
+    rpc Camera(CameraRequest) returns (CameraResponse){}
+
+    // カメラの状態を取得する
+    rpc GetCameraStatus(GetCameraStatusRequest) returns (GetCameraStatusResponse){}
+
+    // カメラの機能を取得する
+    rpc GetCameraAbility(CameraAbilityRequest) returns (CameraAbilityResponse){}
+
+    // ミッションを中止して緊急着陸させる
+    rpc Land(LandRequest) returns (LandResponse){}
+
+    // ミッションを中断し一時停止(ホバリング)させる
+    rpc Pause(PauseRequest) returns (PauseResponse){}
+
+    // 中断したミッションを再開させる
+    rpc Resume(ResumeRequest) returns (ResumeResponse){}
+
+    // 飛行中にミッションを更新する
+    rpc UpdateMissionAtFlying(UpdateMissionAtFlyingRequest) returns (stream UpdateMissionAtFlyingResponse){}
+    
+    // 飛行中にミッションを再計算する
+    rpc Redesign(RedesignRequest) returns (stream RedesignResponse){}
+    
+    // 飛行中の経路変更をさせる
+    rpc Reroute(RerouteRequest) returns (stream RerouteResponse){}
+    
+    // RTL(Return To Launch)させる
+    rpc RTL(RTLRequest) returns (RTLResponse){}
+
+    // ルートを計算してRTLさせる
+    rpc SafeRTL(SafeRTLRequest) returns (SafeRTLResponse){}
+    
+    //rpc StatusView(StatusViewRequest) returns (StatusViewResponse){}
 }
+
 
 // Goto指定パラメータ
 message GotoRequest {
-    UAVID uav_id = 1;   // UAVID
+    UAVID uav_id = 1; // UAVID
     ItemParameterWaypoint point = 2 ; // 目的地点座標
     ROI roi = 3 ; // 対象物座標
     enum ReturnMode { // 目標地点到達後の戻り位置
@@ -36,3 +78,303 @@ message GotoResponse {
     Mission mission = 4; // ルート計算を行った結果のミッションのリスト
     string detail = 10; // 詳細情報
 }
+
+
+message ClearMissionRequest{
+    string uavID = 1;
+}
+
+message ClearMissionResponse{
+    UAVControllerResultStatus status = 1;  // 処理結果
+    string detail = 2;
+}
+
+message ExecuteMissionRequest{
+    string uavID = 1;
+}
+
+message ExecuteMissionResponse{
+    enum Status {
+        Unknown = 0;
+        Continue = 5; // 継続　（streamの場合のみ
+        End = 1;        // 終了　（streamの場合のみ）
+        Complete = 2;   // 完了
+        Error = 3;
+        InvalidUav = 4; // 無効なUAVID DEPRICATED
+        InternalError = 9 ;
+        ErrorParameter = 11 ; // UAVコマンドエラー
+        ErrorUnStable = 13 ; // 飛行可能状態でない
+        ErrorEmptyMission = 14 ; // 指定したミッションが空
+        ErrorFCBusy = 15 ;
+        ErrorFlightPathStrataConfig = 51;
+        ErrorFlightPathNotFoundArea = 52;
+        ErrorFlightPathNotFoundModel = 53;
+        ErrorFlightPathOutofArea = 54;
+        ErrorFlightPathIlligalPositoin = 55; 
+        ErrorCommunicationFC = 60; 
+        ErrorFlightPathUnknown = 50 ;
+    }
+    Status status = 1; // 処理結果
+    string detail  = 2; // 詳細情報
+}
+
+message CameraRequest{
+    string uavID = 1;
+    CameraControl camera_command = 1;
+}
+
+message CameraResponse{
+    UAVControllerResultStatus status = 1;  // 処理結果
+    string detail = 2;
+}
+
+message CameraAbilityRequest{
+    string uavID = 1;
+}
+
+message CameraAbilityResponse{
+    message Result {
+        UAVControllerResultStatus status = 1;
+        string detail = 2;
+    }
+
+    Result result  = 3;
+
+    enum Attr {
+        unknown = 0 ;
+        available = 1 ;
+        unavailable = 2 ;
+    }
+    Attr movie = 4 ; // 開始停止制御
+    Attr picture = 5 ; // シャッター制御
+    Attr visible = 6 ; // 可視光カメラ（現状は常にtrue）
+    Attr infrared = 7 ; // 赤外線光カメラ（現状は常にtrue）
+    Attr pitch = 8 ;
+    Attr yaw = 9 ;
+    Attr zoom = 10 ;
+    Attr imageChange = 11 ; // movie/pictureの切り替え可否
+    Attr rayChange = 12 ; // visible/infraredの切り替え可否
+
+}
+
+message LandRequest{
+    string uavID = 1;
+}
+
+message LandResponse{
+    UAVControllerResultStatus status = 1;  // 処理結果
+    string detail = 2;
+}
+
+message PauseRequest{
+    string uavID = 1;
+}
+
+message PauseResponse{
+    UAVControllerResultStatus status = 1;  // 処理結果
+    string detail = 2;
+}
+
+message ResumeRequest{
+    string uavID = 1;
+}
+
+message ResumeResponse{
+    UAVControllerResultStatus status = 1;  // 処理結果
+    string detail = 2;
+}
+
+message UpdateMissionAtFlyingRequest{
+    string uavID = 1;
+    Mission mission = 2;
+}
+
+message UpdateMissionAtFlyingResponse{
+    enum Progress {
+        Unknown = 0;
+        Calculating = 1;
+        Queueing = 2; // WP転送中
+        Setting = 3; // WP転送中
+        Changing = 4; // ルート変更指示中
+        Complete = 5; // 完了
+        Canceled = 9; // ミッション変更キャンセル
+        Void = 15 ; // リルート無効（通り過ぎたなど）
+        Error = 10; // エラー終了
+        ErrorCommand = 11 ; // UAVコマンドエラー
+        ErrorDuplicate = 12 ; // 指定したWPが重複
+        ErrorUnStable = 13 ; // リルート可能状態でない
+        ErrorEmptyMission = 14 ; // 指定したミッションが空
+        ErrorFlightPathStrataConfig = 51;
+        ErrorFlightPathNotFoundArea = 52;
+        ErrorFlightPathNotFoundModel = 53;
+        ErrorFlightPathOutofArea = 54;
+        ErrorFlightPathIlligalPosition = 55;
+        ErrorFlightPathUnknown = 50 ;
+        InternalError = 99; 
+    }
+    Progress progressState = 1; // 経過状態
+    uint32 progress = 2;    // 各経過状態の経過量（0-100）
+    Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+    string info = 4 ; // 詳細情報
+}
+
+message RedesignRequest{
+    string uavID = 1;
+    int32 projectID = 2;    
+}
+
+message RedesignResponse{
+    enum Progress {
+        // TR_DEV-437 all items are renumbering
+        Unknown = 0;
+        Calculating = 1;
+        Queueing = 2; // WP転送中
+        Setting = 3; // WP転送中
+        Changing = 4; // ルート変更指示中
+        Complete = 5; // 完了
+        Canceled = 9; // ミッション変更キャンセル
+        Void = 15 ; // リルート無効（通り過ぎたなど） RM#192
+        Error = 10; // エラー終了
+        ErrorCommand = 11 ; // UAVコマンドエラー
+        ErrorDuplicate = 12 ; // 指定したWPが重複
+        ErrorUnStable = 13 ; // リルート可能状態でない
+        ErrorEmptyMission = 14 ; // 指定したミッションが空
+        ErrorFlightPathStrataConfig = 51;
+        ErrorFlightPathNotFoundArea = 52;
+        ErrorFlightPathNotFoundModel = 53;
+        ErrorFlightPathOutofArea = 54;
+        ErrorFlightPathIlligalPosition = 55;
+        ErrorFlightPathUnknown = 50 ;
+        InternalError = 99; 
+    }
+    Progress progressState = 1; // 経過状態
+    uint32 progress = 2;    // 各経過状態の経過量（0-100）
+    Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+    string info = 4 ; // 詳細情報
+}
+
+message RerouteRequest{
+    string uavId = 1;
+ 
+    message rerouteRequest{
+        string transitFromTag = 2; // 変更経路に分岐するWaypointのTag
+        string transitToTag = 3; // 戻りのWaypointのTag。省略可。
+    }
+   rerouteRequest reroute_request = 4;
+ 
+    enum Attr { // RM#51 RM#275修正
+        Automatic = 0 ; // Fromを超えていたらImmediately、超えていなければBackground
+        Immediately = 1;  //  Goto。現在地点からすぐにmissionのポイントへ向かう
+        Background = 2 ; // Reroute。Fromに近い場合はPAUSEする。
+    }
+ 
+    Attr invoke = 5 ;// 起動タイミング
+}
+
+message RerouteResponse{
+    enum Progress {
+        Unknown = 0;
+        Calculating = 1;
+        Queueing = 2; // WP転送中
+        Setting = 3; // WP転送中
+        Changing = 4; // ルート変更指示中
+        Complete = 5; // 完了
+        Canceled = 9; // ミッション変更キャンセル
+        Void = 15 ; // リルート無効（通り過ぎたなど）
+        Error = 10; // エラー終了
+        ErrorCommand = 11 ; // UAVコマンドエラー
+        ErrorDuplicate = 12 ; // 指定したWPが重複
+        ErrorUnStable = 13 ; // リルート可能状態でない
+        ErrorEmptyMission = 14 ; // 指定したミッションが空
+        ErrorFlightPathStrataConfig = 51;
+        ErrorFlightPathNotFoundArea = 52;
+        ErrorFlightPathNotFoundModel = 53;
+        ErrorFlightPathOutofArea = 54;
+        ErrorFlightPathIlligalPosition = 55;
+        ErrorFlightPathUnknown = 50 ;
+        InternalError = 99; 
+    }
+    Progress progressState = 1; // 経過状態
+    uint32 progress = 2;    // 各経過状態の経過量（0-100）
+    Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+    string info = 4 ; // 詳細情報
+}
+ 
+message RTLRequest{
+    string uavID = 1;
+}
+
+message RTLResponse{
+    UAVControllerResultStatus status = 1;  // 処理結果
+    string detail = 2;
+}
+
+message SafeRTLRequest{
+    string uavID = 1;
+    string projectID = 2;
+}
+
+message SafeRTLResponse{
+    string event = 1;
+
+    message reroutingResult {
+        enum Progress {
+            Unknown = 0;
+            Calculating = 1;
+            Queueing = 2; // WP転送中
+            Setting = 3; // WP転送中
+            Changing = 4; // ルート変更指示中
+            Complete = 5; // 完了
+            Canceled = 9; // ミッション変更キャンセル
+            Void = 15 ; // リルート無効（通り過ぎたなど）
+            Error = 10; // エラー終了
+            ErrorCommand = 11 ; // UAVコマンドエラー
+            ErrorDuplicate = 12 ; // 指定したWPが重複
+            ErrorUnStable = 13 ; // リルート可能状態でない
+            ErrorEmptyMission = 14 ; // 指定したミッションが空
+            ErrorFlightPathStrataConfig = 51;
+            ErrorFlightPathNotFoundArea = 52;
+            ErrorFlightPathNotFoundModel = 53;
+            ErrorFlightPathOutofArea = 54;
+            ErrorFlightPathIlligalPosition = 55;
+            ErrorFlightPathUnknown = 50 ;
+            InternalError = 99; 
+        }
+        Progress progressState = 1; // 経過状態
+        uint32 progress = 2;    // 各経過状態の経過量（0-100）
+        Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+        string info = 4 ; // 詳細情報
+    }
+
+    reroutingResult rerouting_result = 500; 
+}
+
+
+message GetCameraStatusRequest{
+    string uavID = 1;
+}
+
+message GetCameraStatusResponse{
+    message Result {
+        UAVControllerResultStatus status = 1;
+        string detail = 2;
+    }
+
+    Result result  = 3;
+    repeated CameraControl status = 4;
+}
+
+
+enum UAVControllerResultStatus {
+    UAV_CONTROLLER_RESULT_STATUS_UNKNOWN = 0;
+    UAV_CONTROLLER_RESULT_STATUS_END = 1;
+    UAV_CONTROLLER_RESULT_STATUS_COMPLETE = 2; // 完了
+    UAV_CONTROLLER_RESULT_STATUS_ERROR = 3;
+    UAV_CONTROLLER_RESULT_STATUS_CONTINUE = 4;
+    UAV_CONTROLLER_RESULT_STATUS_NOT_ENOUGH = 5; 
+    UAV_CONTROLLER_RESULT_STATUS_PARAMETER_ERROR = 6 ; 
+    UAV_CONTROLLER_RESULT_STATUS_NO_EXIST = 7 ;
+    UAV_CONTROLLER_RESULT_STATUS_UNREGISTER = 8 ;
+    UAV_CONTROLLER_RESULT_STATUS_UNSTABLE = 13 ;
+}
+
