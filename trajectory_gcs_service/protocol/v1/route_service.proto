@@ -16,13 +16,11 @@ service RouteService {
 message ListVoxelsAroundPathsRequest {
     // 安全が保証されていない経路。タグはレスポンスにも引き継がれる
     repeated trajectory.trjx_api_service.Position unsafe_positions = 1;
-
     oneof Select {
         // 機体ID
         UAVID uav_id = 2;
         double clearance = 3;
     }
-    
     // 組織ID
     ProjectID project_id = 4;
     // SearchPathのzoomSetLevelからのquadkeyZoom-altitudeKeyZoomのペアーを選ぶ
@@ -31,6 +29,8 @@ message ListVoxelsAroundPathsRequest {
     optional int64 start_time = 7;
     // 終了時刻 UnixTime
     optional int64 end_time = 8;
+    // 三次元空間の範囲指定変数
+    optional BoundingBox bounding_box = 9;
 }
 
 // ListVoxelsAroundPathResponse

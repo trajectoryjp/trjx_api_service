@@ -36,25 +36,27 @@ message Altitude {
 
 enum Standard {
     ALTITUDE_ATTR_UNSPECIFIED = 0 ;
-    RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
-    AGL = 2 ; // 地表面高度。
-    MSL = 3; // 海抜高度（標高）。
-    ELLIPSOIDE = 4 ;// 楕円球体高。default値。spank
+    // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+    RELATIVE= 1;
+    // 地表面高度。
+    AGL = 2;
+    // 海抜高度（標高）。
+    MSL = 3;
+    // 楕円球体高。default値。spank
+    ELLIPSOIDE = 4;
 }
 
 // XY座標
 message Coordinate {
     // 緯度
     double latitude = 1;
-
     // 経度
     double longitude = 2;
 }
 
-//ユーザ属性
+// ユーザ属性
 enum UserType{
     option deprecated = true;
-
     TYPE_UNSPECIFIED = 0;                       // 未設定
     TYPE_CAR = 2;                               // 車
     TYPE_SHIP = 3;                              // 船
@@ -82,28 +84,35 @@ enum MobilityType{
 
 }
 
-/*
- * 機体ID
- */
- message UavId {
+// 機体ID
+message UavId {
     oneof uav{
         string uav_id = 1;                  // 機体ID(文字列)
         string remote_id = 2;               // リモートID(文字列)
     }
 }
 
-/*
- * 検索Box
- */
+// 検索Box
+// -> BoundingBox へ順次移行することが決定した。[第096回(20250716)開発判定会議]
 message SearchBox {
-    bool has_value = 1;                     // メッセージの有効性(true/false)
-    Position min = 2;                       // 最小キー
-    Position max = 3;                       // 最大キー
+    // メッセージの有効性(true/false)
+    bool has_value = 1;
+    // 最小キー
+    Position min = 2;
+    // 最大キー
+    Position max = 3;
 }
 
-/*
- * オプショナルの時刻
- */
+// バウンディングボックス
+// 四角柱状の範囲指定のためのメッセージ
+message BoundingBox {
+    // 最小キー
+    Position min = 1;
+    // 最大キー
+    Position max = 2;
+}
+
+// オプショナルの時刻
 message TimeStamp {
     bool has_value = 1; // 値を持っているか否か。time_stampが無い場合はhas_value=falseです
     google.protobuf.Timestamp time_stamp = 2; // 時刻
