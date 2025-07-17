@@ -30,7 +30,7 @@ message ListVoxelsAroundPathsRequest {
     // 終了時刻 UnixTime
     optional int64 end_time = 8;
     // 三次元空間の範囲指定変数
-    optional BoundingBox bounding_box = 9;
+    optional trajectory.trjx_api_service.BoundingBox bounding_box = 9;
 }
 
 // ListVoxelsAroundPathResponse
