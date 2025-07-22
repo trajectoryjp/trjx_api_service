@@ -72,6 +72,8 @@ message ListVoxelsAroundPathsResponse {
             Path danger_path = 3;
             // 障害物に衝突してしまう位置
             trajectory.trjx_api_service.Position position = 2;
+            // 障害物の オブジェクトID:バリア型 の情報
+            map<string, string> barrier_types_by_id = 4;
         }
 
         // 経路が存在しないエラー
