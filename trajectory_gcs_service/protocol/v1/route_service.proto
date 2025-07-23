@@ -73,7 +73,16 @@ message ListVoxelsAroundPathsResponse {
             // 障害物に衝突してしまう位置
             trajectory.trjx_api_service.Position position = 2;
             // 障害物の オブジェクトID:バリア型 の情報
-            map<int64, string> barrier_types_by_id = 4;
+            map<int64, BarrierType> barrier_types_by_id = 4;
+        }
+
+        // 障害物の種類
+        enum BarrierType {
+            BARRIER_TYPE_UNKNOWN = 0;   // 不明 (デフォルト)
+            BARRIER_TYPE_PERMANENT = 1; // 永続的バリア
+            BARRIER_TYPE_TEMPORARY = 2; // 一時的バリア
+            BARRIER_TYPE_TERRAIN = 3;   // 地形バリア
+            BARRIER_TYPE_AIRWAY = 4;    // 航路バリア
         }
 
         // 経路が存在しないエラー
