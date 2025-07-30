@@ -25,6 +25,9 @@ message GetPermissionRequest {
 message GetPermissionResponse {
 
     // 処理結果
+    // 0:OK.  
+    // 1:Rejected.  
+    // 2:Timeout.  
     uint32 status = 1;
 
     oneof detail {
@@ -68,5 +71,10 @@ message GetPermissionStatusRequest {
 }
 
 message GetPermissionStatusResponse {
-    uint32 status = 1; // 処理結果
+    // 処理結果.  
+    // 0:UAVに対する権限を持っておらず（他のユーザーが持っている）、かつユーザーはオペレータ権限を持っている
+    // 1:UAVに対する権限を持っており、かつユーザーはオペレータ権限を持っている
+    // 2:UAVに対する権限を持っているが、ユーザーはオペレータ権限は持っていない
+    // 3:誰もUAVに対する権限を持っていらず、かつユーザーはオペレータ権限を持っている
+    uint32 status = 1;
 }
