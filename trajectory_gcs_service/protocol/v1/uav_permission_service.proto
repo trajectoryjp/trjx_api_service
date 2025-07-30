@@ -18,19 +18,14 @@ service UavPermissionService {
 }
 
 message GetPermissionRequest {
-    string uav_id = 1; // 機体ID
+    int64 uav_id = 1; // 機体ID
     string message = 2; // メッセージ
 }
 
 message GetPermissionResponse {
-    enum Status{
-        COMPLETE = 0; // 正常終了
-        REJECTED = 1; // 承認ユーザーからのreject
-        TIMEOUT = 2; // タイムアウト
-    }
 
     // 処理結果
-    Status status = 1;
+    uint32 status = 1;
 
     oneof detail {
         // 正常終了の場合のみ.  
@@ -50,21 +45,21 @@ message GetPermissionResponse {
 message ConfirmPermissionRequest {
     string message = 1; // 申請メッセージ
     bool acceptance = 2; // 承認/拒否
-    string request_user_id = 3; // 権限申請先ユーザー
-    string request_uav_id = 4; // 権限申請先UAV
+    string request_user_id = 3; // 申請したユーザー
+    int64 request_uav_id = 4; // 申請先のUAV
 }
 
 message ConfirmPermissionResponse {
-    int64 status = 1; // 処理結果　0:正常終了
+    uint32 status = 1; // 処理結果　1:正常終了
     string message = 2; // rejected or accepted
 }
 
 message DeletePermissionRequest {
-    string uav_id = 1; // 機体ID
+    int64 uav_id = 1; // 機体ID
 }
 
 message DeletePermissionResponse {
-    int64 status = 1; // 処理結果　0:正常終了
+    uint32 status = 1; // 処理結果　1:正常終了
     string message = 2; // ok
 }
 
@@ -73,12 +68,5 @@ message GetPermissionStatusRequest {
 }
 
 message GetPermissionStatusResponse {
-    enum Status{
-        HAS_NO_PERMISSION_AND_IS_OPERATOR = 0; // UAVに対する権限を持っておらず（他のユーザーが持っている）、かつユーザーはオペレータ権限を持っている
-        HAS_PERMISSION_AND_IS_OPERATOR = 1; // UAVに対する権限を持っており、かつユーザーはオペレータ権限を持っている
-        HAS_PERMISSION_AND_IS_NOT_OPERATOR = 2; // UAVに対する権限を持っているが、ユーザーはオペレータ権限は持っていない
-        NOBODY_HAS_PERMISSION_AND_IS_OPERATOR = 3; // 誰もUAVに対する権限を持っていらず、かつユーザーはオペレータ権限を持っている
-    }
-
-    Status status = 1; // 処理結果
+    uint32 status = 1; // 処理結果
 }
