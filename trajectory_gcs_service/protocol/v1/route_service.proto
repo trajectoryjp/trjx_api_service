@@ -78,13 +78,20 @@ message ListVoxelsAroundPathsResponse {
 
         // 障害物の種類 (AIP-126 により接頭辞無し)
         enum BarrierType {
-            UNSPECIFIED = 0; // 未指定 (デフォルト)
-            BARRIER = 1;     // 永続的バリア
-            TERRAIN = 2;     // 地形
-            AIRWAY = 3;      // 航路
-            TEMPORARY = 4;   // 一時的バリア
-            ROUTE = 5;       // ルートバリア
-            PORT = 6;        // ポート
+            // 未指定 (デフォルト)
+            UNSPECIFIED = 0;
+            // 永続的バリア
+            BARRIER = 1;
+            // 地形
+            TERRAIN = 2;
+            // 航路
+            AIRWAY = 3;
+            // 一時的バリア
+            TEMPORARY = 4;
+            // ルートバリア
+            ROUTE = 5;
+            // ポート
+            PORT = 6;
         }
 
         // 経路が存在しないエラー
