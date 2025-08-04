@@ -877,3 +877,8 @@ message TakingOffAndLandingUAVStatus {
      LANDING_STATUS_LANDING = 3; // 着陸中状態
     }
 }
+
+// ユーザID
+message UserID{
+    string user_id = 1; // ユーザID
+}
