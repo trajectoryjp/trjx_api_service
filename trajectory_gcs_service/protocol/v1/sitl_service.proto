@@ -8,64 +8,31 @@ import "google/protobuf/timestamp.proto";
 
 // Sitl service
 service SitlService {
-    // Register user to SITL in specified position
-    // 指定した位置のSITLにユーザーを登録
-    rpc RegisterSitl(RegisterSitlRequest) returns (RegisterSitlResponse);
-    // Subscribe to Sitl alerts stream
-    // SITLアラートのストリームを購読
-    rpc SubscribeToSitlAlerts(SubscribeToSitlAlertsRequest) returns (stream SitlAlert);
-    // Release user from SITL
-    // SITLからユーザーを解放
+    // SITLを開始し、SitlAlertイベントのストリームを返します
+    rpc StartSitl(StartSitlRequest) returns (stream SitlAlert);
+    // SITLを停止します
     rpc StopSitl(StopSitlRequest) returns (google.protobuf.Empty);
-    // List active Sitl instances
-    // アクティブなSITLインスタンスのリストを取得
-    rpc ListActiveSitls(google.protobuf.Empty) returns (ListActiveSitlsResponse);
+    // ユーザーの組織内のすべてのアクティブなSITLインスタンスを返します
+    rpc CheckSitl(CheckSitlRequest) returns (CheckSitlResponse);
 }
 
 
-// RegisterSitl's request 
-message RegisterSitlRequest {
+// StartSitlのrequest
+message StartSitlRequest {
     // UAVのID
     UAVID uav_id = 2;
     // UAVの位置
     Position position = 3;
 }
 
-// RegisterSitl's response
-message RegisterSitlResponse {
-    // 登録結果
-    Status status = 1;
-    
-    enum Status {
-        STATUS_UNSPECIFIED = 0; // 未指定
-        STATUS_START = 1; // 開始
-        STATUS_EXTEND = 2; // 拡張
-    }
-    
-}
-
-// SubscribeToSitlAlerts's request
-message SubscribeToSitlAlertsRequest {
-    // Organization ID
-    string organization_id = 1;
-    // User ID
-    UserID user_id = 2;
-}
-
-
-
 // Sitl alert event
 message SitlAlert {
-    // Sitl state
+    // sitlの状態
     SitlState state = 2;
-    // Sitl start time in seconds(at SITL_STATE_STARTING)
     // SITL_STATE_STARTINGのときのSITL開始時刻（秒単位）
     int64 time = 3;
-    // Associated user IDs
     // 関連するユーザーID
     repeated UserID users = 4;
-
-    // Sitl instance state
     // SITLインスタンスの状態
     enum SitlState {
             SITL_STATE_UNSPECIFIED = 0; // 未指定
@@ -74,28 +41,28 @@ message SitlAlert {
     }
 }
 
-// Stop Sitl request
+// StopSitlのrequest
 message StopSitlRequest {
-    // UAV ID
     // UAVのID
     UAVID uav_id = 1;
 }
 
-// Active Sitl instance
+// CheckSitlのrequest
+message CheckSitlRequest {}
+
+// アクティブなSITLインスタンス
 message ActiveSitl {
-    // User ID
     // ユーザーID
     UserID user_id = 1;
-    // Organization ID
     // 組織ID
     string organization_id = 2;
-    // UAV ID
     // UAVのID
     UAVID uav_id = 3;
 }
 
-// List active Sitls response
-message ListActiveSitlsResponse {
+
+// CheckSitlのresponse
+message CheckSitlResponse {
     // Active Sitl instances
     // アクティブなSITLインスタンスのリスト
     repeated ActiveSitl sitls = 1;
