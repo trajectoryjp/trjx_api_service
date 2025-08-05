@@ -5,7 +5,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 service UavPermissionService {
     // GetPermission: UAV操作に関わる権限をリクエストする（120秒後、自動的に権限が削除される）
-    rpc GetPermission(GetPermissionRequest) returns (GetPermissionResponse) {}
+    rpc GetPermission(GetPermissionRequest) returns (stream GetPermissionResponse) {}
 
     // ConfirmPermission: 他ユーザーに対するUAV操作権限付与の承認/拒否を行う
     rpc ConfirmPermission(ConfirmPermissionRequest) returns (ConfirmPermissionResponse) {}
@@ -22,7 +22,13 @@ message GetPermissionRequest {
     string message = 2; // メッセージ
 }
 
-message GetPermissionResponse {
+message GetPermissionNotification {
+    string user_id = 1; // 権限をリクエストしたユーザーID
+	int64 uav_id = 2; // 権限がリクエストされた機体ID
+	string message = 3; // 権限リクエスト時のメッセージ
+}
+
+message GetPermissionResult {
 
     // 処理結果
     // 0:OK.  
@@ -32,9 +38,9 @@ message GetPermissionResponse {
 
     oneof detail {
         // 正常終了の場合のみ.  
-        // 　既に権限を持っており、かつ権限の延長に成功:uav permission extended.  
-        // 　権限の延長に失敗:user already have permission, extend time failed.  
-        // 　権限を持っておらず、かつ他のユーザーが権限を持っていた場合:{申請ユーザーのuser_id}:{message}の形式.  
+        //   既に権限を持っており、かつ権限の延長に成功:uav permission extended.  
+        //   権限の延長に失敗:user already have permission, extend time failed.  
+        //   権限を持っておらず、かつ他のユーザーが権限を持っていた場合:{申請ユーザーのuser_id}:{message}の形式.  
         string message = 2;
 
         // Rejected・Timeoutの場合のみ.  
@@ -42,7 +48,13 @@ message GetPermissionResponse {
         // Timeoutの場合、時間内に承認を行わなかったユーザー.  
         string user = 3;
     }
-    
+}
+
+message GetPermissionResponse {
+    oneof message_type {
+        GetPermissionNotification notification = 1; // 権限リクエストの通知
+        GetPermissionResult result = 2; //権限のリクエスト結果
+    }
 }
 
 message ConfirmPermissionRequest {
@@ -53,7 +65,7 @@ message ConfirmPermissionRequest {
 }
 
 message ConfirmPermissionResponse {
-    uint32 status = 1; // 処理結果　1:正常終了
+    uint32 status = 1; // 処理結果 1:正常終了
     string message = 2; // rejected or accepted
 }
 
