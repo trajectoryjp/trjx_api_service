@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+service UavPermissionService {
+    // GetPermissionStatus: 特定UAVに対する現在の操作権限状況を取得する
+    rpc GetPermissionStatus(GetPermissionStatusRequest) returns (GetPermissionStatusResponse) {}
+}
+
+
+message GetPermissionStatusRequest {
+    string uav_id = 1;// 機体ID
+}
+
+message GetPermissionStatusResponse {
+    // 処理結果.  
+    // 0:UAVに対する権限を持っておらず（他のユーザーが持っている）、かつユーザーはオペレータ権限を持っている.  
+    // 1:UAVに対する権限を持っており、かつユーザーはオペレータ権限を持っている.  
+    // 2:UAVに対する権限を持っているが、ユーザーはオペレータ権限は持っていない.  
+    // 3:誰もUAVに対する権限を持っていらず、かつユーザーはオペレータ権限を持っている.  
+    uint32 status = 1;
+}
