@@ -80,18 +80,24 @@ message ListVoxelsAroundPathsResponse {
         enum BarrierType {
             // 未指定 (デフォルト)
             UNSPECIFIED = 0;
+            // 禁止空域、制限空域、訓練等空域、一時制限空域
+            RESTRICTED_AREA = 1;
+            // 最高高度以上の空域
+            ABOVE_MAX_ALTITUDE = 2;
+            // 最低高度以下の空域
+            BELOW_MIN_ALTITUDE = 3;
             // 永続的バリア
-            BARRIER = 1;
-            // 地形
-            TERRAIN = 2;
-            // 航路
-            AIRWAY = 3;
+            PERMANENT_BARRIER = 4;
             // 一時的バリア
-            TEMPORARY = 4;
-            // ルートバリア
-            ROUTE = 5;
+            TEMPORARY_BARRIER = 5;
+            // 地形
+            TERRAIN = 6;
+            // 航路
+            UASL = 7;
+            // ルート
+            ROUTE = 8;
             // ポート
-            PORT = 6;
+            PORT = 9;
         }
 
         // 経路が存在しないエラー
