@@ -58,16 +58,16 @@ service UavControlService {
     // アクセス権限: operator　且つ UavPermissionの取得
     rpc CancelReroute(CancelRerouteRequest) returns (CancelRerouteResponse){}
 
-    // RTL(Return To Launch)させる
+    // Rtl(Return To Launch)させる
     // アクセス権限: operator　且つ UavPermissionの取得
-    rpc RTL(RTLRequest) returns (RTLResponse){}
+    rpc Rtl(RtlRequest) returns (RtlResponse){}
 
-    // ルートを計算してRTLさせる
+    // ルートを計算してRtlさせる
     // アクセス権限: operator　且つ UavPermissionの取得
-    rpc SafeRTL(SafeRTLRequest) returns (stream SafeRTLResponse){}
+    rpc SafeRtl(SafeRtlRequest) returns (stream SafeRtlResponse){}
 
     // UAV状態構造とその状態
-    // アクセス権限: operator　且つ UavPermissionの取得
+    // アクセス権限: operator
     rpc StatusView(StatusViewRequest) returns (StatusViewResponse) {}
 }
 
@@ -141,8 +141,8 @@ message ExecuteMissionResponse {
         51:ErrorFlightPathStrataConfig
         52:ErrorFlightPathNotFoundArea
         53:ErrorFlightPathNotFoundModel
-        54:ErrorFlightPathOutofArea
-        55:ErrorFlightPathIlligalPositoin
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
         60:ErrorCommunicationFC FCとの通信エラー
         50:ErrorFlightPathUnknown
     */
@@ -288,8 +288,8 @@ message UpdateMissionAtFlyingResponse{
         51:ErrorFlightPathStrataConfig
         52:ErrorFlightPathNotFoundArea
         53:ErrorFlightPathNotFoundModel
-        54:ErrorFlightPathOutofArea
-        55:ErrorFlightPathIlligalPositoin
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
         50:ErrorFlightPathUnknown
         99:InternalError
     */
@@ -321,8 +321,8 @@ message RedesignResponse{
         51:ErrorFlightPathStrataConfig
         52:ErrorFlightPathNotFoundArea
         53:ErrorFlightPathNotFoundModel
-        54:ErrorFlightPathOutofArea
-        55:ErrorFlightPathIlligalPositoin
+        54:ErrorFlightPathOutOfArea/IllegalPosition
+        55:ErrorFlightPathIllegalPosition
         50:ErrorFlightPathUnknown
         99:InternalError
     */
@@ -365,8 +365,8 @@ message RerouteResponse{
         51:ErrorFlightPathStrataConfig
         52:ErrorFlightPathNotFoundArea
         53:ErrorFlightPathNotFoundModel
-        54:ErrorFlightPathOutofArea
-        55:ErrorFlightPathIlligalPositoin
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
         50:ErrorFlightPathUnknown
         99:InternalError
     */
@@ -384,19 +384,19 @@ message CancelRerouteResponse{
     UAVControllerResult result = 1;  // 処理結果
 }
  
-message RTLRequest{
+message RtlRequest{
     string uav_id = 1;
 }
 
-message RTLResponse{
+message RtlResponse{
     UAVControllerResult result = 1;  // 処理結果
 }
 
-message SafeRTLRequest{
+message SafeRtlRequest{
     string uav_id = 1;
 }
 
-message SafeRTLResponse{
+message SafeRtlResponse{
     string event = 1; // safe_rtlUav_{aircraftID}
     ReroutingResponse reroutingResult = 2;
 }
@@ -431,7 +431,7 @@ message StatusViewResponse{
                     3:YellowBlink 注意状態（運用に注意）。処理実行中。
                     2:Orange 危険状態（回復策を実施）
                     1:Red 緊急状態（緊急対処を実施）
-                    99:None Singnalパラメータ無効（変化なし）
+                    99:None Signalパラメータ無効（変化なし）
                 */
                 uint32 Signal = 2;
                 /*
@@ -506,7 +506,7 @@ message StatusViewResponse{
                 3:YellowBlink 注意状態（運用に注意）。処理実行中。
                 2:Orange 危険状態（回復策を実施）
                 1:Red 緊急状態（緊急対処を実施）
-                99:None Singnalパラメータ無効（変化なし）
+                99:None Signalパラメータ無効（変化なし）
             */
             uint32 Signal = 1 ;
             string Message = 2;
@@ -531,7 +531,7 @@ message ExecuteError {
 
     /*
         0:ExecuteErrorDef_Unknown 
-        1:ExecuteErrorDef_OutofArea (this time,result = 1)
+        1:ExecuteErrorDef_OutOfArea (this time,result = 1)
         2:ExecuteErrorDef_ProhibitedPoint (this time,result = 1)
         3:ExecuteErrorDef_Collision 複数機競合（他の機体を避けるルートが設定できない）(this time,result = 1)
         4:ExecuteErrorDef_CollisionInFlight 飛行中の他機衝突警報
@@ -557,7 +557,7 @@ message UAVFlightStatus {
         2:Pause
         3:Manual
         4:Auto
-        5:RTL(safeRTL, when drone returns during flight)
+        5:Rtl(safeRtl, when drone returns during flight)
     */
     uint32 Mode =2; 
     string Message = 3;
@@ -573,7 +573,7 @@ message UAVConnectionStatusDetail {
         3:YellowBlink 注意状態（運用に注意）。処理実行中。
         2:Orange 危険状態（回復策を実施）
         1:Red 緊急状態（緊急対処を実施）
-        99:None Singnalパラメータ無効（変化なし）
+        99:None Signalパラメータ無効（変化なし）
     */
     uint32 signal = 1; // 状態
     /*
@@ -609,7 +609,7 @@ message UAVPositionStatusDetail {
         3:YellowBlink 注意状態（運用に注意）。処理実行中。
         2:Orange 危険状態（回復策を実施）
         1:Red 緊急状態（緊急対処を実施）
-        99:None Singnalパラメータ無効（変化なし）
+        99:None Signalパラメータ無効（変化なし）
     */
     uint32 signal = 1;
     /*
@@ -638,7 +638,7 @@ message UAVSystemStatusDetail {
         3:YellowBlink 注意状態（運用に注意）。処理実行中。
         2:Orange 危険状態（回復策を実施）
         1:Red 緊急状態（緊急対処を実施）
-        99:None Singnalパラメータ無効（変化なし）
+        99:None Signalパラメータ無効（変化なし）
     */
     uint32 signal = 1;
 
@@ -706,7 +706,7 @@ message UAVCommunicationStatusDetail {
         3:YellowBlink 注意状態（運用に注意）。処理実行中。
         2:Orange 危険状態（回復策を実施）
         1:Red 緊急状態（緊急対処を実施）
-        99:None Singnalパラメータ無効（変化なし）
+        99:None Signalパラメータ無効（変化なし）
     */
     uint32 signal = 1;
     /*
@@ -734,7 +734,7 @@ message UAVMissionStatusDetail {
         3:YellowBlink 注意状態（運用に注意）。処理実行中。
         2:Orange 危険状態（回復策を実施）
         1:Red 緊急状態（緊急対処を実施）
-        99:None Singnalパラメータ無効（変化なし）
+        99:None Signalパラメータ無効（変化なし）
     */
     uint32 signal = 1;
 
@@ -774,8 +774,8 @@ message ReroutingResponse{
         51:ErrorFlightPathStrataConfig
         52:ErrorFlightPathNotFoundArea
         53:ErrorFlightPathNotFoundModel
-        54:ErrorFlightPathOutofArea
-        55:ErrorFlightPathIlligalPositoin
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
         50:ErrorFlightPathUnknown
         99:InternalError
     */
