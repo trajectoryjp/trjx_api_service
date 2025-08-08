@@ -381,7 +381,21 @@ message CancelRerouteRequest{
 }
 
 message CancelRerouteResponse{
-    UAVControllerResult result = 1;  // 処理結果
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
 }
  
 message RtlRequest{
@@ -389,7 +403,21 @@ message RtlRequest{
 }
 
 message RtlResponse{
-    UAVControllerResult result = 1;  // 処理結果
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
 }
 
 message SafeRtlRequest{
