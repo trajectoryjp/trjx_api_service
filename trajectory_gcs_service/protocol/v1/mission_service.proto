@@ -176,6 +176,7 @@ message ConvertMissionFormatResponse {
 
 message GetCurrentMissionRequest {
     string uav_id =1;
+    int32 project_id =2; 
 }
 
 message GetCurrentMissionResponse {
@@ -209,16 +210,21 @@ message GetCurrentMissionResponse {
         // 高度
         float altitude = 4;
     }
-
-    Position nextWaypoint = 3 ; // missionController.proto TR_DEV-959
+    Position nextWaypoint = 3 ;
     float distance = 4 ; // nextWaypointまでの距離
     float direction = 5 ; // nextWaypointまでの方位（度）
-    int32 estimatedBatteryRemaining = 10 ; // TR_DEV-168
-    int32 ETE = 11 ; // Estimated Time En-Route nextWaypointへの到達予想時間(秒）　TR_DEV-959
-    int32 ETA = 12 ; // Estimated Time Arrival 到着予想時間（秒） TR_DEV-959
-    int32 totalTime = 13 ; // 飛行経過時間（秒） TR_DEV-959
+    int32 estimatedBatteryRemaining = 10 ;
+    int32 ETE = 11 ; // Estimated Time En-Route nextWaypointへの到達予想時間(秒）
+    int32 ETA = 12 ; // Estimated Time Arrival 到着予想時間（秒） 
+    int32 totalTime = 13 ; // 飛行経過時間（秒）
     
-    //optional WaypointSpaceAttribute space_attribute = 14 ; // 航路内か否か RM#6003（WPのみ有効）
+    enum WaypointSpaceAttribute {
+        // 航路不使用時
+        FREE_SPACE = 0 ;
+        // 航路使用時に設定
+        AIRWAY = 1 ;
+    }
+    optional WaypointSpaceAttribute space_attribute = 14 ; // 航路内か否か （WPのみ有効）
 }
 
 message GetAutopilotStatusRequest {
