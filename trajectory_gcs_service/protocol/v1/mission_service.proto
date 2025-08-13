@@ -252,14 +252,6 @@ message GetAutopilotStatusResponse {
     uint32 Mode=3;
     int32 BasicModeNum =4;
     int32 CustomModeNum =5;
-    enum AutoPilotType {
-        UnknownType = 0 ;
-        APM = 1 ;
-        PX4 = 2 ;
-        Generic = 3 ;
-        OtherType = 4 ;
-        PX4HITL = 10 ;
-    }
     /*
       AutoPilotType
       0:UnknownType,
@@ -269,7 +261,7 @@ message GetAutopilotStatusResponse {
       4:OtherType,
       10:PX4HITL,
     */
-    AutoPilotType Type = 6;
+    uint32 Type = 6;
     int64 Time = 7 ; // UNIX time(sec)
 }
 
