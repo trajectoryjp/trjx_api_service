@@ -28,17 +28,8 @@ service MissionService {
     // ListMissionIDRecords: ミッションIDのリスト取得
     rpc ListMissionIDRecords(ListMissionIDRecordsRequest) returns (ListMissionIDRecordsResponse) {}
 
-    // 機体にアサイン荒れているミッションを取得
-    rpc GetAssignedMissionsList(GetAssignedMissionsListRequest) returns (GetAssignedMissionsListResponse){}
-
     // ミッションの表現形式を変換する
     rpc ConvertMissionFormat(ConvertMissionFormatRequest)returns (ConvertMissionFormatResponse){}
-
-    // 現在実行中のミッション（次のWaypoint）を取得する
-    rpc GetCurrentMission(GetCurrentMissionRequest) returns (stream GetCurrentMissionResponse){}
-
-    // Autopilot(FC)状態を取得する
-    rpc GetAutopilotStatus(GetAutopilotStatusRequest) returns (GetAutopilotStatusResponse){}
 }
 
 message CreateMissionRequest { 
@@ -110,27 +101,15 @@ message Timestamps {
 }
 
 
-message GetAssignedMissionsListRequest {
-    string uav_id =1;
-}
-
-message GetAssignedMissionsListResponse {
-    string uav_id =1 ;
-    Mission mission = 2;
-    UAVControllerResult result =3;
-}
-
 message ConvertMissionFormatRequest {
-    string uav_id = 1;
- }
-message ConvertMissionFormatResponse {
     Mission mission =1;
     string uav_id = 2;
-    oneof selectOutput { 
+
+    oneof selectOutput {
         LitchiFormatSt litchiFormat = 4 ; // 出力は相対高度 Litchi形式の場合は、高度はMSLまたは楕円球体高を指定すること。機首方向パラメータは未サポート。
         MavlinkFormatSt mavlinkFormat = 5 ;
     }
-   
+
     message LitchiFormatSt {
         // MissionはAGL不可
         oneof baseAltitude {
@@ -140,8 +119,7 @@ message ConvertMissionFormatResponse {
         }
     }
 
-    message MavlinkFormatSt { // TR_DEV-1082
-       
+    message MavlinkFormatSt {
         /*
           0:Ellipsoid
           1:Relative
@@ -150,8 +128,8 @@ message ConvertMissionFormatResponse {
         */
         uint32 outputAltitude = 1 ;
         oneof baseAltitude { // outputAltitudeがRelative の場合のみ有効
-            int32 missionItemNumber = 2 ; // 指定したWPの位置を基準 
-            AltitudeSt altitude = 3 ; // 基準高度 
+            int32 missionItemNumber = 2 ; // 指定したWPの位置を基準
+            AltitudeSt altitude = 3 ; // 基準高度
             DifferentialPointSt differentialPoint = 4 ; // 指定WPのAGLを指定する。MissionItemはAGL不可。
         }
     }
@@ -165,7 +143,7 @@ message ConvertMissionFormatResponse {
           3:MSL
         */
         uint32 attr = 1 ;
-        float altitude = 2 ; // TR_DEV-1086
+        float altitude = 2 ;
     }
 
     message DifferentialPointSt {
@@ -174,110 +152,18 @@ message ConvertMissionFormatResponse {
     }
 }
 
-message GetCurrentMissionRequest {
-    string uav_id =1;
-    int32 project_id =2; 
-}
-
-message GetCurrentMissionResponse {
-    string tag = 1; // 実行中ミッション名
-    string name = 6; 
+message ConvertMissionFormatResponse {
+    bool result = 1 ;
+    string status = 2 ;
     /*
-      通知種別
-      0:Unknown,
-      1:REACHED,
-      2:CURRENT,
-      3:IDLE
+      0:TrjxFormat,
+      1:LitchiFormat,
+      2:MavlinkFormat,
     */
-    uint32 attr= 2;
-    // 収集時刻（タイムスタンプ）。未実装
-    string time = 9; 
-
-    message Position {
-        /*
-        　高度属性
-          0:Ellipsoid,
-          1:Relative,
-          2:AGL,
-          3:MSL
-        */
-        uint32 altitudeAttr = 1; // TR_DEV-1047
-    
-        // 緯度
-        double latitude = 2;
-        // 経度
-        double longitude = 3;
-        // 高度
-        float altitude = 4;
+    uint32 attr = 3 ;
+    oneof MissionFormat { // output file format
+        Mission Trjx = 4 ;
+        string Csv = 5 ;
+        string JsonMission = 6 ; // .mission拡張子(mavlink)
     }
-    Position nextWaypoint = 3 ;
-    float distance = 4 ; // nextWaypointまでの距離
-    float direction = 5 ; // nextWaypointまでの方位（度）
-    int32 estimatedBatteryRemaining = 10 ;
-    int32 ETE = 11 ; // Estimated Time En-Route nextWaypointへの到達予想時間(秒）
-    int32 ETA = 12 ; // Estimated Time Arrival 到着予想時間（秒） 
-    int32 totalTime = 13 ; // 飛行経過時間（秒）
-    
-    enum WaypointSpaceAttribute {
-        // 航路不使用時
-        FREE_SPACE = 0 ;
-        // 航路使用時に設定
-        AIRWAY = 1 ;
-    }
-    optional WaypointSpaceAttribute space_attribute = 14 ; // 航路内か否か （WPのみ有効）
-}
-
-message GetAutopilotStatusRequest {
-    string uav_id =1;
-}
-message GetAutopilotStatusResponse {
-    bool Status = 1 ; // データ取得できていればtrue
-    /*
-      0:UnknownArm,
-      1:Arm,
-      2:Disarm
-    */
-    uint32 ArmDisarm=2 ;
-    /*
-      AutoPilotMode
-      0:UnknownMode,
-      1:Stabilize,
-      2:Guided,
-      3:Auto,
-      4:Pause,
-      5:Land,
-      6:Rtl,
-      20:OtherMode,
-    */
-    uint32 Mode=3;
-    int32 BasicModeNum =4;
-    int32 CustomModeNum =5;
-    /*
-      AutoPilotType
-      0:UnknownType,
-      1:APM,
-      2:PX4,
-      3:Generic,
-      4:OtherType,
-      10:PX4HITL,
-    */
-    uint32 Type = 6;
-    int64 Time = 7 ; // UNIX time(sec)
-}
-
-message UAVControllerResult {
-    /*
-        0:Unknown
-        1:End(経過の終了(経過表示の場合のみ))
-        2:Complete(完了)
-        3:Error
-        4:Continue
-        5:NotEnough
-        6:ParameterError
-        7:NoExist
-        8:UnRegister
-        13:UnStable
-    */
-    uint32 status = 1;
-    string detail = 2;
 }

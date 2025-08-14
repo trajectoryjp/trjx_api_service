@@ -69,6 +69,18 @@ service UavControlService {
     // UAV状態構造とその状態
     // アクセス権限: operator
     rpc StatusView(StatusViewRequest) returns (StatusViewResponse) {}
+
+    // 機体にアサインされているミッションを取得
+    // アクセス権限: operator
+    rpc GetAssignedMission(GetAssignedMissionRequest) returns (GetAssignedMissionResponse){}
+
+    // 現在実行中のミッション（次のWaypoint）を取得する
+    // アクセス権限: operator
+    rpc GetCurrentMissionItem(GetCurrentMissionItemRequest) returns (stream GetCurrentMissionItemResponse){}
+
+    // Autopilot(FC)状態を取得する
+    // アクセス権限: operator
+    rpc GetAutopilotStatus(GetAutopilotStatusRequest) returns (GetAutopilotStatusResponse){}
 }
 
 
@@ -547,6 +559,110 @@ message StatusViewResponse{
             bool state = 1 ; // 情報の有効性
             int64 time = 2 ; // Stateが遷移した時刻
         }
+}
+
+
+message GetAssignedMissionRequest {
+    string uav_id =1;
+}
+
+message GetAssignedMissionResponse {
+    string uav_id =1 ;
+    Mission mission = 2;
+    UAVControllerResult result =3;
+}
+
+
+message GetCurrentMissionItemRequest {
+    string uav_id =1;
+    int32 project_id =2;
+}
+
+message GetCurrentMissionItemResponse {
+    string tag = 1; // 実行中ミッション名
+    string name = 6;
+    /*
+      通知種別
+      0:Unknown,
+      1:REACHED,
+      2:CURRENT,
+      3:IDLE
+    */
+    uint32 attr= 2;
+    // 収集時刻（タイムスタンプ）。未実装
+    string time = 9; 
+
+    message Position {
+        /*
+        　高度属性
+          0:Ellipsoid,
+          1:Relative,
+          2:AGL,
+          3:MSL
+        */
+        uint32 altitudeAttr = 1; // TR_DEV-1047
+    
+        // 緯度
+        double latitude = 2;
+        // 経度
+        double longitude = 3;
+        // 高度
+        float altitude = 4;
+    }
+    Position nextWaypoint = 3 ;
+    float distance = 4 ; // nextWaypointまでの距離
+    float direction = 5 ; // nextWaypointまでの方位（度）
+    int32 estimatedBatteryRemaining = 10 ;
+    int32 ETE = 11 ; // Estimated Time En-Route nextWaypointへの到達予想時間(秒）
+    int32 ETA = 12 ; // Estimated Time Arrival 到着予想時間（秒） 
+    int32 totalTime = 13 ; // 飛行経過時間（秒）
+    
+    enum WaypointSpaceAttribute {
+        // 航路不使用時
+        FREE_SPACE = 0 ;
+        // 航路使用時に設定
+        AIRWAY = 1 ;
+    }
+    optional WaypointSpaceAttribute space_attribute = 14 ; // 航路内か否か （WPのみ有効）
+}
+
+message GetAutopilotStatusRequest {
+    string uav_id =1;
+}
+
+message GetAutopilotStatusResponse {
+    bool Status = 1 ; // データ取得できていればtrue
+    /*
+      0:UnknownArm,
+      1:Arm,
+      2:Disarm
+    */
+    uint32 ArmDisarm=2 ;
+    /*
+      AutoPilotMode
+      0:UnknownMode,
+      1:Stabilize,
+      2:Guided,
+      3:Auto,
+      4:Pause,
+      5:Land,
+      6:Rtl,
+      20:OtherMode,
+    */
+    uint32 Mode=3;
+    int32 BasicModeNum =4;
+    int32 CustomModeNum =5;
+    /*
+      AutoPilotType
+      0:UnknownType,
+      1:APM,
+      2:PX4,
+      3:Generic,
+      4:OtherType,
+      10:PX4HITL,
+    */
+    uint32 Type = 6;
+    int64 Time = 7 ; // UNIX time(sec)
 }
 
 message ExecuteError {
