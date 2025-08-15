@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+service ThreeDimensionalObjectService {
+    // MakeModel : Get Solid Model[O/R]
+    rpc ListSolidModel(ListSolidModelRequest) returns (ListSolidModelResponse);
+
+    // MakeModel : Receive Solid Model [O/R]
+    // 未実装のため削除
+
+    // HACK: 仕様維持のため、CreateとUpdateに分解せず1つのAPIで提供
+    // MakeModel : Upload Solid Model[O]
+    rpc UploadSolidModel(UploadSolidModelRequest) returns (UploadSolidModelResponse);
+
+    // MakeModel : Delete Solid Model[O]
+    rpc DeleteSolidModel(DeleteSolidModelRequest) returns (DeleteSolidModelResponse);
+
+    // RS : Get 3DObjects List [O/R]
+    // deprecatedのため削除
+
+    // TODO: 必要になった際に実装
+    // HACK: ファイルサイズが大きい場合を考慮して、Streamにすべき
+    // NEW RS: Get GLTF 3DObject[O/R]
+    // rpc GetGlTF(GetGlTFRequest) returns (GetGlTFResponse);
+
+    // TODO: 必要になった際に実装
+    // RS : Get 3D models list [R/O]
+    // rpc ListGlTF(ListGlTFRequest) returns (ListGlTFResponse);
+}
+
+message ListSolidModelRequest {
+    // プロジェクトID
+    int32 project_id = 1;
+
+    // 高度属性
+    // Ellipsoid = 0 (楕円球体高)
+    // Relative = 1 (離陸地点を基準とする相対高度)
+    // AGL = 2 (地表面高度)
+    // MSL = 3 (海抜高度。デフォルト値)
+    // NOTE: enumだとstringになりBEの仕様が維持できなくなるため、uint32で定義
+    // HACK: enumにする時に、resourceに移動する
+    // HACK: Relativeを指定できないようにする
+    uint32 altitude_attr = 2;
+}
+
+message ListSolidModelResponse {
+    message Data {
+        // 3DモデルID
+        int64 id = 1; // HACK: object_id
+
+        // 名称
+        string name = 2;
+
+        // KMLデータ
+        string kml = 3;
+
+        // 3Dモデルデータ
+        SolidModel data = 4;
+
+        // NOTE: 狭域廃止のため、削除
+        // transactions
+
+        // HACK: SolidModel情報に含まれているため、将来的には不要
+        string model_type = 5;
+
+        // プロジェクトID
+        int32 project_id = 6;
+    }
+
+    repeated Data data = 1;
+}
+
+message UploadSolidModelRequest {
+    // 3DモデルID
+    // 作成時は設定せず、更新時のみ設定する
+    optional int64 models_id = 1;  // HACK: object_id
+
+    // 名称
+    optional string name = 2;
+
+    // ソリッドモデル
+    SolidModel solid_model = 3;
+
+    // 説明
+    optional string description = 4;
+
+    // プロジェクトID
+    int32 project_id = 5;
+
+    // NOTE: 狭域廃止のため、削除
+    // transaction_attr
+}
+
+message UploadSolidModelResponse {
+    // 3DモデルID
+    int64 id = 1; // HACK: object_id
+}
+
+message DeleteSolidModelRequest {
+    // 3DモデルID
+    string models_id = 1; // HACK: object_id
+}
+
+message DeleteSolidModelResponse {
+    // ステータス
+    // 成功時に"ok"を返す
+    string status = 1;
+}
+
+// message GetGlTFRequest {
+//     // ユーザID
+//     string user_id = 1;
+
+//     // 3DモデルID
+//     int64 models_id = 2; // HACK: object_id
+// }
+
+// message GetGlTFResponse {
+//     message Data {
+//         // glTF形式
+//         string gltf = 1;
+//     }
+
+//     Data data = 1;
+// }
+
+// message ListGlTFRequest {
+//     // ユーザID
+//     string user_id = 1;
+
+//     // プロジェクトID
+//     int32 project_id = 2;
+// }
+
+// message ListGlTFResponse {
+//     message Data {
+//         // 名称
+//         string name = 1;
+
+//         // 3DモデルID
+//         int64 id = 2; // HACK: object_id
+
+//         // 基準点
+//         Position position = 3;
+//     }
+
+//     repeated Data data = 1;
+
+//     // 飛行エリアを含む
+//     bool area_exist = 2;
+
+//     // 飛行禁止エリアを含む
+//     bool deny_exist = 3;
+
+//     // DEMグリッドを含む
+//     bool grid_exist = 4;
+
+//     // 障害物（3Dモデル）を含む
+//     bool model_exist = 5;
+
+//     // プロジェクト基準点を含む
+//     bool point_exist = 6;
+// }
