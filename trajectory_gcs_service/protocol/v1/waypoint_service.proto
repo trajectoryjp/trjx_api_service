@@ -35,7 +35,10 @@ message CheckWaypointRequest {
         // transaction_attr
 
         // プロジェクトID
-        int32 project_id = 6;
+        // HACK: repeatedの外に出すべき
+        optional int32 project_id = 6;
+
+        // HACK クリアランスを指定できるようにする
     }
 
     repeated Waypoint waypoints = 1;
@@ -49,6 +52,7 @@ message CheckWaypointResponse {
         // NOTE: Deprecatedのため削除
         // result
 
+        // リザルトメッセージ
         string message = 2;
 
         // NOTE: Deprecatedのため削除
