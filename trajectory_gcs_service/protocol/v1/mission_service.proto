@@ -27,6 +27,9 @@ service MissionService {
 
     // ListMissionIDRecords: ミッションIDのリスト取得
     rpc ListMissionIDRecords(ListMissionIDRecordsRequest) returns (ListMissionIDRecordsResponse) {}
+
+    // ミッションの表現形式を変換する
+    rpc ConvertMissionFormat(ConvertMissionFormatRequest)returns (ConvertMissionFormatResponse){}
 }
 
 message CreateMissionRequest { 
@@ -95,4 +98,72 @@ message Timestamps {
     google.protobuf.Timestamp create_time = 1;
     // 更新日時
     google.protobuf.Timestamp update_time = 2;
+}
+
+
+message ConvertMissionFormatRequest {
+    Mission mission =1;
+    string uav_id = 2;
+
+    oneof selectOutput {
+        LitchiFormatSt litchiFormat = 4 ; // 出力は相対高度 Litchi形式の場合は、高度はMSLまたは楕円球体高を指定すること。機首方向パラメータは未サポート。
+        MavlinkFormatSt mavlinkFormat = 5 ;
+    }
+
+    message LitchiFormatSt {
+        // MissionはAGL不可
+        oneof baseAltitude {
+            int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー、itemsのキー（非優先）でDEPRECATED）
+            AltitudeSt altitude = 2 ; // 基準高度
+            DifferentialPointSt differentialPoint = 3 ; // 指定WPのAGLを指定する。MissionItemはAGL不可。
+        }
+    }
+
+    message MavlinkFormatSt {
+        /*
+          0:Ellipsoid
+          1:Relative
+          2:AGL
+          3:MSL
+        */
+        uint32 outputAltitude = 1 ;
+        oneof baseAltitude { // outputAltitudeがRelative の場合のみ有効
+            int32 missionItemNumber = 2 ; // 指定したWPの位置を基準
+            AltitudeSt altitude = 3 ; // 基準高度
+            DifferentialPointSt differentialPoint = 4 ; // 指定WPのAGLを指定する。MissionItemはAGL不可。
+        }
+    }
+
+
+    message AltitudeSt {
+        /*
+          0:Ellipsoid
+          1:Relative
+          2:AGL
+          3:MSL
+        */
+        uint32 attr = 1 ;
+        float altitude = 2 ;
+    }
+
+    message DifferentialPointSt {
+        int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー、itemsのキー（非優先）でDEPRECATED）
+        float agl = 2 ; // missionItemNumberで指定したWPの地上高
+    }
+}
+
+message ConvertMissionFormatResponse {
+    bool result = 1 ;
+    string status = 2 ;
+    /*
+      0:TrjxFormat,
+      1:LitchiFormat,
+      2:MavlinkFormat,
+    */
+    uint32 attr = 3 ;
+    oneof MissionFormat { // output file format
+        Mission Trjx = 4 ;
+        string Csv = 5 ;
+        string JsonMission = 6 ; // .mission拡張子(mavlink)
+    }
 }
