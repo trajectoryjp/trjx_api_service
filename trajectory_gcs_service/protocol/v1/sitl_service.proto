@@ -8,11 +8,18 @@ import "google/protobuf/timestamp.proto";
 
 // Sitl service
 service SitlService {
-    // SITLを開始し、SitlAlertイベントのストリームを返します
-    rpc StartSitl(StartSitlRequest) returns (stream SitlAlert);
+    // SITLを開始し, SITLの延長をする
+    // SITLの権限を持っている必要があります
+    rpc StartSitl(StartSitlRequest) returns (StartSitlResponse);
+    // SITLアラートの購読を開始します
+    // UAVIDを指定しない場合、組織内のすべてのアラートを受信します。
+    // SITLの権限を持っている必要はありません, 組織内のすべてのユーザーが購読できます
+    rpc SubscribeToSitlAlerts(SubscribeToSitlAlertsRequest) returns (stream SitlAlert);
     // SITLを停止します
-    rpc StopSitl(StopSitlRequest) returns (google.protobuf.Empty);
+    // SITLの権限を持っている必要があります
+    rpc StopSitl(StopSitlRequest) returns (StopSitlResponse);
     // ユーザーの組織内のすべてのアクティブなSITLインスタンスを返します
+    // SITLの権限を持っている必要があります
     rpc CheckSitl(CheckSitlRequest) returns (CheckSitlResponse);
 }
 
@@ -20,31 +27,47 @@ service SitlService {
 // StartSitlのrequest
 message StartSitlRequest {
     // UAVのID
-    UAVID uav_id = 2;
+    int32 uav_id = 1;
     // UAVの位置
-    Position position = 3;
+    Position position = 2;
+}
+
+message StartSitlResponse {
+    // StartSitl ステータス
+    // 1 = 開始
+    // 2 = 拡張
+    int32 status = 1;
+}
+
+// SubscribeToSitlAlertsのrequest
+message SubscribeToSitlAlertsRequest {
+    // UAVID指定しない場合、組織内のすべてのアラートを受信します。
+    // UAVのID
+    optional int32 uav_id = 1; 
 }
 
 // Sitl alert event
 message SitlAlert {
-    // sitlの状態
-    SitlState state = 2;
-    // SITL_STATE_STARTINGのときのSITL開始時刻（秒単位）
+    // UAVのID
+    int32 uav_id = 1;
+    // SITLアラートの状態
+    // 1 = 有効期限の警告。SITLは指定された時刻に停止します。
+    // 2 = 有効期限切れ。SITLは停止しました。
+    int32 state = 2;
+    // SITLの有効期限が切れる時刻（（秒単位で）
+    // stateが1（有効期限の警告）の場合にのみ意味を持ちます。
     int64 time = 3;
-    // 関連するユーザーID
-    repeated UserID users = 4;
-    // SITLインスタンスの状態
-    enum SitlState {
-            SITL_STATE_UNSPECIFIED = 0; // 未指定
-            SITL_STATE_STARTING = 1; // SITLが起動中
-            SITL_STATE_ACTIVE = 2; // SITLがアクティブ
-    }
 }
 
 // StopSitlのrequest
 message StopSitlRequest {
     // UAVのID
-    UAVID uav_id = 1;
+    int32 uav_id = 1;
+}
+
+message StopSitlResponse {
+    // すべて正常に停止した場合は "ok" を返します。
+    string status = 1;
 }
 
 // CheckSitlのrequest
@@ -55,9 +78,15 @@ message ActiveSitl {
     // ユーザーID
     UserID user_id = 1;
     // 組織ID
-    string organization_id = 2;
+    int32 organization_id = 2;
     // UAVのID
-    UAVID uav_id = 3;
+    int32 uav_id = 3;
+    // SITLの開始時刻
+    int64 start_time = 4;
+    // SITLの有効期限切れアラートがトリガーされたかどうかを示します。
+    bool alerted = 5;
+    // SITLの位置
+    Position position = 6;
 }
 
 
