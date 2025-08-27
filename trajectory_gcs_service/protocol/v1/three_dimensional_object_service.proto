@@ -102,7 +102,7 @@ message UploadSolidModelResponse {
 
 message DeleteSolidModelRequest {
     // 3DモデルID
-    string models_id = 1; // HACK: object_id
+    int64 models_id = 1; // HACK: object_id
 }
 
 message DeleteSolidModelResponse {
