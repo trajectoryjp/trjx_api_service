@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+
+service UAVService {
+
+    // 機体認証状態を確認する
+    rpc CheckUavAuth(CheckUavAuthRequest) returns (CheckUavAuthResponse) {}
+    // 機体認証をブロックする
+    rpc BlockUavAuth(BlockUavAuthRequest) returns (BlockUavAuthResponse) {}
+    //  機体認証をクリアする
+    rpc ClearUavAuth(ClearUavAuthRequest) returns (ClearUavAuthResponse) {}
+    // シリアルナンバーから機体IDを取得する
+    rpc GetUavId(GetUavIdRequest) returns (GetUavIdResponse) {}
+    // 組織内の機体リストを取得する
+    rpc ListUsedUavs(ListUsedUavsRequest) returns (ListUsedUavsResponse) {} 
+}
+
+
+message BlockUavAuthRequest {
+    string uav_id = 1;
+}
+  
+message BlockUavAuthResponse {
+    
+    /*
+        0:succeeded
+    */
+    uint32 status = 1;
+}
+  
+
+message GetUavIdRequest {
+    string serial_number = 1; //機体シリアルナンバー
+}
+  
+message GetUavIdResponse {
+    int32 aircrafts_id = 1; // 機体ID
+    string model = 2;
+}
+  
+
+message CheckUavAuthRequest {
+    string uav_id = 1; // 機体ID
+}
+  
+message CheckUavAuthResponse {
+    
+    /*
+      0:Accepted,
+      1:Wait user,
+      2:Block
+    */
+    uint32 status  = 1;
+}
+  
+
+message ClearUavAuthRequest {
+    string uav_id = 1; // 機体ID
+}
+  
+message ClearUavAuthResponse {
+    /*
+      0:succeeded
+    */
+    uint32 success = 1;
+}
+  
+
+message ListUsedUavsRequest {
+}
+  
+message ListUsedUavsResponse {
+    message Uav {
+        int32 aircrafts_id = 1; // 機体ID
+        string uav_id = 2; // 機体ID(文字列)
+        string aircrafts_name = 3; // 機体名
+        string model = 4;
+    }
+    repeated Uav UsedUavs = 1;
+}
