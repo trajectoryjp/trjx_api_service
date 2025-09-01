@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+service OrganizationService {
+    rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationResponse);
+    rpc GetCesiumToken(GetCesiumTokenRequest) returns (GetCesiumTokenResponse);
+    rpc SetCesiumToken(SetCesiumTokenRequest) returns (SetCesiumTokenResponse);
+}
+
+// GetOrganizationのリクエスト
+message GetOrganizationRequest {
+}
+
+// GetOrganizationのレスポンス
+message GetOrganizationResponse {
+    // 組織ID
+    string id = 1;
+    // セシウムアクセストークン
+    string access_token = 2;
+    // デフォルトのセシウムアクセストークン
+    // このパラメータはデフォルトのセシウムアクセストークンとして登録されます。
+    // access_tokenを登録しない場合、デフォルトのセシウムアクセストークンが使用されます。
+    // ただし、この時点ではTRJX-UIに2DMapのみが表示されます。
+    // 3DMapを表示するには、SetCesiumToken RPC でaccess_tokenを登録する必要があります。
+    string default_access_token = 3;
+}
+
+// GetCesiumTokenのリクエスト
+message GetCesiumTokenRequest {
+}
+
+// GetCesiumTokenのレスポンス
+message GetCesiumTokenResponse {
+    // セシウムトークン
+   string cesium_token = 1;
+}
+
+// SetCesiumTokenのリクエスト
+message SetCesiumTokenRequest {
+    // デフォルトアクセストークン
+    string cesium_token = 1;
+}
+
+// SetCesiumTokenのレスポンス
+message SetCesiumTokenResponse {
+}
