@@ -9,6 +9,26 @@ import "google/protobuf/duration.proto";
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
 import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
 
+
+/*
+ エラーコード:エラー時のdetails内に格納される「errorCode」の型にあたる
+
+ サンプル
+ {
+    "code": 3,
+    "message": "sitl is already running, sitl time is extended",
+    "details": [
+        {
+            "@type": "type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCodes",
+            "errorCode": 4001
+        }
+    ]
+}
+*/
+message ErrorCode {
+    int32 error_code = 1;
+}
+
 message TransactionID {
     string identifier = 1;  // トランザクション識別子
     enum Attribute {
