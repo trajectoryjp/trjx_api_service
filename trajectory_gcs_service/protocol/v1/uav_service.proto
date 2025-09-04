@@ -79,5 +79,5 @@ message ListUsedUavsResponse {
         string aircrafts_name = 3; // 機体名
         string model = 4;
     }
-    repeated Uav UsedUavs = 1;
+    repeated Uav used_uavs = 1;
 }
