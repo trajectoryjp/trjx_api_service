@@ -3,6 +3,8 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
+import "protoc-gen-openapiv2/options/annotations.proto";
+
 
 service UAVService {
 
@@ -13,7 +15,39 @@ service UAVService {
     //  機体認証をクリアする
     rpc ClearUavAuth(ClearUavAuthRequest) returns (ClearUavAuthResponse) {}
     // シリアルナンバーから機体IDを取得する
-    rpc GetUavId(GetUavIdRequest) returns (GetUavIdResponse) {}
+    rpc GetUavId(GetUavIdRequest) returns (GetUavIdResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "シリアルナンバーから機体IDを取得します";
+            description: "シリアルナンバーから機体IDを取得します。\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                         "- `4001`\n"
+            responses: {
+              key: "400";
+              value: {
+                description: "Invalid request.";
+                schema: {
+                  json_schema: {
+                    ref: "#/definitions/rpcStatus";
+                  }
+                };
+                examples: {
+                  key: "application/json";
+                  value: "{\n"
+                         "  \"code\": 3,\n"
+                         "  \"message\": \"the serial is not found\",\n"
+                         "  \"details\": [\n"
+                         "    {\n"
+                         "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                         "      \"errorCode\": 4001\n"
+                         "    }\n"
+                         "  ]\n"
+                         "}";
+                }
+              }
+            }
+          };
+    }
     // 組織内の機体リストを取得する
     rpc ListUsedUavs(ListUsedUavsRequest) returns (ListUsedUavsResponse) {} 
 }
