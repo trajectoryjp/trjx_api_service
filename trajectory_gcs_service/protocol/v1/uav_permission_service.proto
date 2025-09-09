@@ -3,8 +3,11 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
+import "protoc-gen-openapiv2/options/annotations.proto";
+
 service UavPermissionService {
-    // GetPermission: UAV操作に関わる権限をリクエストする（120秒後、自動的に権限が削除される）
+    // GetPermission: UAV操作に関わる権限をリクエストする.  
+    // ストリーム切断から120秒の間にもう一度権限がリクエストされなかった場合、自動的に権限が解除される
     rpc GetPermission(GetPermissionRequest) returns (stream GetPermissionResponse) {}
 
     // ConfirmPermission: 他ユーザーに対するUAV操作権限付与の承認/拒否を行う
@@ -13,28 +16,65 @@ service UavPermissionService {
     // DeletePermission: 特定UAVに対する操作権限を削除する
     rpc DeletePermission(DeletePermissionRequest) returns (DeletePermissionResponse) {}
 
-    // GetPermissionStatus: 特定UAVに対する現在の操作権限状況を取得する
-    rpc GetPermissionStatus(GetPermissionStatusRequest) returns (GetPermissionStatusResponse) {}
+    rpc GetPermissionStatus(GetPermissionStatusRequest) returns (GetPermissionStatusResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetPermissionStatus: 特定UAVに対する現在の操作権限状況を取得する"
+            description: "AreaAnnotationの更新を⾏います。\n\n"
+            responses: {
+                key: "400"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"error at get permissioned count\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
 }
 
 message GetPermissionRequest {
-    int64 uav_id = 1; // 機体ID
-    string message = 2; // メッセージ
+    string uav_id = 1; // 機体ID
+    string message = 2; // 申請メッセージ
 }
 
 message GetPermissionNotification {
-    string user_id = 1; // 権限をリクエストしたユーザーID
-	int64 uav_id = 2; // 権限がリクエストされた機体ID
+    string user_id = 1; // 新たに権限をリクエストしたユーザーID
+	string uav_id = 2; // 権限がリクエストされた機体ID
 	string message = 3; // 権限リクエスト時のメッセージ
 }
 
 message GetPermissionResult {
 
     // 処理結果
-    // 0:OK.  
-    // 1:Rejected.  
-    // 2:Timeout.  
-    uint32 status = 1;
+    // 0:Unspecified 使用しない.  
+    // 1:Completed.  
+    // 2:Rejected.  
+    // 3:Timeout.  
+    enum PermissionStatus {
+        PERMISSIONSTATUS_UNSPECIFIED = 0;
+        PERMISSIONSTATUS_COMPLETED = 1;
+        PERMISSIONSTATUS_REJECTED = 2;
+        PERMISSIONSTATUS_TIMEOUT = 3;
+    }
+    PermissionStatus permission_status = 1;
 
     oneof detail {
         // 正常終了の場合のみ.  
@@ -61,21 +101,21 @@ message ConfirmPermissionRequest {
     string message = 1; // 申請メッセージ
     bool acceptance = 2; // 承認/拒否
     string request_user_id = 3; // 申請したユーザー
-    int64 request_uav_id = 4; // 申請先のUAV
+    int32 request_uav_id = 4; // 申請先のUAV
 }
 
 message ConfirmPermissionResponse {
-    uint32 status = 1; // 処理結果 1:正常終了
+    uint32 status = 1 [deprecated = true] ; // 処理結果 1:正常終了
     string message = 2; // rejected or accepted
 }
 
 message DeletePermissionRequest {
-    int64 uav_id = 1; // 機体ID
+    int32 uav_id = 1; // 機体ID
 }
 
 message DeletePermissionResponse {
-    uint32 status = 1; // 処理結果　1:正常終了
-    string message = 2; // ok
+    uint32 status = 1 [deprecated = true] ; // 処理結果　1:正常終了
+    string message = 2  [deprecated = true] ; // ok
 }
 
 message GetPermissionStatusRequest {
