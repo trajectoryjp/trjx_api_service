@@ -137,12 +137,14 @@ message PortTakeOffQueueItem {
   string flight_purpose = 3;
   google.protobuf.Timestamp start_at = 6;
   TakeOffStatus status = 7;
+  bool is_validating = 8;
 
   enum TakeOffStatus {
     TAKE_OFF_STATUS_UNSPECIFIED = 0;
-    WAITING = 1;
-    APPLYING = 2;
-    ON_TAKING_OFF = 3;
+    REQUESTED = 1;
+    HOLDING = 2;
+    CLEARED = 3;
+    TAKING_OFF = 4;
   }
 }
 
@@ -164,12 +166,14 @@ message PortLandingQueueItem {
   double battery_level = 4;
   google.protobuf.Timestamp end_at = 6;
   LandingStatus status = 7;
+  bool is_validating = 8;
 
   enum LandingStatus {
     LANDING_STATUS_UNSPECIFIED = 0;
-    WAITING = 1;
-    APPLYING = 2;
-    ON_LANDING = 3;
+    REQUESTED = 1;
+    HOLDING = 2;
+    CLEARED = 3;
+    LANDING = 4;
   }
 }
 
