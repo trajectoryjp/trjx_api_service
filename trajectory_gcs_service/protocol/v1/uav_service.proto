@@ -9,10 +9,13 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 service UAVService {
 
     // 機体認証状態を確認する
+    // アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
     rpc CheckUavAuth(CheckUavAuthRequest) returns (CheckUavAuthResponse) {}
     // 機体認証をブロックする
+    // アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
     rpc BlockUavAuth(BlockUavAuthRequest) returns (BlockUavAuthResponse) {}
-    //  機体認証をクリアする
+    // 機体認証をクリアする
+    // アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
     rpc ClearUavAuth(ClearUavAuthRequest) returns (ClearUavAuthResponse) {}
     // シリアルナンバーから機体IDを取得する
     rpc GetUavId(GetUavIdRequest) returns (GetUavIdResponse) {
@@ -62,7 +65,7 @@ message BlockUavAuthResponse {
     /*
         0:succeeded
     */
-    uint32 status = 1;
+    uint32 status = 1 [deprecated = true]; // success:0しか返却しないため非推奨
 }
   
 
@@ -99,7 +102,7 @@ message ClearUavAuthResponse {
     /*
       0:succeeded
     */
-    uint32 success = 1;
+    uint32 success = 1 [deprecated = true]; // success:0しか返却しないため非推奨
 }
   
 
