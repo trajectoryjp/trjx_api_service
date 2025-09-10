@@ -65,16 +65,27 @@ service PortControlService {
   // ポート詳細取得⇒既存
   //rpc GetPortDetails(ListPortsRequest) returns (PortDetails) {}
 
-  // 離陸キュー取得
+  // 離陸キュー取得(deprecated)
   // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
   // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
   // port/<port_id>/status/takeoff_queue
-  rpc GetPortTakeOffQueue(GetPortTakeOffQueueRequest) returns (stream PortTakeOffQueue) {}
-  // 着陸キュー取得
+  rpc GetPortTakeOffQueue(GetPortTakeOffQueueRequest) returns (stream PortTakeOffQueue) {
+    option deprecated = true;
+  }
+
+  // 着陸キュー取得(deprecated)
   // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
   // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
   // port/<port_id>/status/landing_queue
-  rpc GetPortLandingQueue(GetPortLandingQueueRequest) returns (stream PortLandingQueue) {}
+  rpc GetPortLandingQueue(GetPortLandingQueueRequest) returns (stream PortLandingQueue) {
+    option deprecated = true;
+  }
+
+  // 離着陸申請取得
+  // 離着陸申請の更新時および一定間隔でデータを送信する
+  // port/<port_id>/status/requests
+  rpc WatchClearanceRequests(WatchClearanceRequestsRequest) returns (stream WatchClearanceRequestsResponse);
+
   // 状態リストを取得
   // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
   // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
@@ -172,6 +183,42 @@ message PortLandingQueueItem {
     HOLDING = 2; // 待機中
     CLEARED = 3; // 許可済み
     LANDING = 4; // 着陸中
+  }
+}
+
+message WatchClearanceRequestsRequest {
+  int64 port_id = 1;
+}
+
+message WatchClearanceRequestsResponse {
+  repeated ClearanceRequest requests = 1;
+}
+
+message ClearanceRequest {
+  int64 port_id = 1;
+  string uav_id = 2;
+  string flight_purpose = 3;
+  UavStatus status = 4;
+  oneof details {
+    TakeOffDetails take_off = 5;
+    LandingDetails landing = 6;
+  }
+
+  message TakeOffDetails {
+    google.protobuf.Timestamp start_at = 1;
+  }
+
+  message LandingDetails {
+    google.protobuf.Timestamp end_at = 1;
+    double battery_level = 2;
+  }
+
+  enum UavStatus {
+    UAV_STATUS_UNSPECIFIED = 0;
+    REQUESTED = 1; // 申請済み
+    HOLDING = 2; // 待機中
+    CLEARED = 4; // 許可済み
+    EXECUTING = 5; // 離着陸中
   }
 }
 
