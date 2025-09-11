@@ -5,12 +5,15 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 service OrganizationService {
+  // 組織情報を取得する
+  // cesium_access_token, default_cesium_access_tokenは返す
   rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationResponse){
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "ミッション生成を行います";
-      description: "ミッションの新規作成を行います。\n\n"
-                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
-                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+      summary: "組織情報を取得する";
+      description:"組織情報を取得する。\n\n"
+                  "cesium_access_token, default_cesium_access_tokenは返す。\n"
+                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
+                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                   "- `4009`\n"
                   "- `5039`";
       responses: {
@@ -20,8 +23,8 @@ service OrganizationService {
         schema: {
           json_schema: {
             ref: "#/definitions/rpcStatus";
-          }
-        };
+            }
+          };
         examples: {
           key: "application/json";
           value: "{\n"
@@ -39,12 +42,14 @@ service OrganizationService {
     }
   };
   }
+  
+  // セシウムアクセストークンを取得する
   rpc GetCesiumToken(GetCesiumTokenRequest) returns (GetCesiumTokenResponse){
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "ミッション生成を行います";
-      description: "ミッションの新規作成を行います。\n\n"
-                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
-                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+      summary: "セシウムアクセストークンを取得する";
+      description: "セシウムアクセストークンを取得する。\n\n"
+                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
+                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                   "- `4009`\n"
                   "- `5000`\n"
                   "- `5039`";
@@ -74,12 +79,14 @@ service OrganizationService {
     }
   };
   }
+
+  // セシウムアクセストークンを設定する
   rpc SetCesiumToken(SetCesiumTokenRequest) returns (SetCesiumTokenResponse){
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "ミッション生成を行います";
-      description: "ミッションの新規作成を行います。\n\n"
-                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
-                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+      summary: "セシウムアクセストークンを設定する";
+      description: "セシウムアクセストークンを設定する。\n\n"
+                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
+                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                   "- `4003`\n"
                   "- `4009`\n"
                   "- `5019`\n"
