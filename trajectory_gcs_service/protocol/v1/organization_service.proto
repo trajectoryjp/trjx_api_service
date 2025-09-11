@@ -43,11 +43,11 @@ service OrganizationService {
   };
   }
   
-  // セシウムアクセストークンを取得する
+  // cesium_access_tokenを取得する
   rpc GetCesiumToken(GetCesiumTokenRequest) returns (GetCesiumTokenResponse){
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "セシウムアクセストークンを取得する";
-      description: "セシウムアクセストークンを取得する。\n\n"
+      summary: "cesium_access_tokenを取得する";
+      description: "cesium_access_tokenを取得する。\n\n"
                   "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
                   "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                   "- `4009`\n"
@@ -80,11 +80,11 @@ service OrganizationService {
   };
   }
 
-  // セシウムアクセストークンを設定する
+  // cesium_access_tokenを設定する
   rpc SetCesiumToken(SetCesiumTokenRequest) returns (SetCesiumTokenResponse){
   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "セシウムアクセストークンを設定する";
-      description: "セシウムアクセストークンを設定する。\n\n"
+      summary: "cesium_access_tokenを設定する";
+      description: "cesium_access_tokenを設定する。\n\n"
                   "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
                   "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                   "- `4003`\n"
