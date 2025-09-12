@@ -15,7 +15,6 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/trajectoryjp/trjx_api_service/traffic_control/proto_go;traffic_control";
 
-
 // ポート管制制御サービス
 // -ステータス
 // * 離陸キュー (status/takeoff_queue)
@@ -59,203 +58,250 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/traffic_control/pr
 // port/<port_id>/status/status_list
 // * 更新前後の差分をイベントとして配信
 
-
 // ポート管制バックエンドサービス
 service PortControlService {
-    // ポート一覧取得⇒既存
-    //rpc ListPorts(ListPortsRequest) returns (PortListItem) {} 
-    // ポート詳細取得⇒既存
-    //rpc GetPortDetails(ListPortsRequest) returns (PortDetails) {} 
+  // ポート一覧取得⇒既存
+  //rpc ListPorts(ListPortsRequest) returns (PortListItem) {}
+  // ポート詳細取得⇒既存
+  //rpc GetPortDetails(ListPortsRequest) returns (PortDetails) {}
 
-    // 離陸キュー取得
-    // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
-    // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
-    // port/<port_id>/status/takeoff_queue
-    rpc GetPortTakeOffQueue(GetPortTakeOffQueueRequest) returns (stream PortTakeOffQueue) {} 
-    // 着陸キュー取得
-    // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
-    // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
-    // port/<port_id>/status/landing_queue
-    rpc GetPortLandingQueue(GetPortLandingQueueRequest) returns (stream PortLandingQueue) {} 
-    // 状態リストを取得
-    // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
-    // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
-    // port/<port_id>/status/status_list
-    rpc GetPortStatusList(GetPortStatusListRequest) returns (stream PortStatusList) {} 
+  // 離陸キュー取得(deprecated)
+  // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
+  // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
+  // port/<port_id>/status/takeoff_queue
+  rpc GetPortTakeOffQueue(GetPortTakeOffQueueRequest) returns (stream PortTakeOffQueue) {
+    option deprecated = true;
+  }
 
-    // キューの機体に対する操作
-    // 離陸許可(待機)
-    rpc ApprovePortTakeOff(ApprovePortTakeOffRequest) returns (ApprovePortTakeOffResponse) {} 
-    // 着陸許可(待機)
-    rpc ApprovePortLanding(ApprovePortLandingRequest) returns (ApprovePortLandingResponse) {} 
-    // 離陸キュー順番変更
-    rpc UpdatePortTakeOffQueue(UpdatePortTakeOffQueueRequest) returns (UpdatePortTakeOffQueueResponse) {} 
-    // 着陸キュー順番変更
-    rpc UpdatePortLandingQueue(UpdatePortLandingQueueRequest) returns (UpdatePortLandingQueueResponse) {} 
+  // 着陸キュー取得(deprecated)
+  // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
+  // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
+  // port/<port_id>/status/landing_queue
+  rpc GetPortLandingQueue(GetPortLandingQueueRequest) returns (stream PortLandingQueue) {
+    option deprecated = true;
+  }
 
-    // 機体状態通知
-    // パイロットUIへの通知
-    rpc GetUavStatus(GetUavStatusRequest) returns (stream GetUavStatusResponse) {} 
+  // 離着陸申請取得
+  // 離着陸申請の更新時および一定間隔でデータを送信する
+  // port/<port_id>/status/requests
+  rpc WatchClearanceRequests(WatchClearanceRequestsRequest) returns (stream WatchClearanceRequestsResponse);
+
+  // 状態リストを取得
+  // MQTTでキューを購読して、更新時および一定時間間隔でクライアントに送信する
+  // 間隔（期間：n秒）は設定ファイルなど実行バイナリ外部で変更可能にする
+  // port/<port_id>/status/status_list
+  rpc GetPortStatusList(GetPortStatusListRequest) returns (stream PortStatusList) {}
+
+  // キューの機体に対する操作
+  // 離陸許可(待機)
+  rpc ApprovePortTakeOff(ApprovePortTakeOffRequest) returns (ApprovePortTakeOffResponse) {}
+  // 着陸許可(待機)
+  rpc ApprovePortLanding(ApprovePortLandingRequest) returns (ApprovePortLandingResponse) {}
+  // 離陸キュー順番変更
+  rpc UpdatePortTakeOffQueue(UpdatePortTakeOffQueueRequest) returns (UpdatePortTakeOffQueueResponse) {}
+  // 着陸キュー順番変更
+  rpc UpdatePortLandingQueue(UpdatePortLandingQueueRequest) returns (UpdatePortLandingQueueResponse) {}
+
+  // 機体状態通知
+  // パイロットUIへの通知
+  rpc GetUavStatus(GetUavStatusRequest) returns (stream GetUavStatusResponse) {}
 }
 
 // 機体状態
 enum UavStatus {
-    UAV_STATUS_UNSPECIFIED = 0;
-    // 離陸
-    WAITING_FOR_APPLY_TAKEOFF = 11;
-    APPLYING_TAKEOFF = 12;
-    WAITING_FOR_TAKEOFF = 13;
-    TAKEOFF = 14;
-    // 着陸
-    WAITING_FOR_APPLY_LANDING = 21;
-    APPLYING_LANDING = 22;
-    WAITING_FOR_LANDING = 23;
-    LANDING = 24;
+  UAV_STATUS_UNSPECIFIED = 0;
+  // 離陸
+  WAITING_FOR_APPLY_TAKEOFF = 11;
+  APPLYING_TAKEOFF = 12;
+  WAITING_FOR_TAKEOFF = 13;
+  TAKEOFF = 14;
+  // 着陸
+  WAITING_FOR_APPLY_LANDING = 21;
+  APPLYING_LANDING = 22;
+  WAITING_FOR_LANDING = 23;
+  LANDING = 24;
 }
 
 message GetUavStatusRequest {
-    string uav_id = 1;
+  string uav_id = 1;
 }
 
 message GetUavStatusResponse {
-    int64 port_id = 1;
-    UavStatus status = 2;
+  int64 port_id = 1;
+  UavStatus status = 2;
 }
 
 // 離陸キュー取得陸リクエスト
 message GetPortTakeOffQueueRequest {
-    int64 port_id = 1;
+  int64 port_id = 1;
 }
 
 // 離陸キュー
 message PortTakeOffQueue {
-    repeated PortTakeOffQueueItem items = 1;
+  repeated PortTakeOffQueueItem items = 1;
 }
+
 // 離陸キューアイテム
 message PortTakeOffQueueItem {
-    int64 port_id = 1;
-    string uav_id = 2;
-    string flight_purpose = 3;
-    google.protobuf.Timestamp start_at = 6;
-    TakeOffStatus status = 7;
+  int64 port_id = 1;
+  string uav_id = 2;
+  string flight_purpose = 3;
+  google.protobuf.Timestamp start_at = 6;
+  UavStatus status = 7;
 
-    enum TakeOffStatus {
-        TAKE_OFF_STATUS_UNSPECIFIED = 0;
-        WAITING = 1;
-        APPLYING = 2;
-        ON_TAKING_OFF = 3;
-    }
+  enum UavStatus {
+    UAV_STATUS_UNSPECIFIED = 0;
+    REQUESTED = 1; // 申請済み
+    HOLDING = 2; // 待機中
+    CLEARED = 3; // 許可済み
+    TAKING_OFF = 4; // 離陸中
+  }
 }
 
 // 着陸キュー取得陸リクエスト
 message GetPortLandingQueueRequest {
-    int64 port_id = 1;
+  int64 port_id = 1;
 }
 
 // 着陸キュー
 message PortLandingQueue {
-    repeated PortLandingQueueItem items = 1;
+  repeated PortLandingQueueItem items = 1;
 }
+
 // 着陸キューアイテム
 message PortLandingQueueItem {
-    int64 port_id = 1;
-    string uav_id = 2;
-    string flight_purpose = 3;
-    double battery_level = 4;
-    google.protobuf.Timestamp end_at = 6;
-    LandingStatus status = 7;
+  int64 port_id = 1;
+  string uav_id = 2;
+  string flight_purpose = 3;
+  double battery_level = 4;
+  google.protobuf.Timestamp end_at = 6;
+  UavStatus status = 7;
 
-    enum LandingStatus {
-        LANDING_STATUS_UNSPECIFIED = 0;
-        WAITING = 1;
-        APPLYING = 2;
-        ON_LANDING = 3;
-    }
+  enum UavStatus {
+    UAV_STATUS_UNSPECIFIED = 0;
+    REQUESTED = 1; // 申請済み
+    HOLDING = 2; // 待機中
+    CLEARED = 3; // 許可済み
+    LANDING = 4; // 着陸中
+  }
+}
+
+message WatchClearanceRequestsRequest {
+  int64 port_id = 1;
+}
+
+message WatchClearanceRequestsResponse {
+  repeated ClearanceRequest requests = 1;
+}
+
+message ClearanceRequest {
+  int64 port_id = 1;
+  string uav_id = 2;
+  string flight_purpose = 3;
+  UavStatus status = 4;
+  oneof details {
+    TakeOffDetails take_off = 5;
+    LandingDetails landing = 6;
+  }
+
+  message TakeOffDetails {
+    google.protobuf.Timestamp start_at = 1;
+  }
+
+  message LandingDetails {
+    google.protobuf.Timestamp end_at = 1;
+    double battery_level = 2;
+  }
+
+  enum UavStatus {
+    UAV_STATUS_UNSPECIFIED = 0;
+    REQUESTED = 1; // 申請済み
+    HOLDING = 2; // 待機中
+    CLEARED = 4; // 許可済み
+    EXECUTING = 5; // 離着陸中
+  }
 }
 
 // キュー順番変更要素
 message UpdateQueueOrderItem {
-    int64 uav_id_old = 1;
-    int64 uav_id_new = 2;
+  string uav_id_old = 1;
+  string uav_id_new = 2;
 }
 
 // 離陸キュー順番変更リクエスト
-message UpdatePortTakeOffQueueRequest{
-    int64 port_id = 1;
-    repeated UpdateQueueOrderItem items = 2;
+message UpdatePortTakeOffQueueRequest {
+  int64 port_id = 1;
+  repeated UpdateQueueOrderItem items = 2;
 }
 
 // 離陸キュー順番変更レスポンス
 message UpdatePortTakeOffQueueResponse {
-    bool result = 1;
-    // 失敗の場合のメッセージ
-    string message = 2;
+  bool result = 1;
+  // 失敗の場合のメッセージ
+  string message = 2;
 }
 
 // 着陸キュー順番変更リクエスト
-message UpdatePortLandingQueueRequest{
-    int64 port_id = 1;
-    repeated UpdateQueueOrderItem items = 2;
+message UpdatePortLandingQueueRequest {
+  int64 port_id = 1;
+  repeated UpdateQueueOrderItem items = 2;
 }
 
 // 着陸キュー順番変更レスポンス
 message UpdatePortLandingQueueResponse {
-    bool result = 1;
-    // 失敗の場合のメッセージ
-    string message = 2;
+  bool result = 1;
+  // 失敗の場合のメッセージ
+  string message = 2;
 }
-
 
 // 状態リスト取得リクエスト
 message GetPortStatusListRequest {
-    int64 port_id = 1;
+  int64 port_id = 1;
 }
 
 // 状態リスト
 message PortStatusList {
-    repeated PortStatusItem items = 1;
+  repeated PortStatusItem items = 1;
 }
 
 // 状態
 message PortStatusItem {
-    oneof status {
-        Collision collision = 2;
-    }
-    message Collision {
-        string uav_id1 = 1;
-        string uav_id2 = 2;
-        AbsolutePosition collision_point = 3;// 衝突予測位置
-        google.protobuf.Timestamp collision_at = 4;// 衝突予測時刻
-    }
+  oneof status {
+    Collision collision = 2;
+  }
+  message Collision {
+    string uav_id1 = 1;
+    string uav_id2 = 2;
+    AbsolutePosition collision_point = 3; // 衝突予測位置
+    google.protobuf.Timestamp collision_at = 4; // 衝突予測時刻
+  }
 }
 
-
 enum ApproveType {
-    APPROVE_TYPE_UNSPECIFIED = 0;
-    APPROVE = 1;
-    WAIT = 2;
-    REJECT = 3;
+  APPROVE_TYPE_UNSPECIFIED = 0;
+  APPROVE = 1;
+  WAIT = 2;
+  REJECT = 3;
 }
 
 message ApprovePortTakeOffRequest {
-    string uav_id = 1;
-    ApproveType approve_type = 2;
+  string uav_id = 1;
+  ApproveType approve_type = 2;
 }
 
 message ApprovePortTakeOffResponse {
-    string uav_id = 1;
-    bool result = 2;
-    string message = 3;
+  string uav_id = 1;
+  bool result = 2;
+  string message = 3;
 }
 
 message ApprovePortLandingRequest {
-    string uav_id = 1;
-    ApproveType approve_type = 2;
+  string uav_id = 1;
+  ApproveType approve_type = 2;
 }
 
 message ApprovePortLandingResponse {
-    string uav_id = 1;
-    bool result = 2;
-    string message = 3;
+  string uav_id = 1;
+  bool result = 2;
+  string message = 3;
 }
-
