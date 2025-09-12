@@ -224,8 +224,8 @@ message ClearanceRequest {
 
 // キュー順番変更要素
 message UpdateQueueOrderItem {
-  int64 uav_id_old = 1;
-  int64 uav_id_new = 2;
+  string uav_id_old = 1;
+  string uav_id_new = 2;
 }
 
 // 離陸キュー順番変更リクエスト
