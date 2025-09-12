@@ -3,24 +3,119 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
-import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 
 // Sitl service
 service SitlService {
     // SITLを開始し, SITLの延長をする
-    // SITLの権限を持っている必要があります
-    rpc StartSitl(StartSitlRequest) returns (StartSitlResponse);
-    // SITLアラートの購読を開始します
-    // UAVIDを指定しない場合、組織内のすべてのアラートを受信します。
-    // SITLの権限を持っている必要はありません, 組織内のすべてのユーザーが購読できます
+    rpc StartSitl(StartSitlRequest) returns (StartSitlResponse) {
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "SITLを開始し, SITLの延長をする";
+      description: "SITLを開始し, SITLの延長をする。\n\n"
+                  "SITLの権限を持っている必要があります。\n"
+                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
+                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
+                  "- `4001`\n"
+                  "- `4041`\n"
+                  "- `5009`\n"
+                  "- `5039`";
+      responses: {
+      key: "400";
+      value: {
+        description: "Invalid request.";
+        schema: {
+          json_schema: {
+            ref: "#/definitions/rpcStatus";
+          }
+        };
+        examples: {
+          key: "application/json";
+          value: "{\n"
+              "  \"code\": 3,\n"
+              "  \"message\": \"uavId is empty\",\n"
+              "  \"details\": [\n"
+              "    {\n"
+              "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+              "      \"errorCode\": 4001\n"
+              "    }\n"
+              "  ]\n"
+              "}";
+            }
+        }
+        }
+    };
+    }
+    // SITLアラートの購読を開始する
     rpc SubscribeToSitlAlerts(SubscribeToSitlAlertsRequest) returns (stream SitlAlert);
-    // SITLを停止します
-    // SITLの権限を持っている必要があります
-    rpc StopSitl(StopSitlRequest) returns (StopSitlResponse);
-    // ユーザーの組織内のすべてのアクティブなSITLインスタンスを返します
-    // SITLの権限を持っている必要があります
-    rpc CheckSitl(CheckSitlRequest) returns (CheckSitlResponse);
+    // SITLを停止する
+    rpc StopSitl(StopSitlRequest) returns (StopSitlResponse) {
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "SITLを停止する";
+      description: "SITLを停止する。\n\n"
+                  "SITLの権限を持っている必要がある。\n"
+                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
+                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
+                  "- `4001`";
+      responses: {
+      key: "400";
+      value: {
+        description: "Invalid request.";
+        schema: {
+          json_schema: {
+            ref: "#/definitions/rpcStatus";
+          }
+        };
+        examples: {
+          key: "application/json";
+          value: "{\n"
+              "  \"code\": 3,\n"
+              "  \"message\": \"uavId is empty\",\n"
+              "  \"details\": [\n"
+              "    {\n"
+              "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+              "      \"errorCode\": 4001\n"
+              "    }\n"
+              "  ]\n"
+              "}";
+            }
+        }
+        }
+    };
+    }
+    // ユーザーの組織内のすべてのアクティブなSITLインスタンスを返す
+    rpc CheckSitl(CheckSitlRequest) returns (CheckSitlResponse) {
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "ユーザーの組織内のすべてのアクティブなSITLインスタンスを返す";
+      description: "ユーザーの組織内のすべてのアクティブなSITLインスタンスを返す。\n\n"
+                  "SITLの権限を持っている必要がある。\n"
+                  "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
+                  "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
+                  "- `4001`";
+      responses: {
+      key: "400";
+      value: {
+        description: "Invalid request.";
+        schema: {
+          json_schema: {
+            ref: "#/definitions/rpcStatus";
+          }
+        };
+        examples: {
+          key: "application/json";
+          value: "{\n"
+              "  \"code\": 3,\n"
+              "  \"message\": \"uavId is empty\",\n"
+              "  \"details\": [\n"
+              "    {\n"
+              "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+              "      \"errorCode\": 4001\n"
+              "    }\n"
+              "  ]\n"
+              "}";
+        }
+      }
+    }
+  };
+  }
 }
 
 
