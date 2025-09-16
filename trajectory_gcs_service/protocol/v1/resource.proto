@@ -902,3 +902,7 @@ message TakingOffAndLandingUAVStatus {
 message UserID{
     string user_id = 1; // ユーザID
 }
+
+message OrganizationID {
+    int32 identifier = 1;
+}
