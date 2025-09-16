@@ -15,9 +15,6 @@ service SitlService {
                   "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
                   "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                   "- `4001`\n"
-                  "- `4041`\n"
-                  "- `5009`\n"
-                  "- `5039`";
       responses: {
       key: "400";
       value: {
@@ -54,7 +51,9 @@ service SitlService {
                   "SITLの権限を持っている必要がある。\n"
                   "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
                   "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
-                  "- `4001`";
+                  "- `4001`\n"
+                  "- `4009`\n"
+                  "- `5039`";
       responses: {
       key: "400";
       value: {
