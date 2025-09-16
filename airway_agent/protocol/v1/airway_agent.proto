@@ -1,0 +1,179 @@
+/*
+ * <アクセス方法>
+ * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
+ * "x-grpc-service": "AirwayAgent"
+ * "username": システムユーザID
+ * "token": アクセストークン
+ */
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package Trajectory.AirwayAgent.Protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/airway_agent";
+
+// 航路システム対向バックエンド
+// 認証用の注意事項を追記　HTTPヘッダの必要事項
+service AirwayAgent {
+    // [254_3 航路利用UI]
+    // 航路予約一覧取得
+    rpc ListAirwayReservations(ListAirwayReservationsUiRequest) returns (stream AirwayReservationUiListItem) {} 
+
+    // 航路予約詳細取得
+    // 1) CommandService.GetAirwayReservationDetailsを呼び出して航路予約情報を取得する
+    // 2) CommandService.GetAirwaySectionCrossSectionInfoを呼び出して航路断面情報を取得する
+    // 3) Wrapper.ConvertCrossSectionsToWaypointsを呼び出して航路断面形状配列からウェイポイント配列を取得する
+    rpc GetAirwayReservationDetails(GetAirwayReservationDetailsUiRequest) returns (AirwayReservationUiDetails) {} 
+
+    // [254_2 航路利用BE]
+    // [263 MissionDB]
+    // 航路利用登録
+    // 1) CommandService.GetAirwayReservationDetailsを呼び出して航路予約情報を取得する
+    // 2) CommandService.GetAirwaySectionCrossSectionInfoを呼び出して航路断面情報を取得する
+    // 3) Wrapper.ConvertCrossSectionsToWaypointsを呼び出して航路断面形状配列からウェイポイント配列を取得する
+    // 4) MissionController.DBSaveMission(ウェイポイント配列, 航路予約ID, supervisor=true)を呼び出してミッションDBに登録する
+    rpc RegisterAirwayUsage(RegisterAirwayUsageRequest) returns (RegisterAirwayUsageResponse) {} 
+
+    // [254_2 航路利用BE 3.2航路策定]
+    // 指定されたウェイポイント配列から航路システムに航路を登録する
+    // 1) Wrapper.ConvertWaypointsToCrossSectionsを呼び出してウェイポイントから空間断面に変換する
+    // 2) CommandService.RegisterAirwaySectionCrossSectionInfoを呼び出して航路断面情報を登録する
+    rpc RegisterAirway(RegisterAirwayRequest) returns (RegisterAirwayResponse) {} 
+}
+
+// 基本パラメータ：Mission識別子
+// DBに保存されたMissionの識別子（プライムキー）
+message MissionID {
+    string identifier = 1; 
+}
+
+message Position {
+    message Altitude {
+        Standard standard = 1;
+        float altitude = 2; // m
+    
+        enum Standard { 
+            ALTITUDE_ATTR_UNSPECIFIED = 0 ;
+            RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+            AGL = 2 ; // 地表面高度。
+            MSL = 3; // 海抜高度（標高）。
+            ELLIPSOIDE = 4 ;// 楕円球体高。default値。
+        }
+    }
+    // 緯度
+    double latitude = 1;
+    // 経度
+    double longitude = 2;
+    // 高度
+    Altitude altitude = 3;
+}
+
+// 航路利用登録リクエスト
+message RegisterAirwayUsageRequest {
+    // 航路予約ID
+    string airwayReservationId = 1;
+}
+
+// 航路利用登録結果
+message RegisterAirwayUsageResponse {
+    // 航路利用登録結果
+    bool result = 1;
+    // ミッションID：DBSaveMissionResult.missionId
+    MissionID missionID = 2;
+    // エラー情報
+    RegisterAirwayUsageError error = 3;
+}
+
+// 航路利用登録エラー
+// エラーのマッピング：gRPCでは正常でもアプリケーションの論理エラーの場合に定義など、考慮
+message RegisterAirwayUsageError {
+    // エラー種別
+    RegisterAirwayUsageErrorType type = 1;
+    // エラーメッセージ
+    string message = 2;
+
+    // gRPCの標準エラーコードに出来るだけ当てはめる
+    enum RegisterAirwayUsageErrorType    {
+        NONE = 0;
+        INVALID_AIRWAY_RESERVATION_ID = 1;
+        ALREADY_REGISTERED = 2;
+        EXCEPTION = 99;
+    }
+}
+
+// 航路予約一覧取得リクエスト
+message ListAirwayReservationsUiRequest {
+    // 運航事業者ID
+    bool use_filter_operator_id = 1;
+    string operator_id = 2;
+    // 航路予約ID
+    bool use_filter_reservation_id = 3;
+    string airway_reservation_id = 4;
+    // 予約開始日時
+    bool use_filter_start_at = 5;
+    google.protobuf.Timestamp start_at = 6;
+    // 予約終了日時
+    bool use_filter_end_at = 7;
+    google.protobuf.Timestamp end_at = 8;
+}
+
+// 航路予約一覧の各行
+message AirwayReservationUiListItem {
+    // 運航事業者ID
+    string operatorId = 1;
+    // 航路予約ID
+    string airway_reservation_id = 2;
+    // 予約開始日時
+    google.protobuf.Timestamp start_at = 3;
+    // 予約終了日時
+    google.protobuf.Timestamp end_at = 4;
+    // 航路区画ID配列
+    repeated string airway_section_ids = 5;
+}
+
+// 航路予約情報詳細取得リクエスト
+message GetAirwayReservationDetailsUiRequest {
+    // 航路予約ID: 航路システムの航路予約APIから返された予約ID
+    string airway_reservation_id = 1;
+}
+
+// 航路予約情報詳細
+message AirwayReservationUiDetails {
+    // 航路予約ID
+    string airway_reservation_id = 1;
+    // 運航事業者ID
+    string operator_id = 2;
+    // 航路区画ID配列
+    repeated string airway_section_ids = 3;
+    // 予約開始日時
+    google.protobuf.Timestamp start_at = 4;
+    // 予約終了日時
+    google.protobuf.Timestamp end_at = 5;
+    // 予約日時
+    google.protobuf.Timestamp  reserved_at = 6;
+    // ウェイポイントの配列
+    repeated Position waypoints = 7;
+}
+
+// 航路登録リクエスト
+message RegisterAirwayRequest {
+    // 事業者番号
+    string business_number = 1;
+    // 航路運営者ID
+    string airway_operator_id = 2;
+    // 航路名
+    string airway_name = 3;
+    // ウェイポイントの配列
+    repeated Position waypoints = 4;
+}
+
+// 航路登録結果
+message RegisterAirwayResponse {
+    // 航路登録結果
+    bool result = 1;
+    // 航路ID
+    string airway_id = 2;
+    // エラーメッセージ
+    string message = 3;
+}
