@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+service UavConfigService {
+
+    /*
+      自組織に属する機体の設定値を取得する
+    */
+    rpc GetUavsConfig(GetUavConfigRequest) returns (GetUavConfigResponse);
+
+    /*
+      機体の設定値を更新する
+    */
+    rpc UpdateUavConfig(UpdateUavConfigRequest) returns (UpdateUavConfigResponse);
+
+    /*
+      機体情報を取得する
+    */
+    rpc GetAircraftInfo(GetAircraftInfoRequest) returns (GetAircraftInfoResponse);
+}
+
+
+message GetUavConfigRequest {}
+
+message GetUavConfigResponse {
+    repeated UavConfig uav_configs = 1;
+}
+
+message UpdateUavConfigRequest {
+    int32 uav_id = 1; //機体Id
+    optional string name = 2;
+    optional string serial_number = 3;
+    optional string aspect_ratio = 4;
+    optional bool simulator = 5;
+    optional double diagonal_view_angle = 6;
+    optional double moderate_horizontally_speed = 7;
+    optional double moderate_vertical_speed = 8;
+}
+message UpdateUavConfigResponse {
+    /*
+     0:OK
+    */
+    uint32 status = 1 [deprecated = true]; // 0:OK しか返却しないため非推奨
+}
+
+message GetAircraftInfoRequest {
+    int32 uav_id = 1; //機体Id
+}
+message GetAircraftInfoResponse {
+    optional string name = 1;
+    optional int32 duration = 2;
+    optional string description = 3;
+    optional string landing_type = 4; //着陸種別
+    optional bool simulator = 5; // true シュミレーター | false 実機
+    optional string maker = 6; //
+    optional string model = 7;
+    optional string model3d_url = 8; // 機体3DデータURL
+    optional string video_url = 9; //
+    optional bool stealth = 10;
+}
+
+message UavConfig {
+    int32 uav_id = 1; //機体Id
+    optional string name = 2;
+    optional string serial_number = 3; // シリアルナンバー
+    optional string aspect_ratio = 4; // アスペクト比(M:M)
+    optional bool simulator = 5;
+    optional double diagonal_view_angle = 6;
+    optional double moderate_horizontally_speed = 7;
+    optional double moderate_vertical_speed = 8;
+}
