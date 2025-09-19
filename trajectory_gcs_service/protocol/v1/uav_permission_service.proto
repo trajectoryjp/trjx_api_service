@@ -7,10 +7,11 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 service UavPermissionService {
     // GetPermission: UAV操作に関わる権限をリクエストする.  
-    // ストリーム切断から120秒の間にもう一度権限がリクエストされなかった場合、自動的に権限が解除される
+    // アクセス権限: operator.  
+    // ストリーム切断から120秒（デフォルト）の間にもう一度権限がリクエストされなかった場合、自動的に権限が解除される
     rpc GetPermission(GetPermissionRequest) returns (stream GetPermissionResponse) {}
 
-    // ConfirmPermission: 他ユーザーに対するUAV操作権限付与の承認/拒否を行う
+    // ConfirmPermission: 他ユーザーに対するUAV操作権限付与の承認/拒否を行う.  
     rpc ConfirmPermission(ConfirmPermissionRequest) returns (ConfirmPermissionResponse) {}
 
     // DeletePermission: 特定UAVに対する操作権限を削除する
@@ -21,7 +22,10 @@ service UavPermissionService {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
         = {
             summary: "GetPermissionStatus: 特定UAVに対する現在の操作権限状況を取得する"
-            description: "AreaAnnotationの更新を⾏います。\n\n"
+            description: "特定UAVに対する現在の操作権限状況を取得する。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`";
             responses: {
                 key: "400"
                 value: {
@@ -53,6 +57,7 @@ service UavPermissionService {
 message GetPermissionRequest {
     string uav_id = 1; // 機体ID
     string message = 2; // 申請メッセージ
+    optional int32 timeout = 3; // ストリーム終了後から、権限解放までの待ち時間（秒単位） デフォルト120秒
 }
 
 message GetPermissionNotification {
