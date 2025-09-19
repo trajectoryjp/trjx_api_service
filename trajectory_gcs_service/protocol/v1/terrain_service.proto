@@ -3,8 +3,6 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
-import "protoc-gen-openapiv2/options/annotations.proto";
-
 service TerrainService {
     // 任意の基準の高度を、別の基準 (output_altitude) で計測された高度に変換する API
     rpc ConvertAltitude(ConvertAltitudeRequest) returns (ConvertAltitudeResponse);
