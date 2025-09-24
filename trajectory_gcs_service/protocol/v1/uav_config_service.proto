@@ -3,73 +3,174 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
-import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 service UavConfigService {
 
     /*
       自組織に属する機体の設定値を取得する
     */
-    rpc GetUavsConfig(GetUavConfigRequest) returns (GetUavConfigResponse);
+    rpc GetUavsConfig(GetUavsConfigRequest) returns (GetUavsConfigResponse){
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "自組織に属する機体の設定値を取得する";
+            description: "自組織に属する機体の設定値を取得する。\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                         "- `4001`\n"
+                         "- `4011`\n"
+            responses: {
+              key: "400";
+              value: {
+                description: "Invalid request.";
+                schema: {
+                  json_schema: {
+                    ref: "#/definitions/rpcStatus";
+                  }
+                };
+                examples: {
+                  key: "application/json";
+                  value: "{\n"
+                         "  \"code\": 3,\n"
+                         "  \"message\": \"the uav is not found\",\n"
+                         "  \"details\": [\n"
+                         "    {\n"
+                         "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                         "      \"errorCode\": 4001\n"
+                         "    }\n"
+                         "  ]\n"
+                         "}";
+                }
+              }
+            }
+          };
+    };
 
     /*
-      機体の設定値を更新する
+      機体の設定値を更新する　※自組織機体のみ指定可能
+      アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
     */
-    rpc UpdateUavConfig(UpdateUavConfigRequest) returns (UpdateUavConfigResponse);
+    rpc UpdateUavConfig(UpdateUavConfigRequest) returns (UpdateUavConfigResponse){
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "機体の設定値を更新する";
+            description: "機体の設定値を更新する。\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                         "- `4002`\n"
+            responses: {
+              key: "400";
+              value: {
+                description: "Invalid request.";
+                schema: {
+                  json_schema: {
+                    ref: "#/definitions/rpcStatus";
+                  }
+                };
+                examples: {
+                  key: "application/json";
+                  value: "{\n"
+                         "  \"code\": 3,\n"
+                         "  \"message\": \"the uav is not found\",\n"
+                         "  \"details\": [\n"
+                         "    {\n"
+                         "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                         "      \"errorCode\": 4002\n"
+                         "    }\n"
+                         "  ]\n"
+                         "}";
+                }
+              }
+            }
+          };
+    };
 
     /*
-      機体情報を取得する
+      機体情報を取得する ※自組織機体のみ指定可能
     */
-    rpc GetAircraftInfo(GetAircraftInfoRequest) returns (GetAircraftInfoResponse);
+    rpc GetAircraftInfo(GetAircraftInfoRequest) returns (GetAircraftInfoResponse){
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "機体情報を取得する";
+            description: "機体の設定値を更新する\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                         "- `4011`\n"
+            responses: {
+              key: "400";
+              value: {
+                description: "Invalid request.";
+                schema: {
+                  json_schema: {
+                    ref: "#/definitions/rpcStatus";
+                  }
+                };
+                examples: {
+                  key: "application/json";
+                  value: "{\n"
+                         "  \"code\": 3,\n"
+                         "  \"message\": \"the uav is not found\",\n"
+                         "  \"details\": [\n"
+                         "    {\n"
+                         "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                         "      \"errorCode\": 4011\n"
+                         "    }\n"
+                         "  ]\n"
+                         "}";
+                }
+              }
+            }
+          };
+    };
 }
 
 
-message GetUavConfigRequest {}
+message GetUavsConfigRequest {}
 
-message GetUavConfigResponse {
+message GetUavsConfigResponse {
     repeated UavConfig uav_configs = 1;
 }
 
+
 message UpdateUavConfigRequest {
-    int32 uav_id = 1; //機体Id
-    optional string name = 2;
-    optional string serial_number = 3;
-    optional string aspect_ratio = 4;
-    optional bool simulator = 5;
-    optional double diagonal_view_angle = 6;
-    optional double moderate_horizontally_speed = 7;
-    optional double moderate_vertical_speed = 8;
+    int32 uav_id = 1;                  // 機体Id
+    optional string name = 2;          // 機体名
+    optional string serial_number = 3; // シリアルナンバー
+    optional string aspect_ratio = 4;  // アスペクト比(M:M)
+    optional bool simulator = 5;       // true シュミレーター | false 実機
+    optional double diagonal_view_angle = 6;     // 対角画角
+    optional double moderate_horizontally_speed = 7; // 標準水平速度
+    optional double moderate_vertical_speed = 8; // 標準垂直速度
 }
+
 message UpdateUavConfigResponse {
     /*
-     0:OK
+      0:OK しか返却しないため非推奨
     */
-    uint32 status = 1 [deprecated = true]; // 0:OK しか返却しないため非推奨
+    uint32 status = 1 [deprecated = true];
 }
 
 message GetAircraftInfoRequest {
-    int32 uav_id = 1; //機体Id
+    int32 uav_id = 1; // 機体Id
 }
+
 message GetAircraftInfoResponse {
-    optional string name = 1;
-    optional int32 duration = 2;
-    optional string description = 3;
-    optional string landing_type = 4; //着陸種別
-    optional bool simulator = 5; // true シュミレーター | false 実機
-    optional string maker = 6; //
+    optional string name = 1;         // 機体名
+    optional int32 duration = 2;      // 機体飛行時間
+    optional string description = 3;  // 説明
+    optional string landing_type = 4; // 着陸種別
+    optional bool simulator = 5;      // true シュミレーター | false 実機
+    optional string maker = 6;        // 機体メーカー
     optional string model = 7;
-    optional string model3d_url = 8; // 機体3DデータURL
-    optional string video_url = 9; //
-    optional bool stealth = 10;
+    optional string model3d_url = 8;  // 機体3DデータURL
+    optional string video_url = 9;    // リアルタイム動画表示URL
+    optional bool stealth = 10;       // true ステルス機体 | false 非ステルス機体
 }
 
 message UavConfig {
-    int32 uav_id = 1; //機体Id
-    optional string name = 2;
+    int32 uav_id = 1;                  // 機体Id
+    optional string name = 2;          // 機体名
     optional string serial_number = 3; // シリアルナンバー
-    optional string aspect_ratio = 4; // アスペクト比(M:M)
-    optional bool simulator = 5;
-    optional double diagonal_view_angle = 6;
-    optional double moderate_horizontally_speed = 7;
-    optional double moderate_vertical_speed = 8;
+    optional string aspect_ratio = 4;  // アスペクト比(M:M)
+    optional bool simulator = 5;       // true シュミレーター | false 実機
+    optional double diagonal_view_angle = 6;     // 対角画角
+    optional double moderate_horizontally_speed = 7; // 標準水平速度
+    optional double moderate_vertical_speed = 8; // 標準垂直速度
 }
