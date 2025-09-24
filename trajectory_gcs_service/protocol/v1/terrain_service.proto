@@ -6,7 +6,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 service TerrainService {
     // 任意の基準の高度を、別の基準 (output_altitude) で計測された高度に変換する API
     rpc ConvertAltitude(ConvertAltitudeRequest) returns (ConvertAltitudeResponse);
-    // 任意の地点の標高を返す API
+    // TRJX 内の任意の地点の DEM (Terrain) の標高 [MSL, m] を返す API
     rpc GetElevation(GetElevationRequest) returns (GetElevationResponse);
 }
 
@@ -27,17 +27,11 @@ message GetElevationRequest {
 	double latitude = 1;
 	// 経度 [˚]
 	double longitude = 2;
-	// 高度 [m] (リクエストでは無効な値)
-	float altitude = 3;
-	// 高度種別 (0: Ellipsoid, 1: Relative, 2: AGL, 3: MSL)
-	uint32 altitude_attr = 4;
 }
 
 message GetElevationResponse {
-	// 高度
+	// 高度 [MSL, m]
 	float altitude = 1;
-	// 高度種別 (0: Ellipsoid, 1: Relative, 2: AGL, 3: MSL)
-	uint32 altitude_attr = 2;
 }
 
 message TerrainServicePosition {
