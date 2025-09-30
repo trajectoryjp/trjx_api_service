@@ -287,6 +287,7 @@ enum ApproveType {
 message ApprovePortTakeOffRequest {
   string uav_id = 1;
   ApproveType approve_type = 2;
+  int64 port_id = 3;
 }
 
 message ApprovePortTakeOffResponse {
@@ -298,6 +299,7 @@ message ApprovePortTakeOffResponse {
 message ApprovePortLandingRequest {
   string uav_id = 1;
   ApproveType approve_type = 2;
+  int64 port_id = 3;
 }
 
 message ApprovePortLandingResponse {
