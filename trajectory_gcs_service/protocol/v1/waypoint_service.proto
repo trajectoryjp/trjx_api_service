@@ -31,7 +31,7 @@ service WaypointService {
           description: "Not Implemented error is 5019";
           schema: {
             json_schema: {
-              ref: "#/definitions/googlerpcStatus";
+              ref: "#/definitions/rpcStatus";
             }
           }
           examples: {

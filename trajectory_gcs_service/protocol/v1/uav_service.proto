@@ -25,6 +25,20 @@ service UAVService {
                          "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
                          "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
                          "- `4001`\n"
+            parameters: {
+              headers: {
+                name: "user_id"
+                type: STRING
+                description: "ユーザID"
+                required: true
+              }
+              headers: {
+                name: "Authorization"
+                type: STRING
+                description: "Bearer Token"
+                required: true
+              }
+            }
             responses: {
               key: "400";
               value: {

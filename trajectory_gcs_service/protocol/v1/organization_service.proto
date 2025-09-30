@@ -16,6 +16,20 @@ service OrganizationService {
                   "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                   "- `4009`\n"
                   "- `5039`";
+      parameters: {
+        headers: {
+          name: "user_id"
+          type: STRING
+          description: "ユーザID"
+          required: true
+        }
+        headers: {
+          name: "Authorization"
+          type: STRING
+          description: "Bearer Token"
+          required: true
+        }
+      }
       responses: {
       key: "400";
       value: {
@@ -53,6 +67,20 @@ service OrganizationService {
                   "- `4009`\n"
                   "- `5000`\n"
                   "- `5039`";
+      parameters: {
+        headers: {
+          name: "user_id"
+          type: STRING
+          description: "ユーザID"
+          required: true
+        }
+        headers: {
+          name: "Authorization"
+          type: STRING
+          description: "Bearer Token"
+          required: true
+        }
+      }
       responses: {
       key: "400";
       value: {
@@ -91,6 +119,20 @@ service OrganizationService {
                   "- `4009`\n"
                   "- `5019`\n"
                   "- `5039`";
+      parameters: {
+        headers: {
+          name: "user_id"
+          type: STRING
+          description: "ユーザID"
+          required: true
+        }
+        headers: {
+          name: "Authorization"
+          type: STRING
+          description: "Bearer Token"
+          required: true
+        }
+      }
       responses: {
       key: "400";
       value: {
