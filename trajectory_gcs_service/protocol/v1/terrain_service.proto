@@ -8,39 +8,50 @@ service TerrainService {
     rpc ConvertAltitude(ConvertAltitudeRequest) returns (ConvertAltitudeResponse);
     // TRJX 内の任意の地点の DEM (Terrain) の標高 [MSL, m] を返す API
     rpc GetElevation(GetElevationRequest) returns (GetElevationResponse);
+
+    // TODO_1: GPS や CesiumJS などのライブラリで ellipsoid を基準とした高度が
+    //         利用しやすいように、ELLIPSOID の高度を返すインターフェースを追加
+    //         する。
+
+    // TODO_2: 地上高を取得するニーズがあるはずなので、AGL を取得するインターフ
+    //         ェースを追加する。ただし、先に社内の DEM を整備する必要がある。
 }
 
 message ConvertAltitudeRequest {
-	// 任意の地点 (標高は無効な値)
-	TerrainServicePosition position = 1;
-	// 変換後の高度基準 (0: Ellipsoid, 1: Relative, 2: AGL, 3: MSL)
-	uint32 output_altitude = 2;
+        // 任意の地点 (標高は無効な値)
+        TerrainServicePosition position = 1;
+        // 変換後の高度基準 (0: Ellipsoid, 1: Relative, 2: AGL, 3: MSL)
+        // 単純移行による暫定方式 → TODO: v2 作成時はシステムで共有する enum 型
+        // へ変更する。
+        uint32 output_altitude = 2;
 }
 
 message ConvertAltitudeResponse {
-	// 変換後の高度 [m]
-	float altitude = 1;
+        // 変換後の高度 [m]
+        float altitude = 1;
 }
 
 message GetElevationRequest {
-	// 緯度 [˚]
-	double latitude = 1;
-	// 経度 [˚]
-	double longitude = 2;
+        // 緯度 [˚]
+        double latitude = 1;
+        // 経度 [˚]
+        double longitude = 2;
 }
 
 message GetElevationResponse {
-	// 高度 [MSL, m]
-	float altitude = 1;
+        // 高度 [MSL, m]
+        float altitude = 1;
 }
 
 message TerrainServicePosition {
-	// 緯度 [˚]
-	double latitude = 1;
-	// 経度 [˚]
-	double longitude = 2;
-	// 高度 [m]
-	float altitude = 3;
-	// 高度種別 (0: Ellipsoid, 1: Relative, 2: AGL, 3: MSL)
-	uint32 altitude_attr = 4;
+        // 緯度 [˚]
+        double latitude = 1;
+        // 経度 [˚]
+        double longitude = 2;
+        // 高度 [m]
+        float altitude = 3;
+        // 高度種別 (0: Ellipsoid, 1: Relative, 2: AGL, 3: MSL)
+        // 単純移行による暫定方式 → TODO: v2 作成時はシステムで共有する enum 型
+        // へ変更する。
+        uint32 altitude_attr = 4;
 }
