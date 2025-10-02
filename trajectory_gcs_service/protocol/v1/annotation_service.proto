@@ -15,15 +15,29 @@ service AnnotationService {
             description: "PointAnnotationの新規作成を⾏う。\n\n"
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
-            "- `4001`"\n;
+            "- `4001`\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Argument."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -47,7 +61,7 @@ service AnnotationService {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -77,13 +91,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -111,15 +139,29 @@ service AnnotationService {
             description: "AreaAnnotationの新規作成を⾏う。\n\n"
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
-            "- `4001`"\n;
+            "- `4001`\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Argument"
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -143,7 +185,7 @@ service AnnotationService {
                     description: "Invalid Argument"
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -167,7 +209,7 @@ service AnnotationService {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -196,13 +238,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `4001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Request."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -231,13 +287,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `4001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Request."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -266,13 +336,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `4001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Request."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -302,13 +386,27 @@ service AnnotationService {
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `4001`\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Request."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -332,7 +430,7 @@ service AnnotationService {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -362,13 +460,27 @@ service AnnotationService {
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `4001`\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Request."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -392,7 +504,7 @@ service AnnotationService {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -422,13 +534,27 @@ service AnnotationService {
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `4001`\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "400"
                 value: {
                     description: "Invalid Request."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -452,7 +578,7 @@ service AnnotationService {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -481,13 +607,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -517,13 +657,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -553,13 +707,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -588,13 +756,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -623,13 +805,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -657,13 +853,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -692,13 +902,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -727,13 +951,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {
@@ -762,13 +1000,27 @@ service AnnotationService {
             "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
             "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
             "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
             responses: {
                 key: "500"
                 value: {
                     description: "Internal Error."
                     schema: {
                         json_schema: {
-                            ref: "#/definitions/rpcStatus"
+                            ref: "#/definitions/googlerpcStatus"
                         }
                     }
                     examples: {

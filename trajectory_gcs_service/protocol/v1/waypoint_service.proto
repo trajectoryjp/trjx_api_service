@@ -3,86 +3,126 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
+import "protoc-gen-openapiv2/options/annotations.proto";
+
 service WaypointService {
-    rpc CheckWaypoint(CheckWaypointRequest) returns (CheckWaypointResponse);
+  // ウェイポイントが設定できるか確認する
+  rpc CheckWaypoint(CheckWaypointRequest) returns (CheckWaypointResponse) {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "ウェイポイントが設定できるかの確認";
+      description: "ウェイポイントが設定できるか確認する。";
+      parameters: {
+        headers: {
+          name: "user_id"
+          type: STRING
+          description: "ユーザID"
+          required: true
+        }
+        headers: {
+          name: "Authorization"
+          type: STRING
+          description: "Bearer Token"
+          required: true
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Not Implemented error is 5019";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus";
+            }
+          }
+          examples: {
+            key: "application/json";
+            value:
+              "{\n"
+              "  \"code\": 12,\n"
+              "  \"message\": \"string\",\n"
+              "  \"details\": [\n"
+              "    {\n"
+              "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+              "      \"errorCode\": 5019\n"
+              "    }\n"
+              "  ]\n"
+              "}";
+          }
+        }
+      }
+    };
+  }
 }
 
 message CheckWaypointRequest {
-    message Waypoint {
-        // 緯度
-        double latitude = 1;
+  message Waypoint {
+    // 緯度
+    double latitude = 1;
 
-        // 経度
-        double longitude = 2;
+    // 経度
+    double longitude = 2;
 
-        // 高度
-        float altitude = 3;
+    // 高度
+    float altitude = 3;
 
-        // 名称
-        optional string name = 4;
+    // 名称
+    optional string name = 4;
 
-        // 高度属性、RelativeとAGLは非対応
-        // Ellipsoid = 0 (楕円球体高)
-        // Relative = 1 (離陸地点を基準とする相対高度)
-        // AGL = 2 (地表面高度)
-        // MSL = 3 (海抜高度。デフォルト値)
-        // NOTE: enumだとstringになりBEの仕様が維持できなくなるため、uint32で定義
-        // HACK: enumにする時に、resourceに移動する
-        // HACK: Relativeを指定できないようにする
-        uint32 altitude_attr = 5;
+    // 高度属性、RelativeとAGLは非対応
+    // Ellipsoid = 0 (楕円球体高)
+    // Relative = 1 (離陸地点を基準とする相対高度)
+    // AGL = 2 (地表面高度)
+    // MSL = 3 (海抜高度。デフォルト値)
+    uint32 altitude_attr = 5;
 
-        // NOTE: 狭域廃止のため、削除
-        // transaction_attr
+    // プロジェクトID
+    optional int32 project_id = 6;
 
-        // プロジェクトID
-        // HACK: repeatedの外に出すべき
-        optional int32 project_id = 6;
+    // NOTE クリアランスを指定できるようにする
+    // // クリアランス
+    // optional double clearance = 7;
 
-        // HACK クリアランスを指定できるようにする
-    }
+    // NOTE 機体IDを指定できるようにする
+    // // 機体ID
+    // optional string uav_id = 8;
+  }
 
-    repeated Waypoint waypoints = 1;
+  repeated Waypoint waypoints = 1;
 }
 
 message CheckWaypointResponse {
-    message Waypoint {
-        // 名称
-        string name = 1;
+  message Waypoint {
+    // 名称
+    string name = 1;
 
-        // NOTE: Deprecatedのため削除
-        // result
+    // リザルトメッセージ
+    string message = 2;
 
-        // リザルトメッセージ
-        string message = 2;
+    // 緯度
+    double latitude = 3;
 
-        // NOTE: Deprecatedのため削除
-        // detail
+    // 経度
+    double longitude = 4;
 
-        // 緯度
-        double latitude = 3;
+    // 高度
+    float altitude = 5;
 
-        // 経度
-        double longitude = 4;
+    message ResultDef {
+      // 0 ウェイポイントチェックOK。safeで飛行可。
+      // 2003　バリア領域。飛行不可
+      // 2004 スペースなし。飛行不可
+      // 2005 予約空域。飛行不可（未実装）
+      // 2006 エリア未設定。unsafeだが飛行可。
+      // 2007 エラー。WP設定不可で飛行不可
+      int32 result = 1;
 
-        // 高度
-        float altitude = 5;
-
-        message ResultDef {
-            // 0 ウェイポイントチェックOK。safeで飛行可。
-            // 2003　バリア領域。飛行不可
-            // 2004 スペースなし。飛行不可
-            // 2005 予約空域。飛行不可（未実装）
-            // 2006 エリア未設定。unsafeだが飛行可。
-            // 2007 エラー。WP設定不可で飛行不可
-            int32 result = 1;
-
-            // リザルト情報
-            string info = 2;
-        }
-
-        // リザルトコード
-        ResultDef result_code = 6;
+      // リザルト情報
+      string info = 2;
     }
 
-    repeated Waypoint waypoints = 1;
+    // リザルトコード
+    ResultDef result_code = 6;
+  }
+
+  repeated Waypoint waypoints = 1;
 }
