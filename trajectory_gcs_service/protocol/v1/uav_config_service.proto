@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service UavConfigService {
+
+    /*
+      自組織に属する機体の設定値を取得する
+    */
+    rpc GetUavsConfig(GetUavsConfigRequest) returns (GetUavsConfigResponse){
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "自組織に属する機体の設定値を取得する";
+            description: "自組織に属する機体の設定値を取得する。\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                         "- `4001`\n"
+                         "- `4011`\n"
+            responses: {
+              key: "400";
+              value: {
+                description: "Invalid request.";
+                schema: {
+                  json_schema: {
+                    ref: "#/definitions/rpcStatus";
+                  }
+                };
+                examples: {
+                  key: "application/json";
+                  value: "{\n"
+                         "  \"code\": 3,\n"
+                         "  \"message\": \"the uav is not found\",\n"
+                         "  \"details\": [\n"
+                         "    {\n"
+                         "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                         "      \"errorCode\": 4001\n"
+                         "    }\n"
+                         "  ]\n"
+                         "}";
+                }
+              }
+            }
+          };
+    };
+
+    /*
+      機体の設定値を更新する　※自組織機体のみ指定可能
+      アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
+    */
+    rpc UpdateUavConfig(UpdateUavConfigRequest) returns (UpdateUavConfigResponse){
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "機体の設定値を更新する";
+            description: "機体の設定値を更新する。\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                         "- `4002`\n"
+            responses: {
+              key: "400";
+              value: {
+                description: "Invalid request.";
+                schema: {
+                  json_schema: {
+                    ref: "#/definitions/rpcStatus";
+                  }
+                };
+                examples: {
+                  key: "application/json";
+                  value: "{\n"
+                         "  \"code\": 3,\n"
+                         "  \"message\": \"the uav is not found\",\n"
+                         "  \"details\": [\n"
+                         "    {\n"
+                         "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                         "      \"errorCode\": 4002\n"
+                         "    }\n"
+                         "  ]\n"
+                         "}";
+                }
+              }
+            }
+          };
+    };
+}
+
+
+message GetUavsConfigRequest {}
+
+message GetUavsConfigResponse {
+    repeated UavConfig uav_configs = 1;
+}
+
+
+message UpdateUavConfigRequest {
+    int32 uav_id = 1;                  // 機体Id
+    optional string name = 2;          // 機体名
+    optional string serial_number = 3; // シリアルナンバー
+    optional string aspect_ratio = 4;  // アスペクト比(M:M)
+    optional bool simulator = 5;       // true シュミレーター | false 実機
+    optional double diagonal_view_angle = 6;     // 対角画角
+    optional double moderate_horizontally_speed = 7; // 標準水平速度
+    optional double moderate_vertical_speed = 8; // 標準垂直速度
+}
+
+message UpdateUavConfigResponse {
+    /*
+      0:OK しか返却しないため非推奨
+    */
+    uint32 status = 1 [deprecated = true];
+}
+
+message UavConfig {
+    int32 uav_id = 1;                  // 機体Id
+    optional string name = 2;          // 機体名
+    optional string serial_number = 3; // シリアルナンバー
+    optional string aspect_ratio = 4;  // アスペクト比(M:M)
+    optional bool simulator = 5;       // true シュミレーター | false 実機
+    optional double diagonal_view_angle = 6;     // 対角画角
+    optional double moderate_horizontally_speed = 7; // 標準水平速度
+    optional double moderate_vertical_speed = 8; // 標準垂直速度
+}

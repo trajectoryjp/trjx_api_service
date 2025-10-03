@@ -67,6 +67,41 @@ service UAVService {
     }
     // 組織内の機体リストを取得する
     rpc ListUsedUavs(ListUsedUavsRequest) returns (ListUsedUavsResponse) {} 
+
+    // 機体情報を取得する ※自組織機体のみ指定可能
+    rpc GetAircraftInfo(GetAircraftInfoRequest) returns (GetAircraftInfoResponse){
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          summary: "機体情報を取得する";
+          description: "機体の設定値を更新する\n\n"
+                       "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                       "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                       "- `4011`\n"
+          responses: {
+            key: "400";
+            value: {
+              description: "Invalid request.";
+              schema: {
+                json_schema: {
+                  ref: "#/definitions/rpcStatus";
+                }
+              };
+              examples: {
+                key: "application/json";
+                value: "{\n"
+                       "  \"code\": 3,\n"
+                       "  \"message\": \"the uav is not found\",\n"
+                       "  \"details\": [\n"
+                       "    {\n"
+                       "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                       "      \"errorCode\": 4011\n"
+                       "    }\n"
+                       "  ]\n"
+                       "}";
+              }
+            }
+          }
+        };
+  };
 }
 
 
@@ -131,4 +166,21 @@ message ListUsedUavsResponse {
         string model = 4;
     }
     repeated Uav used_uavs = 1;
+}
+
+message GetAircraftInfoRequest {
+  int32 uav_id = 1; // 機体Id
+}
+
+message GetAircraftInfoResponse {
+  optional string name = 1;         // 機体名
+  optional int32 duration = 2;      // 機体飛行時間
+  optional string description = 3;  // 説明
+  optional string landing_type = 4; // 着陸種別
+  optional bool simulator = 5;      // true シュミレーター | false 実機
+  optional string maker = 6;        // 機体メーカー
+  optional string model = 7;
+  optional string model3d_url = 8;  // 機体3DデータURL
+  optional string video_url = 9;    // リアルタイム動画表示URL
+  optional bool stealth = 10;       // true ステルス機体 | false 非ステルス機体
 }
