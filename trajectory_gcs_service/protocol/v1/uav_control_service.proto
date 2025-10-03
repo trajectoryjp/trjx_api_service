@@ -97,6 +97,9 @@ message GotoRequest {
     ReturnMode return_mode = 4;
     string tag = 5 ; // オプション
     string name = 6 ; // オプション
+
+    optional bool uses_public_channels_whenever_possible = 7; // パブリックな航路（UASL）を可能な限り使うか否か
+    optional bool uses_private_channels_whenever_possible = 8; // プライベートな航路を可能な限り使うか否か
 }
 
 // Goto経過情報
@@ -280,6 +283,8 @@ message ResumeResponse{
 message UpdateMissionAtFlyingRequest{
     string uav_id = 1;
     Mission mission = 2;
+    optional bool uses_public_channels_whenever_possible = 3; // パブリックな航路（UASL）を可能な限り使うか否か
+    optional bool uses_private_channels_whenever_possible = 4; // プライベートな航路を可能な限り使うか否か
 }
 
 message UpdateMissionAtFlyingResponse{
@@ -357,6 +362,9 @@ message RerouteRequest{
         2:Background(Reroute. Fromに近い場合はPAUSE)
     */
     uint32 invoke = 5 ;
+
+    optional bool uses_public_channels_whenever_possible = 6; // パブリックな航路（UASL）を可能な限り使うか否か
+    optional bool uses_private_channels_whenever_possible = 7; // プライベートな航路を可能な限り使うか否か
 }
 
 message RerouteResponse{

@@ -54,6 +54,9 @@ message CreateMissionRequest {
     Mission mission = 12; // ルート計算を行うMissionItemのリスト。
 
     trajectory.trjx_api_service.Standard output_altitude = 14; // 出力高度属性。
+
+    bool uses_public_channels_whenever_possible = 15; // パブリックな航路（UASL）を可能な限り使うか否か
+    bool uses_private_channels_whenever_possible = 16; // プライベートな航路を可能な限り使うか否か
 }
 
 message CreateMissionResponse {
