@@ -2,13 +2,14 @@
  * <アクセス方法>
  * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
  * "x-grpc-service": "AirwayAgent"
- * "username": システムユーザID
- * "token": アクセストークン
+ * "user_id": システムユーザID
+ * "Authorization": アクセストークン
  */
 
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 package Trajectory.AirwayAgent.Protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/airway_agent";
@@ -18,13 +19,21 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/airway_agent";
 service AirwayAgent {
     // [254_3 航路利用UI]
     // 航路予約一覧取得
-    rpc ListAirwayReservations(ListAirwayReservationsUiRequest) returns (stream AirwayReservationUiListItem) {} 
+    rpc ListAirwayReservations(ListAirwayReservationsUiRequest) returns (stream AirwayReservationUiListItem) {
+      option (google.api.http) = {
+        get: "/airway_agent/airway_reservations"
+      };
+    }
 
     // 航路予約詳細取得
     // 1) CommandService.GetAirwayReservationDetailsを呼び出して航路予約情報を取得する
     // 2) CommandService.GetAirwaySectionCrossSectionInfoを呼び出して航路断面情報を取得する
     // 3) Wrapper.ConvertCrossSectionsToWaypointsを呼び出して航路断面形状配列からウェイポイント配列を取得する
-    rpc GetAirwayReservationDetails(GetAirwayReservationDetailsUiRequest) returns (AirwayReservationUiDetails) {} 
+    rpc GetAirwayReservationDetails(GetAirwayReservationDetailsUiRequest) returns (AirwayReservationUiDetails) {
+      option (google.api.http) = {
+        get: "/airway_agent/airway_reservations/{airway_reservation_id}"
+      };
+    }
 
     // [254_2 航路利用BE]
     // [263 MissionDB]
@@ -33,13 +42,23 @@ service AirwayAgent {
     // 2) CommandService.GetAirwaySectionCrossSectionInfoを呼び出して航路断面情報を取得する
     // 3) Wrapper.ConvertCrossSectionsToWaypointsを呼び出して航路断面形状配列からウェイポイント配列を取得する
     // 4) MissionController.DBSaveMission(ウェイポイント配列, 航路予約ID, supervisor=true)を呼び出してミッションDBに登録する
-    rpc RegisterAirwayUsage(RegisterAirwayUsageRequest) returns (RegisterAirwayUsageResponse) {} 
+    rpc RegisterAirwayUsage(RegisterAirwayUsageRequest) returns (RegisterAirwayUsageResponse) {
+      option (google.api.http) = {
+        post: "/airway_agent/airway_usage/{airwayReservationId}/register"
+        body: "*"
+      };
+    }
 
     // [254_2 航路利用BE 3.2航路策定]
     // 指定されたウェイポイント配列から航路システムに航路を登録する
     // 1) Wrapper.ConvertWaypointsToCrossSectionsを呼び出してウェイポイントから空間断面に変換する
     // 2) CommandService.RegisterAirwaySectionCrossSectionInfoを呼び出して航路断面情報を登録する
-    rpc RegisterAirway(RegisterAirwayRequest) returns (RegisterAirwayResponse) {} 
+    rpc RegisterAirway(RegisterAirwayRequest) returns (RegisterAirwayResponse) {
+      option (google.api.http) = {
+        post: "/airway_agent/airway/register"
+        body: "*"
+      };
+    }
 }
 
 // 基本パラメータ：Mission識別子
@@ -73,6 +92,7 @@ message Position {
 message RegisterAirwayUsageRequest {
     // 航路予約ID
     string airwayReservationId = 1;
+    string missionName = 2;
 }
 
 // 航路利用登録結果
@@ -158,14 +178,32 @@ message AirwayReservationUiDetails {
 
 // 航路登録リクエスト
 message RegisterAirwayRequest {
-    // 事業者番号
-    string business_number = 1;
-    // 航路運営者ID
-    string airway_operator_id = 2;
+    // 最大落下許容範囲ID
+    // 落下空間取得API(/airway-design/fall-space)に指定するID
+    // 落下空間までは予め航路システムに登録済みの想定
+    string fall_tolerance_range_id = 1;
     // 航路名
-    string airway_name = 3;
+    string airway_name = 2;
+    // 飛行目的
+    string flight_purpose = 3;
     // ウェイポイントの配列
     repeated Position waypoints = 4;
+    // ジャンクション名の配列
+    // ウェイポイント各点がジャンクションとなる。ウェイポイント配列と同じ要素数
+    repeated string junction_names = 5;
+    // 航路区画名の配列
+    // ジャンクション間が航路区画となる。ウェイポイント配列より１少ない要素数
+    repeated string section_names = 6;
+    // 使用可能機体リスト
+    // 機体情報候補リストの取得API(/airway-design/aircraft)で得られる一覧に存在する機体のみ指定可能
+    repeated UAVModel available_uav_models = 7;
+
+    message UAVModel {
+        // メーカー名
+        string maker = 1;
+        // 型式(モデル)
+        string model_number = 2;
+    }
 }
 
 // 航路登録結果
