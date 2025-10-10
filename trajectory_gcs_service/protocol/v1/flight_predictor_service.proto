@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+service FlightPredictorService {
+
+    // GetCollidingMobilitiesWithinArea: 指定した領域内に存在するMoblityの衝突を通知する
+    rpc GetCollidingMobilitiesWithinArea(GetCollidingMobilitiesWithinAreaRequest) returns (stream CollidingMobilitiesWithinArea) {}
+    // GetCollidingMobilitiesIntoMobility: 指定したMobilityに対するMoblityの衝突を通知する
+    // アクセス権限: operator
+    rpc GetCollidingMobilitiesIntoMobility(GetCollidingMobilitiesIntoMobilityRequest) returns (stream CollidingMobilitiesIntoMobility) {}
+}
+
+message GetCollidingMobilitiesWithinAreaRequest {
+    trajectory.trjx_api_service.Position fixed_point = 1 ; // 領域の中心: 座標
+    float radius = 2; // 領域の半径(m)
+}
+
+// 指定した領域内に存在するMoblityの衝突を通知する
+// 一部機体ではmobility・collision_timeの設定なし
+// 相対的な位置などの機体基準の情報はMobilityPositionで得る
+message CollidingMobilitiesWithinArea {
+    optional MobilityPosition mobility_a= 1; // 機体　A
+    optional MobilityPosition mobility_b= 2; // 機体B
+    trajectory.trjx_api_service.Position collision_point = 3; // 衝突予測位置
+    optional int64 collision_time = 4; // 衝突予測時間（秒）
+
+    message MobilityPosition {
+        string uav_id = 1; // 機体ID
+        trajectory.trjx_api_service.Position position = 2; // 位置情報
+        optional XYZPosition relative_position = 3; // 機体の相対位置
+        trajectory.trjx_api_service.MobilityType mobility_type = 4; // 移動体種別
+        string uav_name = 5; // 機体名
+        optional string remote_id = 6; // リモートID
+    }
+}
+
+message GetCollidingMobilitiesIntoMobilityRequest{
+    // 衝突を検知する機体ID。
+    // 自組織機体のみ、他組織の場合はエラー
+    // UAV以外についてはサポート対象外　今後追加予定
+    string mobility_id= 1;
+    // 領域の半径(m) 
+    float radius = 2; 
+}
+
+// 指定したMobilityに対するMoblityの衝突を通知する
+// 一部機体ではmobility・collision_timeの設定なし
+message CollidingMobilitiesIntoMobility{
+    optional MobilityPosition mobility= 1; // 衝突してくる相手機体
+    trajectory.trjx_api_service.Position collision_point = 2; // 衝突予測位置
+    optional int64 collision_time = 3; // 衝突予測時間（秒）
+
+    message MobilityPosition {
+        string uav_id = 1; // 機体ID
+        trajectory.trjx_api_service.Position position = 2; // 位置情報
+        optional XYZPosition relative_position = 3; // 機体の相対位置
+        trajectory.trjx_api_service.MobilityType mobility_type = 4; // 移動体種別
+        string uav_name = 5; // 機体名
+        optional string remote_id = 6; // リモートID
+    }
+}

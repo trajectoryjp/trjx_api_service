@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+// 飛行計画を操作するAPI
+service FlightPlanService {
+    // 飛行計画作成
+    // rpc CreateFlightPlan(CreateFlightPlanRequest) returns (CreateFlightPlanResponse);
+
+    // 飛行計画取得
+    rpc GetFlightPlan(GetFlightPlanRequest) returns (GetFlightPlanResponse);
+
+    // 飛行計画一覧取得・検索
+    rpc ListFlightPlans(ListFlightPlanRequest) returns (stream ListFlightPlanResponse);
+
+    // 飛行計画更新
+    // rpc UpdateFlightPlan(UpdateFlightPlanRequest) returns (UpdateFlightPlanResponse);
+
+    // 飛行計画削除
+    // rpc DeleteFlightPlan(DeleteFlightPlanRequest) returns (DeleteFlightPlanResponse);
+
+}
+
+// 飛行計画の取得リクエスト
+message GetFlightPlanRequest {
+    string flight_plan_id = 1;                          // 飛行計画ID
+    bool has_tiles = 4;                                 // 飛行計画された空間タイルを返すかどうか true:返す false:返さない(デフォルトFalse)
+}
+
+// 飛行計画の取得レスポンス
+message GetFlightPlanResponse {
+    FlightPlanBody body = 2;                            // 飛行計画
+}
+
+// 飛行計画一覧取得・検索リクエスト
+message ListFlightPlanRequest {
+    SearchSpace box = 1;                         // 検索ボックス 検索範囲の制限を設ける
+    bool own_organization = 2;                          // 組織ID(所有組織)　true:自組織のみ false: 他組織を含める
+    optional string uav_id = 4;                         // 機体ID(文字列)
+    OptionalTimeStamp start_time = 5;                      // 有効期間始点 UNIX時間 (未サポート)
+    OptionalTimeStamp end_time = 6;                        // 有効期間終点 UNIX時間 (未サポート)
+    optional bool has_tiles = 7;                        // 飛行計画された空間タイル軍を返すかどうか true:返す false:返さない(デフォルトFalse)
+}
+
+// 飛行計画一覧取得・検索レスポンス
+message ListFlightPlanResponse {
+    // ResponseHeader  header = 1;                         // レスポンスヘッダ # BG内で実装
+    // StreamStatus status = 2;                            // ストリーム分割ステータス
+    repeated FlightPlanBody body = 3;                   // 飛行計画
+}
+
+// 飛行計画レスポンスボディー
+// 仮設ポートの場合
+//    離陸ターミナルルート ： 離陸ポイントー離陸ポイント直上WPー第一WP(再近接点)で生成
+//    着陸ターミナルルート ：
+//      - 最終WP着陸(Current)モード ：
+//        最終WPから最終WP直下(地上)へのターミナルルートを生成
+//      - ホームポジション帰還(RTL)/離陸地点帰還(Takeofff)モード ：
+//        最終WP(再近接点)ー離陸地点上空ー離陸地点の３点でターミナルルートを生成
+message FlightPlanBody {
+    string flight_plan_id = 1;                          // 飛行計画ID
+    PortLocation takeoff = 2;                           // 離陸ポート
+    PortLocation landing = 3;                           // 着陸ポート
+    repeated RouteObjectForPlan route = 4;              // 生成ルート
+}

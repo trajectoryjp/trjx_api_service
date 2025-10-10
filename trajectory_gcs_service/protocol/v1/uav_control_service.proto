@@ -1,0 +1,955 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+service UavControlService {
+    // Mission Interface：指定した座標に向かう
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Goto(GotoRequest) returns (stream GotoResponse) {}
+
+    // 機体にアサインされているミッションを消去する
+    // アクセス権限: operator 且つ UavPermissionの取得
+    rpc ClearMission(ClearMissionRequest) returns (ClearMissionResponse){}
+
+    // 指定した機体のミッションを開始する ※事前にミッションのアサインが必要
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc ExecuteMission(ExecuteMissionRequest) returns (ExecuteMissionResponse){}
+
+    // カメラ機能を実行する
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Camera(CameraRequest) returns (CameraResponse){}
+
+    // カメラの除隊を取得する
+    // アクセス権限: operator
+    rpc GetCameraStatus(GetCameraStatusRequest) returns (GetCameraStatusResponse) {}
+
+    // カメラの各機能の使用可否を取得する
+    // アクセス権限: operator
+    rpc GetCameraAbility(GetCameraAbilityRequest) returns (GetCameraAbilityResponse) {}
+
+    // ミッションを中止して緊急着陸させる
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Land(LandRequest) returns (LandResponse){}
+
+    // ミッションを中断し一時停止(ホバリング)させる
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Pause(PauseRequest) returns (PauseResponse){}
+
+    // 中断したミッションを再開させる（ミッション実行=AUTOモードへ変更する）
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Resume(ResumeRequest) returns (ResumeResponse){}
+
+    // 飛行中にミッションを更新する
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc UpdateMissionAtFlying(UpdateMissionAtFlyingRequest) returns (stream UpdateMissionAtFlyingResponse){}
+
+    // 飛行中にミッションを再計算する
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Redesign(RedesignRequest) returns (stream RedesignResponse){}
+
+    // 飛行中の経路変更をさせる ※他機体の経路は維持する
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Reroute(RerouteRequest) returns (stream RerouteResponse){}
+
+    // ReroutingおよびGotoをキャンセルする
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc CancelReroute(CancelRerouteRequest) returns (CancelRerouteResponse){}
+
+    // Rtl(Return To Launch)させる
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc Rtl(RtlRequest) returns (RtlResponse){}
+
+    // ルートを計算してRtlさせる
+    // アクセス権限: operator　且つ UavPermissionの取得
+    rpc SafeRtl(SafeRtlRequest) returns (stream SafeRtlResponse){}
+
+    // UAV状態構造とその状態
+    // アクセス権限: operator
+    rpc StatusView(StatusViewRequest) returns (StatusViewResponse) {}
+
+    // 機体にアサインされているミッションを取得
+    // アクセス権限: operator
+    rpc GetAssignedMission(GetAssignedMissionRequest) returns (GetAssignedMissionResponse){}
+
+    // 現在実行中のミッション（次のWaypoint）を取得する
+    // アクセス権限: operator
+    rpc GetCurrentMissionItem(GetCurrentMissionItemRequest) returns (stream GetCurrentMissionItemResponse){}
+
+    // Autopilot(FC)状態を取得する
+    // アクセス権限: operator
+    rpc GetAutopilotStatus(GetAutopilotStatusRequest) returns (GetAutopilotStatusResponse){}
+}
+
+
+// Goto指定パラメータ
+message GotoRequest {
+    string uav_id = 1; // uav_id
+    ItemParameterWaypoint point = 2 ; // 目的地点座標
+    ROI roi = 3 ; // 対象物座標
+    enum ReturnMode { // 目標地点到達後の戻り位置
+        RETURN_MODE_UNSPECIFIED = 0;
+        START_POINT = 1; // Gotoを開始した地点
+        NEXT_WAYPOINT = 2;
+    }
+    ReturnMode return_mode = 4;
+    string tag = 5 ; // オプション
+    string name = 6 ; // オプション
+
+    optional bool uses_public_channels_whenever_possible = 7; // パブリックな航路（UASL）を可能な限り使うか否か
+    optional bool uses_private_channels_whenever_possible = 8; // プライベートな航路を可能な限り使うか否か
+}
+
+// Goto経過情報
+message GotoResponse {
+    oneof GotoStatus{
+        ReroutingResult setup_mission = 1 ;
+        GotoProgress    goto_progress = 2 ;
+    }
+    uint32 progress = 3;    // 各経過状態の経過量（0-100）
+    Mission mission = 4;  // ルート計算を行った結果のミッションのリスト
+    string detail = 10;  // 詳細情報
+}
+
+
+message ClearMissionRequest{
+    string uav_id = 1;
+}
+
+message ClearMissionResponse{
+     /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}
+
+message ExecuteMissionRequest{
+    string uav_id = 1;
+}
+
+message ExecuteMissionResponse {
+    /*
+        0:Unknown
+        5:Continue 継続（streamの場合のみ）
+        1:End 終了（streamの場合のみ）
+        2:Complete 完了
+        3:Error
+        4:InvalidUav 無効なUAVID DEPRICATED
+        9:InternalError →404 Error
+        11:ErrorParameter UAVコマンドエラー →400 Error
+        13:ErrorUnStable 飛行可能状態でない
+        14:ErrorEmptyMission 指定したミッションが空
+        15:ErrorFCBusy FCがビジー
+        51:ErrorFlightPathStrataConfig
+        52:ErrorFlightPathNotFoundArea
+        53:ErrorFlightPathNotFoundModel
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
+        60:ErrorCommunicationFC FCとの通信エラー
+        50:ErrorFlightPathUnknown
+    */
+    uint32 status = 1; // 処理結果
+    string detail  = 2; // 詳細情報
+}
+
+message CameraRequest{
+    string uav_id = 1;
+    CameraControl camera_command = 2;
+}
+
+message CameraResponse{
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}
+
+message GetCameraStatusRequest{
+    string uav_id = 1;
+}
+
+message GetCameraStatusResponse{
+    UAVControllerResult result = 1;  // 処理結果
+    repeated CameraControl status = 2 ;
+}
+
+message GetCameraAbilityRequest{
+    string uav_id = 1;
+}
+
+message GetCameraAbilityResponse{
+    UAVControllerResult result = 1;  // 処理結果
+    uint32 movie = 2 ;        // 開始停止制御 (0:unknown/1:available/2:unavailable)
+    uint32 picture = 3 ;      // シャッター制御 (0:unknown/1:available/2:unavailable)
+    uint32 visible = 4 ;      // 可視光カメラ (0:unknown/1:available/2:unavailable)
+    uint32 infrared = 5 ;     // 赤外線光カメラ (0:unknown/1:available/2:unavailable)
+    uint32 pitch = 6 ;        // ピッチの切り替え可否 (0:unknown/1:available/2:unavailable)
+    uint32 yaw = 7 ;          // ヨーの切り替え可否 (0:unknown/1:available/2:unavailable)
+    uint32 zoom = 8 ;         // ズーム倍率の切り替え可否 (0:unknown/1:available/2:unavailable)
+    uint32 image_change = 9 ;  // movie/pictureの切り替え可否 (0:unknown/1:available/2:unavailable)
+    uint32 ray_change = 10 ;    // visible/infraredの切り替え可否 (0:unknown/1:available/2:unavailable)
+}
+
+message LandRequest{
+    string uav_id = 1;
+}
+
+message LandResponse{
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}
+
+message PauseRequest{
+    string uav_id = 1;
+}
+
+message PauseResponse{
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}
+
+message ResumeRequest{
+    string uav_id = 1;
+}
+
+message ResumeResponse{
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}
+
+message UpdateMissionAtFlyingRequest{
+    string uav_id = 1;
+    Mission mission = 2;
+    optional bool uses_public_channels_whenever_possible = 3; // パブリックな航路（UASL）を可能な限り使うか否か
+    optional bool uses_private_channels_whenever_possible = 4; // プライベートな航路を可能な限り使うか否か
+}
+
+message UpdateMissionAtFlyingResponse{
+       /*
+        0:Unknown
+        1:Calculating ルート計算中
+        2:Queueing WP転送中
+        3:Setting WP転送中
+        4:Changing ルート変更指示中
+        5:Complete 完了
+        9:Canceled ミッション変更キャンセル
+        10:Error エラー終了
+        11:ErrorCommand UAVコマンドエラー
+        12:ErrorDuplicate 指定したWPが重複
+        13:ErrorUnStable リルート可能状態でない
+        14:ErrorEmptyMission 指定したミッションが空
+        15:Void リルート無効（通り過ぎたなど）
+        51:ErrorFlightPathStrataConfig
+        52:ErrorFlightPathNotFoundArea
+        53:ErrorFlightPathNotFoundModel
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
+        50:ErrorFlightPathUnknown
+        99:InternalError
+    */
+    uint32 progressState = 1; // 経過状態
+    uint32 progress = 2;    // 各経過状態の経過量（0-100）
+    Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+    string info = 4 ; // 詳細情報
+}
+
+message RedesignRequest{
+    string uav_id = 1;  
+}
+
+message RedesignResponse{
+    /*
+        0:Unknown
+        1:Calculating ルート計算中
+        2:Queueing WP転送中
+        3:Setting WP転送中
+        4:Changing ルート変更指示中
+        5:Complete 完了
+        9:Canceled ミッション変更キャンセル
+        10:Error エラー終了
+        11:ErrorCommand UAVコマンドエラー
+        12:ErrorDuplicate 指定したWPが重複
+        13:ErrorUnStable リルート可能状態でない
+        14:ErrorEmptyMission 指定したミッションが空
+        15:Void リルート無効（通り過ぎたなど）
+        51:ErrorFlightPathStrataConfig
+        52:ErrorFlightPathNotFoundArea
+        53:ErrorFlightPathNotFoundModel
+        54:ErrorFlightPathOutOfArea/IllegalPosition
+        55:ErrorFlightPathIllegalPosition
+        50:ErrorFlightPathUnknown
+        99:InternalError
+    */
+    uint32 progressState = 1; // 経過状態
+    uint32 progress = 2;    // 各経過状態の経過量（0-100）
+    Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+    string info = 4 ; // 詳細情報
+}
+
+message RerouteRequest{
+    string uav_id = 1;
+    string transit_from_tag = 2; // 変更経路に分岐するWaypointのTag
+    optional string transit_to_tag = 3; // 戻りのWaypointのTag
+    Mission mission = 4; // 変更するミッション（分岐後のミッション）のリスト　※MissionのTagの名前は重複及びCancelRerouteしたMissionのTag名の利用も不可
+ 
+    /*
+        起動タイミング
+        0:Automatic(Fromを超えていたらImmediately、超えていなければBackground)
+        1:Immediate(Goto)
+        2:Background(Reroute. Fromに近い場合はPAUSE)
+    */
+    uint32 invoke = 5 ;
+
+    optional bool uses_public_channels_whenever_possible = 6; // パブリックな航路（UASL）を可能な限り使うか否か
+    optional bool uses_private_channels_whenever_possible = 7; // プライベートな航路を可能な限り使うか否か
+}
+
+message RerouteResponse{
+        /*
+        0:Unknown
+        1:Calculating ルート計算中
+        2:Queueing WP転送中
+        3:Setting WP転送中
+        4:Changing ルート変更指示中
+        5:Complete 完了
+        9:Canceled ミッション変更キャンセル
+        10:Error エラー終了
+        11:ErrorCommand UAVコマンドエラー
+        12:ErrorDuplicate 指定したWPが重複
+        13:ErrorUnStable リルート可能状態でない
+        14:ErrorEmptyMission 指定したミッションが空
+        15:Void リルート無効（通り過ぎたなど）
+        51:ErrorFlightPathStrataConfig
+        52:ErrorFlightPathNotFoundArea
+        53:ErrorFlightPathNotFoundModel
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
+        50:ErrorFlightPathUnknown
+        99:InternalError
+    */
+    uint32 progressState = 1; // 経過状態
+    uint32 progress = 2;    // 各経過状態の経過量（0-100）
+    Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+    string info = 4 ; // 詳細情報
+}
+
+message CancelRerouteRequest{
+    string uav_id = 1;
+}
+
+message CancelRerouteResponse{
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}
+ 
+message RtlRequest{
+    string uav_id = 1;
+}
+
+message RtlResponse{
+    /*
+        処理結果
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}
+
+message SafeRtlRequest{
+    string uav_id = 1;
+}
+
+message SafeRtlResponse{
+    string event = 1; // safe_rtlUav_{aircraftID}
+    ReroutingResponse reroutingResult = 2;
+}
+
+message StatusViewRequest{
+    string uav_id = 1;
+}
+
+message StatusViewResponse{
+
+        UAVAttributeDef  UAVAttr = 1;
+        message UAVAttributeDef {
+            string model = 1 ;
+            bool simulator = 2 ;
+            bool registered = 3 ; // NW登録状態 
+        }
+    
+        ConnectionStatusDef ConnectionStatus = 2;
+        message ConnectionStatusDef { // UAVConnectionStatusDetailに対応する
+            SignalInfo MissionReq = 1 ;
+            SignalInfo MissionCurrent = 2;
+            SignalInfo Comm = 3 ;
+            SignalInfo Position = 4 ;
+            SignalInfo System = 5;
+            message SignalInfo {
+                int64 Time = 1 ; // unix time(sec)
+                /*
+                    0:White 初期状態、未設定状態
+                    6:Green 正常状態
+                    5:GreenBlink 正常状態処理実行中
+                    4:Yellow 注意状態（運用に注意）
+                    3:YellowBlink 注意状態（運用に注意）。処理実行中。
+                    2:Orange 危険状態（回復策を実施）
+                    1:Red 緊急状態（緊急対処を実施）
+                    99:None Signalパラメータ無効（変化なし）
+                */
+                uint32 Signal = 2;
+                /*
+                    0:Non 初期状態
+                    1:Error エラー（確立できない）
+                    2:Disconnect 切断状態
+                    3:Connect 確立
+                */
+                uint32 Status = 3;
+                string AdditionalInfo = 4;
+                repeated UAVConnectionStatusDetail Log = 5 ;
+            }
+        }
+        
+        repeated UAVCommunicationStatusDetail CommunicationStatus = 3 ; // 最新およびログ
+            
+        MissionStatusDef MissionStatus = 4;
+        message MissionStatusDef {
+            AvailableDef Available = 1; // 時刻はリクエスト発行時（現時刻）
+            repeated LogDef Log = 2;
+            message LogDef {
+                int64 Time = 1 ; // unix time(sec)
+                oneof Message {
+                    UAVMissionStatusDetail MissionStatus = 2;
+                    ExecuteError ExecuteError = 3;
+                    /*
+                        0:ReasonDef_Unknown
+                        4:ReasonDef_CreateRoute
+                        1:ReasonDef_SetMission
+                        2:ReasonDef_SetMissionInFlight
+                        5:ReasonDef_Goto
+                        6:ReasonDef_Reroute
+                        3:ReasonDef_Clear
+                        7:ReasonDef_NoAssign
+                    */
+                    uint32 UpdateMission = 4 ;
+                }
+            }
+        }
+    
+        PositionStatusDef PositionStatus = 5 ;
+        message PositionStatusDef {
+            AvailableDef Available = 1;
+            repeated UAVPositionStatusDetail Logs = 2 ;
+        }
+    
+        SystemStatusDef SystemStatus = 6 ;
+         message SystemStatusDef {
+            AvailableDef Available = 1;
+            repeated UAVSystemStatusDetail Logs = 2 ;
+        }
+    
+        AutoPilotDef AutoPilotStatus = 7 ;
+         message AutoPilotDef {
+            AvailableDef Available = 1;
+            repeated UAVAutoPilotStatus Logs = 2 ;
+        }
+    
+        FlightStatusDef FlightStatus = 8;
+        message FlightStatusDef {
+            AvailableDef Available = 1;
+            repeated UAVFlightStatus Logs = 2 ;
+        }
+    
+        repeated AlertMessageLogDef AlertMessageLog = 9 ;
+        message AlertMessageLogDef {
+            /*
+                0:White 初期状態、未設定状態
+                6:Green 正常状態
+                5:GreenBlink 正常状態処理実行中
+                4:Yellow 注意状態（運用に注意）
+                3:YellowBlink 注意状態（運用に注意）。処理実行中。
+                2:Orange 危険状態（回復策を実施）
+                1:Red 緊急状態（緊急対処を実施）
+                99:None Signalパラメータ無効（変化なし）
+            */
+            uint32 Signal = 1 ;
+            string Message = 2;
+            int64 Time = 3 ;
+        }
+    
+        UAVControllerResult result = 20 ;
+    
+        message AvailableDef {
+            bool state = 1 ; // 情報の有効性
+            int64 time = 2 ; // Stateが遷移した時刻
+        }
+}
+
+
+message GetAssignedMissionRequest {
+    string uav_id =1;
+}
+
+message GetAssignedMissionResponse {
+    string uav_id =1 ;
+    Mission mission = 2;
+    UAVControllerResult result =3;
+}
+
+
+message GetCurrentMissionItemRequest {
+    string uav_id =1;
+    int32 project_id =2;
+}
+
+message GetCurrentMissionItemResponse {
+    string tag = 1; // 実行中ミッション名
+    string name = 6;
+    /*
+      通知種別
+      0:Unknown,
+      1:REACHED,
+      2:CURRENT,
+      3:IDLE
+    */
+    uint32 attr= 2;
+    // 収集時刻（タイムスタンプ）。未実装
+    string time = 9; 
+
+    message Position {
+        /*
+        　高度属性
+          0:Ellipsoid,
+          1:Relative,
+          2:AGL,
+          3:MSL
+        */
+        uint32 altitudeAttr = 1; // TR_DEV-1047
+    
+        // 緯度
+        double latitude = 2;
+        // 経度
+        double longitude = 3;
+        // 高度
+        float altitude = 4;
+    }
+    Position nextWaypoint = 3 ;
+    float distance = 4 ; // nextWaypointまでの距離
+    float direction = 5 ; // nextWaypointまでの方位（度）
+    int32 estimatedBatteryRemaining = 10 ;
+    int32 ETE = 11 ; // Estimated Time En-Route nextWaypointへの到達予想時間(秒）
+    int32 ETA = 12 ; // Estimated Time Arrival 到着予想時間（秒） 
+    int32 totalTime = 13 ; // 飛行経過時間（秒）
+    
+    enum WaypointSpaceAttribute {
+        // 航路不使用時
+        FREE_SPACE = 0 ;
+        // 航路使用時に設定
+        AIRWAY = 1 ;
+    }
+    optional WaypointSpaceAttribute space_attribute = 14 ; // 航路内か否か （WPのみ有効）
+}
+
+message GetAutopilotStatusRequest {
+    string uav_id =1;
+}
+
+message GetAutopilotStatusResponse {
+    bool Status = 1 ; // データ取得できていればtrue
+    /*
+      0:UnknownArm,
+      1:Arm,
+      2:Disarm
+    */
+    uint32 ArmDisarm=2 ;
+    /*
+      AutoPilotMode
+      0:UnknownMode,
+      1:Stabilize,
+      2:Guided,
+      3:Auto,
+      4:Pause,
+      5:Land,
+      6:Rtl,
+      20:OtherMode,
+    */
+    uint32 Mode=3;
+    int32 BasicModeNum =4;
+    int32 CustomModeNum =5;
+    /*
+      AutoPilotType
+      0:UnknownType,
+      1:APM,
+      2:PX4,
+      3:Generic,
+      4:OtherType,
+      10:PX4HITL,
+    */
+    uint32 Type = 6;
+    int64 Time = 7 ; // UNIX time(sec)
+}
+
+message ExecuteError {
+    /*
+        0:ExecuteErrorAttr_Unknown
+        1:ExecuteErrorAttr_SetMission
+        2:ExecuteErrorAttr_Predictor
+    */
+    uint32 result = 1;
+
+    /*
+        0:ExecuteErrorDef_Unknown 
+        1:ExecuteErrorDef_OutOfArea (this time,result = 1)
+        2:ExecuteErrorDef_ProhibitedPoint (this time,result = 1)
+        3:ExecuteErrorDef_Collision 複数機競合（他の機体を避けるルートが設定できない）(this time,result = 1)
+        4:ExecuteErrorDef_CollisionInFlight 飛行中の他機衝突警報
+    */
+    uint32 detail = 2; 
+}
+
+// UAV飛行状態
+message UAVFlightStatus {
+    /*
+        0:UnknownState 
+        1:IN_AIR
+        2:TAKEOFF
+        3:LANDING
+        4:UNKNOWN
+        5:ON_GROUND
+        6:Unregister
+    */
+    uint32 State =1;
+    /*
+        0:UnknownMode
+        1:Goto
+        2:Pause
+        3:Manual
+        4:Auto
+        5:Rtl(safeRtl, when drone returns during flight)
+    */
+    uint32 Mode =2; 
+    string Message = 3;
+    int64 Time = 4 ; // UNIX time(sec) RM#235
+}
+
+message UAVConnectionStatusDetail {
+    /*
+        0:White 初期状態、未設定状態
+        6:Green 正常状態
+        5:GreenBlink 正常状態処理実行中
+        4:Yellow 注意状態（運用に注意）
+        3:YellowBlink 注意状態（運用に注意）。処理実行中。
+        2:Orange 危険状態（回復策を実施）
+        1:Red 緊急状態（緊急対処を実施）
+        99:None Signalパラメータ無効（変化なし）
+    */
+    uint32 signal = 1; // 状態
+    /*
+        コネクション種別
+        0:Null
+        1:MissionReq Mission設定コネクション
+        2:MissionCurrent Mission状態コネクション
+        3:Comm 通信状態監視コネクション
+        4:Position Position監視コネクション
+        5:System System(UAV)監視コネクション
+    */
+    uint32 ConnectionAttr =2;
+    /*
+        コネクション状態
+        Non = 0; // 初期状態    
+        Error =1; // エラー（確立できない）
+        Disconnect = 2; // 切断状態
+        Connect = 3; // 確立
+    */
+    uint32 Status =3;
+    string AdditionalInfo = 4; // 付加情報
+    int64 Time = 5 ; // UNIX time(sec) RM#235
+}
+
+// ポジション状態詳細情報
+message UAVPositionStatusDetail {
+    /*
+        状態
+        0:White 初期状態、未設定状態
+        6:Green 正常状態
+        5:GreenBlink 正常状態処理実行中
+        4:Yellow 注意状態（運用に注意）
+        3:YellowBlink 注意状態（運用に注意）。処理実行中。
+        2:Orange 危険状態（回復策を実施）
+        1:Red 緊急状態（緊急対処を実施）
+        99:None Signalパラメータ無効（変化なし）
+    */
+    uint32 signal = 1;
+    /*
+        詳細状態
+        0:Non(初期状態)
+        1:Error(システムエラー)
+        2:Prediction(推測（機体からの情報なし）)
+        3:LowPrecision(精度低下)
+        4:Normal(正常)
+        5:NormalWithoutHeading)
+    */
+    uint32 Status = 2;
+    string AdditionalInfo = 3; // 付加情報
+    int64 Time = 4 ; // UNIX time(sec) RM#235
+}
+
+// 機体状態詳細情報
+message UAVSystemStatusDetail {
+
+    /*
+        状態
+        0:White 初期状態、未設定状態
+        6:Green 正常状態
+        5:GreenBlink 正常状態処理実行中
+        4:Yellow 注意状態（運用に注意）
+        3:YellowBlink 注意状態（運用に注意）。処理実行中。
+        2:Orange 危険状態（回復策を実施）
+        1:Red 緊急状態（緊急対処を実施）
+        99:None Signalパラメータ無効（変化なし）
+    */
+    uint32 signal = 1;
+
+    /*
+        詳細状態
+        0:Non(初期状態)
+        1:Error(システムエラー)
+        2:Normal(正常)
+        3:LowBattery(バッテリー低下)
+        4:SensorError(センサーエラー)
+        5:CPUOverload
+        6:IncreaseDropRate
+        7:Warn
+        8:Emergency
+        9:EmptyBattery(バッテリー切れ)
+    */
+    uint32 status = 2;
+    string AdditionalInfo = 3; // 付加情報
+    float BatteryLevel = 4; // バッテリー残容量
+    int64 Time = 5 ; // UNIX time(sec) RM#235
+}
+
+// Autopilot状態
+message UAVAutoPilotStatus {
+    bool Status = 1 ; // データ取得できていればtrue
+    /*
+        0:UnknownArm
+        1:Arm
+        2:Disarm
+    */
+    uint32 ArmDisarm=2 ;
+    /*
+        0:UnknownMode
+        1:Stabilize 
+        2:Guided 
+        3:Auto 
+        4:Pause 
+        5:Land 
+        6:Rtl 
+        20:OtherMode
+    */
+    uint32 Mode=3;
+    int32 BasicModeNum =4;
+    int32 CustomModeNum =5;
+    /*
+        0:UnknownType 
+        1:APM
+        2:PX4 
+        3:Generic 
+        4:OtherType 
+        10:PX4HITL
+    */
+    uint32 Type=6;
+    int64 Time = 7 ; // UNIX time(sec) RM#235
+}
+
+// 通信状態詳細情報
+message UAVCommunicationStatusDetail {
+    /*
+        状態
+        0:White 初期状態、未設定状態
+        6:Green 正常状態
+        5:GreenBlink 正常状態処理実行中
+        4:Yellow 注意状態（運用に注意）
+        3:YellowBlink 注意状態（運用に注意）。処理実行中。
+        2:Orange 危険状態（回復策を実施）
+        1:Red 緊急状態（緊急対処を実施）
+        99:None Signalパラメータ無効（変化なし）
+    */
+    uint32 signal = 1;
+    /*
+        詳細状態
+        0:Non 初期状態    
+        1:Error システムエラー
+        2:Disconnect 切断状態
+        3:QualityLow 通信状態劣化
+        4:QualityMiddle 通信状態低下
+        5:QualityHigh 通信状態良好
+    */
+    uint32 Status = 2;
+    string AdditionalInfo = 3; // 付加情報
+    float PacketLoss = 4; // パケットロス率
+    int64 Time = 5 ; // UNIX time(sec) RM#235
+}
+
+message UAVMissionStatusDetail {
+    /*
+        状態
+        0:White 初期状態、未設定状態
+        6:Green 正常状態
+        5:GreenBlink 正常状態処理実行中
+        4:Yellow 注意状態（運用に注意）
+        3:YellowBlink 注意状態（運用に注意）。処理実行中。
+        2:Orange 危険状態（回復策を実施）
+        1:Red 緊急状態（緊急対処を実施）
+        99:None Signalパラメータ無効（変化なし）
+    */
+    uint32 signal = 1;
+
+    /*
+        詳細状態
+        0:Non
+        1:Error
+        2:Failure(設定失敗、ただし設定処理は継続される)
+        3:NoMission(ミッション未設定)
+        4:Processing(設定処理中)
+        5:Ready(ミッション設定完了。実行待ち)
+        6:Executing(ミッション実行中)
+        7:LostCurrentMission(CurrentMissionの通知を受けていない)
+        8:WaitUAV(UAVの接続待ち)
+        9:NoAssign(Assign抑止))
+    */
+    uint32 status = 2;
+    string AdditionalInfo = 3; // 付加情報
+    int64 Time = 4 ; // UNIX time(sec) RM#235
+}
+
+message ReroutingResponse{
+    /*
+        0:Unknown
+        1:Calculating ルート計算中
+        2:Queueing WP転送中
+        3:Setting WP転送中
+        4:Changing ルート変更指示中
+        5:Complete 完了
+        9:Canceled ミッション変更キャンセル
+        10:Error エラー終了
+        11:ErrorCommand UAVコマンドエラー
+        12:ErrorDuplicate 指定したWPが重複
+        13:ErrorUnStable リルート可能状態でない
+        14:ErrorEmptyMission 指定したミッションが空
+        15:Void リルート無効（通り過ぎたなど）
+        51:ErrorFlightPathStrataConfig
+        52:ErrorFlightPathNotFoundArea
+        53:ErrorFlightPathNotFoundModel
+        54:ErrorFlightPathOutOfArea
+        55:ErrorFlightPathIllegalPosition
+        50:ErrorFlightPathUnknown
+        99:InternalError
+    */
+    uint32 progressState = 1; // 経過状態
+    uint32 progress = 2;    // 各経過状態の経過量（0-100）
+    Mission mission = 3; // ルート計算を行った結果のミッションのリスト
+    string info = 4 ; // 詳細情報
+}
+
+message UAVControllerResult {
+    /*
+        0:Unknown
+        1:End(経過の終了(経過表示の場合のみ))
+        2:Complete(完了)
+        3:Error
+        4:Continue
+        5:NotEnough
+        6:ParameterError
+        7:NoExist
+        8:UnRegister
+        13:UnStable
+    */
+    uint32 status = 1;
+    string detail = 2;
+}

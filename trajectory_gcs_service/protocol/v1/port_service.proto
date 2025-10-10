@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+
+service PortService {
+
+    // ポートの登録
+    rpc CreatePort(CreatePortRequest) returns (Port);
+
+    // ポートの取得
+    rpc GetPort(GetPortRequest) returns (Port);
+
+    // ポートのリスト取得
+    rpc ListPorts(ListPortsRequest) returns (stream ListPortsResponse);
+
+    // ポートの削除
+    rpc DeletePort(DeletePortRequest) returns (google.protobuf.Empty);
+
+    // ポートの更新
+    rpc UpdatePort(UpdatePortRequest) returns (Port);
+}
+
+// ポート登録リクエスト
+message CreatePortRequest {
+    // 登録ポート
+    Port port = 1;
+}
+
+// ポート取得リクエスト
+message GetPortRequest {
+    // ポートID
+    int64 id = 1;
+}
+
+// TODO: UI再審議
+// ポート一覧取得・フィルタリング検索リクエスト
+message ListPortsRequest {
+    // 検索ボックス 検索範囲の制限を設ける
+    SearchSpace search_space = 1;
+
+    // 組織ID(所有組織)　true:自組織のみ false: 他組織を含める
+    bool own_organization = 2;
+
+     // グループID 利用不可
+    optional int64 group_id = 3 [deprecated = true];
+
+    // TODO: UI再審議
+    // ポートの種別 true:private false:public
+    optional bool is_private = 4;                       
+
+    // 緊急着陸ポート種別 true:緊急着陸ポート/ flase:通常ポート
+    optional bool is_emergency = 5;
+
+    // 名称
+    optional string name = 6;                           
+
+    // タグ
+    optional string tag = 7;                            
+
+    // ポート提供者
+    optional string provider = 8;                       
+}
+
+// ポート一覧取得・フィルタリング検索レスポンス
+message ListPortsResponse {
+    // ポート
+    repeated Port ports = 1;
+
+    // // リスト全体の項目数
+    // int32 total_count = 2;
+
+    // // 次のページを取得するトークン
+    // string next_page_token = 3;
+}
+
+// ポート更新リクエスト
+message UpdatePortRequest{
+
+    // ポート（指定した内容で上書き）
+    Port port = 2;
+}
+
+// ポート削除リクエスト
+message DeletePortRequest {
+    int64 id = 1;                                       // ポートID
+    optional bool is_logical = 2;                       // 論理削除フラグ(true:論理削除 /  false:物理削除)
+}

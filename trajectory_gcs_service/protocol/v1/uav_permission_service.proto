@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service UavPermissionService {
+    // GetPermission: UAV操作に関わる権限をリクエストする.  
+    // アクセス権限: operator.  
+    // ストリーム切断から120秒（デフォルト）の間にもう一度権限がリクエストされなかった場合、自動的に権限が解除される
+    rpc GetPermission(GetPermissionRequest) returns (stream GetPermissionResponse) {}
+
+    // ConfirmPermission: 他ユーザーに対するUAV操作権限付与の承認/拒否を行う.  
+    rpc ConfirmPermission(ConfirmPermissionRequest) returns (ConfirmPermissionResponse) {}
+
+    // DeletePermission: 特定UAVに対する操作権限を削除する
+    rpc DeletePermission(DeletePermissionRequest) returns (DeletePermissionResponse) {}
+
+    rpc GetPermissionStatus(GetPermissionStatusRequest) returns (GetPermissionStatusResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetPermissionStatus: 特定UAVに対する現在の操作権限状況を取得する"
+            description: "特定UAVに対する現在の操作権限状況を取得する。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"error at get permissioned count\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+}
+
+message GetPermissionRequest {
+    string uav_id = 1; // 機体ID
+    string message = 2; // 申請メッセージ
+    optional int32 timeout = 3; // ストリーム終了後から、権限解放までの待ち時間（秒単位） デフォルト120秒
+}
+
+message GetPermissionNotification {
+    string user_id = 1; // 新たに権限をリクエストしたユーザーID
+	string uav_id = 2; // 権限がリクエストされた機体ID
+	string message = 3; // 権限リクエスト時のメッセージ
+}
+
+message GetPermissionResult {
+
+    // 処理結果 Unspecified,Rejected,Timeoutの場合はストリームが切断される.  
+    // 0:Unspecified 使用しない.  
+    // 1:Completed.  
+    // 2:Rejected.  
+    // 3:Timeout.  
+    enum PermissionStatus {
+        PERMISSIONSTATUS_UNSPECIFIED = 0;
+        PERMISSIONSTATUS_COMPLETED = 1;
+        PERMISSIONSTATUS_REJECTED = 2;
+        PERMISSIONSTATUS_TIMEOUT = 3;
+    }
+    PermissionStatus permission_status = 1;
+
+    oneof detail {
+        // 正常終了の場合のみ.  
+        //   既に権限を持っており、かつ権限の延長に成功:uav permission extended.  
+        //   権限の延長に失敗:user already have permission, extend time failed.  
+        //   権限を持っておらず、かつ他のユーザーが権限を持っていた場合:{申請ユーザーのuser_id}:{message}の形式.  
+        string message = 2;
+
+        // Rejected・Timeoutの場合のみ.  
+        // Rejectedの場合、拒否を行なったユーザー.  
+        // Timeoutの場合、時間内に承認を行わなかったユーザー.  
+        string user = 3;
+    }
+}
+
+message GetPermissionResponse {
+    oneof message_type {
+        GetPermissionNotification notification = 1; // 権限リクエストの通知
+        GetPermissionResult result = 2; //権限のリクエスト結果
+    }
+}
+
+message ConfirmPermissionRequest {
+    string message = 1; // 申請メッセージ
+    bool acceptance = 2; // 承認/拒否
+    string request_user_id = 3; // 申請したユーザー
+    int32 request_uav_id = 4; // 申請先のUAV
+}
+
+message ConfirmPermissionResponse {
+    uint32 status = 1 [deprecated = true] ; // 処理結果 1:正常終了
+    string message = 2; // rejected or accepted
+}
+
+message DeletePermissionRequest {
+    int32 uav_id = 1; // 機体ID
+}
+
+message DeletePermissionResponse {
+    uint32 status = 1 [deprecated = true] ; // 処理結果　1:正常終了
+    string message = 2  [deprecated = true] ; // ok
+}
+
+message GetPermissionStatusRequest {
+    string uav_id = 1;// 機体ID
+}
+
+message GetPermissionStatusResponse {
+    // 処理結果.  
+    // 0:UAVに対する権限を持っておらず（他のユーザーが持っている）、かつユーザーはオペレータ権限を持っている
+    // 1:UAVに対する権限を持っており、かつユーザーはオペレータ権限を持っている
+    // 2:UAVに対する権限を持っているが、ユーザーはオペレータ権限は持っていない
+    // 3:誰もUAVに対する権限を持っていらず、かつユーザーはオペレータ権限を持っている
+    uint32 status = 1;
+}
