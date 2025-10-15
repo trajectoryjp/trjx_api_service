@@ -17,7 +17,7 @@
  package trajectory.sensor_connector.protocol.v1;
  option go_package = "github.com/trajectoryjp/trjx_api_service/sensor";
  
- import "trajectory/type/remote_id_position.proto";
+ import "github.com/trajectoryjp/trjx_api_service/type/remote_id_position.proto";
 
 // リモートID位置情報サービス
 service RemoteIdPositionService {

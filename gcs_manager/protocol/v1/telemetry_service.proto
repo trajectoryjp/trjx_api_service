@@ -1,0 +1,103 @@
+/***　Copyright © 2023-2024 Trajectory. All rights reserved. ***/
+
+/*
+ * <機能概要>
+ * GCS向けテレメトリサービスは、機体の位置,姿勢,システム情報などをTRJXに送信することで
+ * 衝突検知, 飛行ルート逸脱検知(飛行計画送信時のみ), フライトログ保存といった安全支援機能を有効化します。
+ * 本APIでは機体テレメトリAPIを提供します。
+ *
+ * <アクセス方法>
+ * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
+ * "x-grpc-service": "GcsManager"
+ * "username": システムユーザID
+ * "token": アクセストークン
+ */
+
+syntax = "proto3";
+
+package trajectory.gcs_manager.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/gcs";
+ 
+import "github.com/trajectoryjp/trjx_api_service/type/telemetry.proto";
+
+// テレメトリサービス
+// このサービスで提供するAPIは全て機体ごとのstream(1:1関係)。
+service TelemetryService {
+    // 機体テレメトリをgRPC client streamで送信する
+    // streamは以下の契機で切断する。(再開には再度接続・Initializeリクエストが必要)
+    // - Initializeリクエスト時にエラーが返却時された場合。(サーバによって切断される)
+    // - flightIdなどのInitializeパラメータ変更を行う場合(クライアントから明示的に切断する必要がある)
+    // - サーバとの接続異常時(ネットワーク起因)
+    // errors:
+    // - InvalidArgument: Initializeリクエスト時に必須データが送られていない、または不正な場合。(Telemetryリクエスト時の不正データは破棄のみ行いエラーは返さない)
+    rpc UpdateTelemetry(stream TelemetryRequest) returns (TelemetryResponse);
+
+    // 機体テレメトリをMAVLINKメッセージで送信する
+    // 送信可能なMavlink MSGIDはMavlinkTelemetry参照
+    rpc UpdateMavlinkTelemetry(stream MavlinkTelemetry) returns (UpdateMavlinkTelemetryResponse);
+
+}
+
+
+// 外部GCSがテレメトリを送信するリクエスト
+message TelemetryRequest {
+    oneof request {
+        // テレメトリ送信開始通知(TRJXのテレメトリシステムに機体を認識させる)
+        // stream開始後の初回リクエストは必ずこのメッセージである必要があります
+        trjx_api_service.UavBasic initialize = 1;
+        Telemetry telemetry = 2;                    // テレメトリ通知(Initializeメッセージを受信するまでテレメトリは破棄する)
+    }
+}
+
+// 外部GCSがテレメトリを送信するレスポンス
+message TelemetryResponse {
+    uint32 code = 1;                        // ステータスコード
+    string message = 2;                     // メッセージ
+    Request request = 3;                    // リクエスト種別
+    enum Request {
+        INITIALIZE = 0;                     // Initialize応答
+        TELEMETRY = 1;                      // Telemetry応答
+    }
+}
+
+// 外部GCSからMavlinkでテレメトリ送信するメッセージ
+message MavlinkTelemetry {
+    // バイト列にシリアライズしたMavlinkパケットフレーム(STX~CHECKSUMまたはSIGNATUREまで)
+    // Mavlinkバージョンは2を推奨
+    // サポートするMSG IDは以下
+    // - HEARTBEAT(#0)
+    // - SYS_STATUS(#1)
+    // - GLOBAL_POSITION_INT(#33)
+    // - GLOBAL_POSITION_INT_COV(#63)
+    // - ATTITUDE(#30)
+    // - MISSION_CURRENT(#42)
+    // - MISSION_ITEM_REACHED(#46)
+    // - BATTERY_STATUS(#147)
+    bytes mavlink_message = 1;
+}
+
+// 外部GCSがテレメトリを送信するレスポンス
+message UpdateMavlinkTelemetryResponse {
+    uint32 code = 1;                        // ステータスコード
+    string message = 2;                     // メッセージ
+}
+
+// テレメトリ情報メッセージ
+message Telemetry {
+    // テレメトリとしてstreamのメッセージ毎に次の情報のうちいずれか1つを送る
+    // 必須と表記しているメッセージは一定時間以内に送信する必要がある(目安1分)
+    // 一定時間内に送信しない場合、テレメトリの累積情報(速度推定など)がクリアされる
+    oneof telemetry_data {
+        // テレメトリ位置情報(必須)
+        trjx_api_service.UavPosition position = 1;
+        // テレメトリ姿勢情報(オプショナル)
+        // UavBasicで指定したAbilityのattitude_report=true時は必須
+        trjx_api_service.UavAttitude attitude = 2;
+        // テレメトリバッテリー情報(オプショナル)
+        // UavBasicで指定したAbilityのbattery_status_report=true時は必須
+        trjx_api_service.UavBattery battery = 3;
+        // テレメトリステータス情報(オプショナル)
+        // UavBasicで指定したAbilityのattitude_report=true時は必須
+        trjx_api_service.UavStatus status = 4;
+    }
+}

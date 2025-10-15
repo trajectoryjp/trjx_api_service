@@ -1,0 +1,119 @@
+/***　Copyright © 2023-2024 Trajectory. All rights reserved. ***/
+
+syntax = "proto3";
+
+package trajectory.trjx_api_service;
+option go_package = "github.com/trajectoryjp/trjx_api_service/type";
+
+import "google/protobuf/timestamp.proto";
+
+// 空間ID uasの定義を参照する
+//message SpatialIdentification {
+//    string id = 1 ; // z/f/x/y
+//}
+
+// ストリームステータス
+enum StreamStatus {
+    STREAM_STATUS_UNSPECIFIED = 0; // 未定義
+    STREAM_STATUS_CONTINUE = 1;    // 継続
+    STREAM_STATUS_DONE = 2;        // 完了
+    STREAM_STATUS_ABORT = 3;       // 中止
+}
+
+message Position {
+    // 緯度
+    double latitude = 2;
+    // 経度
+    double longitude = 3;
+    // 高度
+    Altitude altitude = 4;
+}
+
+message Altitude {
+    Standard standard = 1;
+    float altitude = 2; // m
+}
+
+enum Standard {
+    ALTITUDE_ATTR_UNSPECIFIED = 0 ;
+    // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+    RELATIVE= 1;
+    // 地表面高度。
+    AGL = 2;
+    // 海抜高度（標高）。
+    MSL = 3;
+    // 楕円球体高。default値。spank
+    ELLIPSOIDE = 4;
+}
+
+// XY座標
+message Coordinate {
+    // 緯度
+    double latitude = 1;
+    // 経度
+    double longitude = 2;
+}
+
+// ユーザ属性
+enum UserType{
+    option deprecated = true;
+    TYPE_UNSPECIFIED = 0;                       // 未設定
+    TYPE_CAR = 2;                               // 車
+    TYPE_SHIP = 3;                              // 船
+    TYPE_AIRPLANE =4;                           // 航空機
+    TYPE_HELICOPTER =5;                         // ヘリコプター
+    TYPE_MARKER =6;                             // マーカー
+    TYPE_URBAN_AIR_MOBILITY = 7;                // エア・モビリティ(UAM)
+    TYPE_TRAIN = 8;                             // 電車
+    TYPE_UAV = 9;                               // UAV
+}
+
+// 移動体種別
+enum MobilityType{
+    MOBILITY_TYPE_UNSPECIFIED = 0;                       // 未設定
+    MOBILITY_TYPE_CAR = 2;                               // 車
+    MOBILITY_TYPE_SHIP = 3;                              // 船
+    MOBILITY_TYPE_AIRPLANE =4;                           // 航空機
+    MOBILITY_TYPE_HELICOPTER =5;                         // ヘリコプター
+    MOBILITY_TYPE_MARKER =6;                             // マーカー
+    MOBILITY_TYPE_URBAN_AIR_MOBILITY = 7;                // エア・モビリティ(UAM)
+    MOBILITY_TYPE_TRAIN = 8;                             // 電車
+    MOBILITY_TYPE_UAV = 9;                               // UAV
+    MOBILITY_TYPE_MAN = 10;                              // 人間
+    MOBILITY_TYPE_UNMANNED_VEHICLE = 11;                 // 無人車両
+
+}
+
+// 機体ID
+message UavId {
+    oneof uav{
+        string uav_id = 1;                  // 機体ID(文字列)
+        string remote_id = 2;               // リモートID(文字列)
+    }
+}
+
+// 検索Box
+// -> BoundingBox へ順次移行することが決定した。[第096回(20250716)開発判定会議]
+message SearchBox {
+    // メッセージの有効性(true/false)
+    bool has_value = 1;
+    // 最小キー
+    Position min = 2;
+    // 最大キー
+    Position max = 3;
+}
+
+// バウンディングボックス
+// 四角柱状の範囲指定のためのメッセージ
+message BoundingBox {
+    // 最小キー
+    Position min = 1;
+    // 最大キー
+    Position max = 2;
+}
+
+// オプショナルの時刻
+message TimeStamp {
+    bool has_value = 1; // 値を持っているか否か。time_stampが無い場合はhas_value=falseです
+    google.protobuf.Timestamp time_stamp = 2; // 時刻
+}

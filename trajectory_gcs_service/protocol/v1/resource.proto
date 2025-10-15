@@ -1,0 +1,908 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
+
+
+/*
+ エラーコード:エラー時のdetails内に格納される「errorCode」の型にあたる
+
+ サンプル
+ {
+    "code": 3,
+    "message": "sitl is already running, sitl time is extended",
+    "details": [
+        {
+            "@type": "type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCodes",
+            "errorCode": 4001
+        }
+    ]
+}
+*/
+message ErrorCode {
+    int32 error_code = 1;
+}
+
+message TransactionID {
+    string identifier = 1;  // トランザクション識別子
+    enum Attribute {
+        SINGLE = 0;  // 狭域
+        WIDE = 1;  // 広域
+    }
+    Attribute attribute = 2;  // 種別
+}
+
+message ScheduledTime {
+    optional bool available  = 1;
+    google.protobuf.Timestamp time  = 2;
+    google.protobuf.Duration period = 3;
+    google.protobuf.Duration occupy = 4;
+}
+
+// Export
+message ExternalMission {
+    bool result = 1 ;
+    string status = 2 ;
+    enum Format {
+        TRJX_FORMAT = 0 ;
+        LITCHI_FORMAT = 1;
+        MAV_LINK_FORMAT = 2 ;
+    }
+    Format attr = 3 ;
+    oneof MissionFormat { // output file format
+        Mission trjx = 4 ;
+        string csv = 5 ;
+        string json_mission = 6 ; // .mission拡張子(mavlink)
+    }
+}
+
+// MissionControllerの処理結果の基本形
+// at *
+// in SaveMissionResult
+message MissionControllerResult {
+    enum Status {
+        SATUS_UNSPECIFIED = 0;
+        CONTINUE = 5;
+        END = 1;        // 終了
+        COMPLETE = 2;   // 完了
+        ERROR = 3;
+        INTERNAL_ERRO = 9 ;
+        ERROR_PARAMETER = 11 ; // UAVコマンドエラー
+        //ErrorDuplicate = 12 ; // 指定したWPが重複
+        ERROR_UNSTABLE = 13 ; // 飛行可能状態でない
+        ERROR_EMPTY_MISSION = 14 ; // 指定したミッションが空
+        ERROR_FC_BUSY = 15 ; // FCがビジー
+        ERROR_FLIGHT_PATH_STRATA_CONFIG = 51; // FP9001
+        ERROR_FLIGHT_PATH_NOT_FOUND_AREA = 52; // FP9002
+        ERROR_FLIGHT_PATH_NOT_FOUND_MODEL = 53; // FP9003
+        ERROR_FLIGHT_PATH_OUT_OF_AREA = 54; // FP9004
+        ERROR_FLIGHT_PATH_ILLIGAL_POSITION = 55; // FP9005
+        ERROR_COMMUNICATION_FC = 60; // FCとの通信エラー。Timeout含む。
+        ERRROR_FLIGHT_PATH_UNKNOWN = 50 ;
+    }
+    Status status = 1; // 処理結果
+    string detail  = 2; // 詳細情報
+}
+
+message ApplicationAttr {
+    // すべてのMission形式を解釈できるアプリの場合はfalse。trueの場合はbundleIDが一致しないとUpdateできない。ReadやCreateMissionで生成されたミッションを透過的にSaveする場合にはfalseとする（もしくはApplicationAttrを設定しない）。
+    bool subset_mission = 1;
+
+    // 例
+    // (1) Trapon：jp.trajectory.trapon
+    // (2) Mobile：jp.trajectory.mobile
+    // (3) TRJX-UI：jp.trajectory.trjxui
+    // (4) TRJXコマンド：jp.trajectory.trjxcmd
+    //
+    // TRJXで自動生成されたルートでは、jp.trajectory.trjxが設定される
+    // ドメイン形式
+    string bundle_id = 2;
+}
+
+message Mission {
+    reserved 11, 13, 14;
+    reserved "conditions", "condition_branchs", "condition_reacheds";
+    enum EtaAttr {
+        ETA_PROGRESS = 0;
+        ETA_TIME = 1;
+    }
+    // ETA種別
+    EtaAttr eta_attr = 1;
+    // ミッションのリスト 
+    repeated MissionItem items_array = 9;
+    // ROIグループのリスト。
+    repeated ROI roi_groups = 12;
+    // Missionを生成したアプリケーション。未設定はすべてのMissionItemを解釈できるアプリケーション。未設定時はsubsetMission=falseとして解釈する。本パラメータは読み取り専用、編集禁止。
+    ApplicationAttr app = 20;
+    // 飛行計画ID CreateMission時は無効
+    optional string flight_plan_id = 21 ;
+    // 航路予約ID　※航路使用時のみ使用
+    optional string airway_reservation_id = 22 ;
+}
+
+// MissionItem（ミッションの構成要素）
+// in Mission,（内部形式itemGraphElement）
+// （Missionおよび内部形式（itemGraphElement）で保持するための構造体）
+// 各要素で設定されるtagおよびtagOfGroupは、"0"および"_"で始まる名称は予約（利用不可）
+message MissionItem {
+    // MissionItemを識別するための識別子。
+    // ルート計算で自動設定されたものにはプリフィックスが付与される(_AUTOnn_) 。nnは0から始まる通番。
+    string tag = 1;
+    string name = 2;
+
+    // DB化に合わせたリファクタリング予定
+    enum ItemAttr {
+        ITEM_ATTR_UNSPECIFIED = 0;
+        AUTO = 1;
+        USER = 2;
+        // 次のWPへのルートは自動設計しない（ラダールート等に利用）。wideareaのみ対応。Singleで指定した場合は未保証。
+        FIXED = 3;
+    }
+
+    // 次のWPへのルートの属性
+    enum SafetyRoute {
+        reserved 2;
+        reserved "ROUTE_WARN";
+        SAFTY_ROUTE_UNSPECIFIED = 0;
+        // ルート設計成功（当面はWarn属性を含む）
+        ROUTE_SAFE = 1;
+        // wide areaにおいてルート設計不可（ダイレクトにUser間を結ぶルート）
+        ROUTE_UNSAFE = 3;
+        // Waypointがバリア内に存在する区間
+        ROUTE_DANGER = 4;
+    }
+    
+    // ミッションの種類毎のミッション設定情報
+    oneof ItemParameter {
+        // 離陸
+        ItemParameterTakeoff takeoff = 11;
+        // Waypoint（通過点）
+        ItemParameterWaypoint waypoint = 12;
+        // 着陸
+        ItemParameterLand land = 14;
+        // スピード設定
+        ItemParameterSpeed speed = 15;
+        // 機首方向指定。Waypoint通過やoverride_go_toによりキャンセルされることがある。
+        ItemParameterYaw   yaw = 16;
+        // 未使用（Not available）
+        ItemParameterROI roi = 10;
+        ItemParameterDelay delay = 17;
+    }
+}
+
+message PortZone { // ドローンボックスと区別するための名称
+    // 0は非許容
+    int64 port_id = 1 ;
+
+    // 離陸：指定なしの場合は機体を置いた位置から離陸する。機体を置いた周辺のスポットが予約されている時はエラー。
+    // 着陸：指定なしの場合は空きスポットを自動割付（将来的に実装予定）。
+    optional int64 spot_id = 2 ; 
+}
+
+// 離陸を実行する。
+message ItemParameterTakeoff {
+    reserved 3, 4;
+    reserved "latitude", "longitude";
+    // ROIグループ名
+    string tag_of_group = 1;
+    // 垂直上昇高度
+    // optional trajectory.trjx_api_service.Altitude takeoff_altitude = 6 ;  // DEPRECATED（Conditionで指定）
+    oneof takeoff_select {
+        PortZone port_zone = 11 ; // ポート利用
+        Condition condition = 12 ; // 条件の明示的指定
+    }
+
+    message Condition {
+        optional trajectory.trjx_api_service.Altitude takeoff_altitude = 1 ; 
+    }
+}
+
+// ROIを指定する。
+message ItemParameterROI {
+    // ROIの緯度
+    double latitude = 3;
+    // ROIの経度
+    double longitude = 4;
+    // ROIの高度
+    trajectory.trjx_api_service.Altitude altitude = 5;
+}
+
+// カメラ操作
+message CameraControl {
+    oneof CameraCommand {
+        Angle pitch = 1;
+        Angle yaw = 2;
+        PictureControl picture = 3;
+        MovieControl movie = 4;
+        ZoomControl zoom = 5;
+        ImageMode image_mode = 6;
+        RayMode ray_mode = 7;
+    }
+    // Pitch/Yaw指定モード。absoluteのみ許容。廃止予定。
+    enum ControlMode {
+        // 相対値（現在値からの移動量）指定。SERVOタイプのミッションにおいては無効（absoluteとして扱われる）。
+        DIFFERENTIAL = 0;
+        // 絶対値指定
+        ABSOLUTE = 1;
+    }
+    message Angle {
+        // 無効（absoluteのみ）
+        ControlMode mode = 1;
+        float degree = 2;
+    }
+
+    // 静止画コマンド
+    enum PictureControl {
+        // 撮影
+        SHUTTER = 0;
+        // 内部処理用。指示不要（自動でリリースする）。
+        RELEASE = 1;
+    }
+
+    // 動画コマンド
+    enum MovieControl {
+        START = 0;
+        STOP = 1;
+    }
+
+    // 無効（absoluteのみ）
+    message ZoomControl {
+        ControlMode mode = 1;
+        float magnification = 2;
+    }
+
+    enum ImageMode {
+        MOVIE_MODE = 0;
+        PICTURE_MODE = 1;
+    }
+
+
+    // 画像モード
+    enum RayMode {
+        // 可視光映像
+        VISIBLE = 0;
+        // 赤外線映像
+        INFRARED = 1;
+    }
+}
+
+// 指定の座標のWaypointへ向かう
+message ItemParameterWaypoint {
+    // ROIグループ名
+    // heading設定時は無効
+    string tag_of_group = 1;
+    // 緯度（度）
+    double latitude = 3;
+    // 経度（度）
+    double longitude = 4;
+    // 高度（m）
+    trajectory.trjx_api_service.Altitude altitude = 5;
+    // ETA 到着予定時刻。UNIX時刻（秒）
+    int64 eta = 6;
+    // 次のWaypointへのルートの属性
+    MissionItem.SafetyRoute safety_route_attr = 7;
+    // trueで無限pause（再開メッセージを受けるまで）
+    bool    pause = 10;
+    // pauseがfalseの場合のみ有効。秒
+    float holdtime = 11;
+    // ヘディング
+    // 指定なしの場合は進行方向。heading設定でROI（tagOfGroup）はキャンセル。
+    // 度。絶対角度、北が0度。
+    optional float heading = 12;
+    // スピード（本WP通過後の速度）
+    // 対地速度（COG）。m/s
+    optional float speed = 13;
+    MissionItem.ItemAttr attr = 20;
+
+    // 角度は絶対値指定（absolute）のみ許容。重複不可。
+    repeated CameraControl camera_controls = 41;
+    // 指定がなく、ROIが設定され、機体が能力を有する場合はシャッターを切る（Shoot=trueに同じ）
+    oneof CameraOption {
+        // ROIが設定されていてもfalseの場合はシャッターを切らない。trueの場合はROIが設定されているとシャッターを切る。
+        bool auto_shoot  = 42;
+        // 写真の撮影間隔（m）。0以下で停止。
+        float shoot_interval_distance = 43;
+        // 写真の撮影間隔（秒）。0以下で停止。
+        int32 shoot_interval_time = 44;
+    }
+
+    // Type。リクエストでは設定不可。
+    enum Type {
+        // 通常のROI
+        GENERAL = 0;
+        // RoadROIにより生成されたWaypoint
+        ROAD_ROI = 1;
+    }
+    Type waypoint_type = 21;
+
+    enum WaypointSpaceAttribute {
+        // 航路不使用時
+        FREE_SPACE = 0 ;
+        // 航路使用時に設定
+        AIRWAY = 1 ;
+    }
+    WaypointSpaceAttribute waypoint_attr = 22;
+    
+}
+
+// 着陸を実行する
+// 最終ポイントで本Itemを指定しない場合はDefaultの動作になる
+// RTLを指定した場合はRTLが変わるごとに自動でルートが変更される（未実装）
+message ItemParameterLand {
+    reserved 3, 4;
+    reserved "latitude", "longitude";
+    // 着陸種別
+    enum LandMode {
+        LAND_MODE_UNSPECIFIED = 0;
+        DEFAULT = 10; // 機体の種別により自動でモードを決定する
+        TAKEOFF_POINT = 1; // 離陸地点に戻って着陸する。（緯度、経度の指定は無視される）
+        RTL = 2; // RTLに指定された位置へ着陸する。（緯度、経度の指定は無視される）
+        CURRENT = 3 ; // 緯度、経度で指定した位置に着陸する。
+        TRACKING = 4 ; // トラッキングで与える場所に着陸（実装予定）（緯度、経度の指定は無視される）
+    };
+    // LandMode mode = 8;  // DEPRECATED（Conditionで指定）
+    // ROIグループ名
+    string tag_of_group = 1; // RTL指定時は無効（離陸時のヘディングが自動で設定される）
+    // optional trajectory.trjx_api_service.Altitude approach_altitude = 6 ; // 垂直降下を始める高度（着陸地点からの地上高。DEMが設定されていない地域でのAGL指定はエラー）// DEPRECATED（Conditionで指定）
+    oneof landing_select {
+        PortZone port_zone = 11 ; // ポート利用
+        Condition condition = 12 ; // 条件の明示的指定
+    }
+    message Condition {
+        LandMode mode = 1;
+        optional trajectory.trjx_api_service.Altitude approach_altitude = 2 ; // 垂直降下を始める高度（着陸地点からの地上高。DEMが設定されていない地域でのAGL指定はエラー）  
+    }
+    MissionItem.ItemAttr attr = 20;
+}
+
+// 速度を変更する
+// 利用は推奨しない。RESUME時にはデフォルト速度に戻る。
+// Waypointのspeedを推奨
+message ItemParameterSpeed {
+    // m/sec
+    float speed = 1;
+    MissionItem.ItemAttr attr = 20;
+}
+
+// 未使用（Not available）
+// 利用は推奨しない。RESUME時にはデフォルトヘディングに戻る。
+// Waypointのheadingを推奨
+message ItemParameterYaw {
+    float angle = 1;
+    MissionItem.ItemAttr attr = 20;
+}
+
+// 遅延時間を指定する。未使用（Not available）
+message ItemParameterDelay {
+    reserved 20, 21;
+    reserved "x", "y";
+    // 遅延時間（秒）
+    int32 delay_sec = 1;
+    MissionItem.ItemAttr attr = 30;
+}
+
+message ROI {
+    reserved 2 to 5;
+    reserved "altitude_attr", "latitude", "longitude", "altitude", "attr";
+    // tagOfGroupのタグ名
+    string tag = 1;
+    // name
+    string name = 6;
+
+    oneof Target {
+        // ROIポイント
+        trajectory.trjx_api_service.Position point = 7;
+        // Road ROI。ROIは開始点のWP（のtagOfGroup）に設定する
+        RoadROI road = 8;
+    }
+
+    message RoadROI {
+        trajectory.trjx_api_service.Position start = 1;
+        trajectory.trjx_api_service.Position end = 2;
+        // 起点WPとターゲットの距離からの差
+        float offset = 3;
+    }
+
+    // number of reroute and goto. avilable only response.
+    int32 append_id = 10;
+}
+
+message OragnizationID {
+    string identifier = 1;  // 組織識別子
+}
+
+message MissionID {
+    string identifier = 1;  // Mission識別子
+}
+
+message ProjectID {
+    string identifier = 1;  // Project識別子。システムでユニーク。数字の文字列であること（例："1"）
+}
+
+// UAVID
+message UAVID {
+    string identifier = 1; // 機体識別子
+}
+
+// キー
+message Key {
+    // クアッドキー。日本が含まれるquad_key=13内のみ対応しています
+    uint64 quad_key = 1;
+
+    // 高度キー
+    uint32 altitude_key = 2;
+}
+
+// オプションの時刻
+message OptionalTimeStamp {
+    bool has_value = 1; // 値を持っているか否か。time_stampが無い場合はhas_value=falseです
+    google.protobuf.Timestamp time_stamp = 2; // 時刻
+}
+
+message SolidModel {
+    // 原点、錐の頂点はこの直上に来ます
+    trajectory.trjx_api_service.Position origin = 1;
+
+    // 東に対するobjファイルのx軸の角度[°]。右手系です
+    double angle = 2;
+
+    // 高さ[m]
+    double height = 3;
+    
+    // サブクラス
+    oneof subclass {
+        // 角柱
+        PolygonalPillar polygonal_pillar = 4;
+
+        // 角錐
+        PolygonalPyramid polygonal_pyramid = 5;
+
+        // 円柱
+        Column column = 6;
+
+        // 円錐
+        Cone cone = 7;
+
+        // 直角三角柱を倒したもの
+        RightTrianglePillar right_triangle_pillar = 8;
+    }
+
+    // 角柱
+    message PolygonalPillar {
+        // 底面。右手系です。閉じている必要はありません。自己交叉してはいけません。
+        repeated Cartesian2D base = 1;
+    }
+
+    // 角錐
+    message PolygonalPyramid {
+        // 底面。右手系です。閉じている必要はありません。自己交叉してはいけません。
+        repeated Cartesian2D base = 1;
+    }
+
+    // 円柱
+    message Column {
+        // xとyの半径
+        Cartesian2D radii = 1;
+    };
+
+    // 円錐
+    message Cone {
+        // xとyの半径
+        Cartesian2D radii = 1;
+    };
+
+    // 直角三角柱を倒したもの。原点とy切片の頂点の直上に峰が来ます
+    message RightTrianglePillar {
+        // 底面。長方形です
+        Cartesian2D size = 1;
+    };
+}
+
+// 二次元直交座標
+message Cartesian2D {
+    // x座標[m]
+    double x = 1;
+
+    // y座標[m]
+    double y = 2;
+}
+
+message KML {
+    // 本文
+    string body = 1;
+}
+
+enum TransactionAttribute {
+    NARROW = 0;
+    WIDE = 1;
+  }
+
+
+  // ポートリクエストヘッダー
+message PortHeader {
+    // 組織ID(所有組織)
+    int64 organizations_id = 1;                  
+    
+    // グループID
+    int64 group_id = 2 [deprecated = true];
+    
+    // 機体ID(文字列)
+    string uav_id = 3;                                  
+
+    // 有効期間始点 UNIX時間
+    optional int64 start_time = 5;   
+    
+    // 有効期間終点 UNIX時間
+    optional int64 end_time = 6;                        
+}
+
+// ポート
+message Port {
+    // ポートID(Create時は設定不要)
+    int64 id = 1;                         
+    
+    // 組織ID
+    int64 organizations_id = 2;                         
+
+    // グループID ※利用不可
+    int64 group_id = 3 [deprecated = true];
+
+    // ポートの種別 true:private false:public   
+    bool is_private = 4;              
+    
+    // 緊急着陸ポート種別 true:緊急着陸ポート/ flase:通常ポート
+    bool is_emergency = 5;                              
+
+    // 名称
+    optional string name = 6;                  
+    
+     // タグ
+    optional string tag = 7;                          
+    
+    // ポート提供者
+    optional string provider = 8;                      
+    
+    // ポート形状をSolidModeで登録(角柱(PolygonalPillar)のみ登録可能), ポートの施設の高度はSolidModelのOriginで指定
+    SolidModel port = 9;                                
+
+    // 有効期間始点
+    google.protobuf.Timestamp  start_time = 10;   
+    
+    // 有効期間終点
+    google.protobuf.Timestamp  end_time = 11;                        
+
+    // 説明文
+    string description = 12;
+
+}
+
+message SearchSpace {
+
+    //　TODO: 座標系に変更する
+
+    trajectory.trjx_api_service.Coordinate max_coordinate = 1; 
+
+
+    trajectory.trjx_api_service.Coordinate min_coordinate = 2;
+}
+
+
+
+// ポートロケーション
+message PortLocation {
+    // ポート識別子(3月開発時はID=0)
+    int64 port_id = 1;              
+    
+    // ポート区間(離陸/着陸)
+    PortInterval interval = 2;                 
+    
+    // ポート名
+    string name = 3;                   
+    
+    // タグ
+    string tag = 4;                                
+    
+    // 離着陸機体位置
+    trajectory.trjx_api_service.Position uav_position = 5;                          
+
+    // 離陸上昇高度(m)
+    float takeoff_altitude = 6;                         
+
+    // 最近接点位置
+    trajectory.trjx_api_service.Position closest_position = 7;                  
+    
+    // 本構造体のデータを持つか否かのフラグ(true:持つ/false:持たない)
+    bool has_value = 8;                                 
+
+    // 有効期間始点 UNIX時間
+    int64 start_time = 9;                               
+
+    // 有効期間終点 UNIX時間
+    int64 end_time = 10;                                
+
+    // パス生成結果
+    repeated ResultPathForPlan paths = 11;              
+}
+
+enum PortInterval {
+    PORT_INTERVAL_TAKEOFF = 0;                          // 離陸ポート(TakeOff) default
+    PORT_INTERVAL_LANDING = 1;                          // 着陸ポート(Landing)
+}
+
+// パス生成結果
+message ResultPathForPlan {
+    // クリアランス
+    float clearance = 3;                                
+
+    // 有効期間始点 UNIX時間
+    int64 start_time = 4;                               
+
+    // 有効期間終点 UNIX時間
+    int64 end_time = 5;                                 
+
+    // 飛行計画予約方法(推奨/登録)
+    PlanReservationMethod method = 6;                   
+
+    // 無視する予約されたパスIDリスト
+    repeated string ignore_path_ids = 7;                
+
+    // パスのコスト値
+    double cost = 8;                                    
+
+    // 3Dタイルデータ群(oneofでPathの場合に設定)
+    repeated generic.v2.SpatialIdentification tiles = 9;               
+
+    // INSERT, BRANCH時に新規作成されたPathについてはTrue
+    bool added = 10;
+
+    oneof result {
+        // パス情報
+        Path path = 21;             
+        
+        // 障害物衝突するパス
+        InBarrierError in_barrier_error = 22;           
+
+        // データ存在せずにパス生成不可 
+        InNoDataError in_nodata_error = 23;       
+        
+        // 全て障害物やパスで埋められパス生成ができない
+        NoPathError no_path_error = 24;                 
+
+        // パス生成で次WPに到達できない
+        UnreachableError unreachable_erro = 25;         
+    }
+    
+    // パス
+    message Path {
+        // 安全が保証されたパス
+        Mission path = 1;            
+    }
+
+    // 障害物に衝突してしまうエラー
+    message InBarrierError {
+        // 危険なパス
+        Mission danger_path = 1;
+
+        // 障害物に衝突してしまう位置
+        trajectory.trjx_api_service.Position position = 2;
+    }
+
+    // データが無いエラー
+    message InNoDataError {
+        // 安全が保障されないパス
+        Mission unsafe_path = 1; 
+        
+        // データが無い位置
+        trajectory.trjx_api_service.Position position = 2;                          
+    }
+
+    // パスが存在しないエラー
+    message NoPathError {
+        // 存在しないパス
+        Mission danger_path = 1;      
+    }
+
+    // パス到達不能エラー
+    message UnreachableError {
+        // 到達できないパス
+        Mission unreachable_path = 1; 
+    }
+}
+
+// 飛行計画の予約方式
+enum PlanReservationMethod {
+    PLAN_METHOD_RECOMMEND = 0;                          // TRJX推奨ルート(default)
+    PLAN_METHOD_INPUTWP = 1;                            // 入力WP登録
+}
+
+
+// スポット
+message Spot {
+    int64 id = 1;                                       // スポットID
+    int64 port_id = 2;                                  // 親ポートID
+    optional string name = 3;                           // 名称
+    optional string tag = 5;                            // タグ
+    bool is_used = 6;                                   // スポット利用状態(true:利用中 / false:未利用) Create時は無効
+    float spot_size = 7;                                // スポットの半径(m)
+    trajectory.trjx_api_service.Position center = 8;    // スポット中心座標　TODO: Port内の座標確認をどちらのサーバーでやるか確認
+}
+
+// ルート情報
+message RouteObjectForPlan {
+    int64 id = 1;                                       // ルートID
+    string reserved_route_id = 2;                       // ルート予約ID
+    int64 organizations_id = 3;                         // 組織ID(所有組織)
+    int64 group_id = 4;                                 // グループID
+    string uav_id = 5;                                  // 機体ID(文字列)
+    RouteInterval interval = 6;                         // ルート種別
+    double total_cost = 7;                              // ルートのコスト値(パスのコスト値合計)
+    google.protobuf.Timestamp start_time = 8;                               // 有効期間始点 UNIX時間
+    google.protobuf.Timestamp end_time = 9;                                 // 有効期間終点 UNIX時間
+    repeated ResultPathForPlan paths = 10;              // パス生成結果
+}
+
+// ルート区間
+enum RouteInterval {
+    ROUTE_INTERVAL_ROUTE = 0;                           // 飛行ルート(default)
+    ROUTE_INTERVAL_TAKEOFF = 1;                         // 離陸ターミナルルート
+    ROUTE_INTERVAL_LANDING = 2;                         // 着陸ターミナルルート
+}
+
+// 飛行経路変更の応答
+message ReroutingResult {
+    enum Progress {
+        PROGRESS_UNSPECIFIED = 0;
+        CALCULATING = 1;
+        QUEUEING = 2;                                   // WP転送中
+        SETTING = 3;                                    // WP転送中
+        CHANGING = 4;                                   // ルート変更指示中
+        COMPLETE = 5;                                   // 完了
+        CANCELED = 9;                                   // ミッション変更キャンセル
+        VOID = 15 ;                                     // リルート無効（通り過ぎたなど）
+        ERROR = 10;                                     // エラー終了
+        ERROR_COMMAND = 11 ;                            // UAVコマンドエラー
+        ERROR_DUPLICATE = 12 ;                          // 指定したWPが重複
+        ERROR_UNSTABLE = 13 ;                           // リルート可能状態でない
+        ERROR_EMPTY_MISSION = 14 ;                      // 指定したミッションが空
+        ERROR_FLIGHT_PATH_STRATA_CONFIG = 51;           // FP9001
+        ERROR_FLIGHT_PATH_NOT_FOUND_AREA = 52;          // FP9002
+        ERROR_FLIGHT_PATH_NOT_FOUND_MODEL = 53;         // FP9003
+        ERROR_FLIGHT_PATH_OUT_OF_AREA = 54;             // FP9004
+        ERROR_FLIGHT_PATH_ILLIGAL_POSITION = 55;        // FP9005
+        ERROR_FLIGHT_PATH_UNKNOWN = 50 ;
+        INTERNAL_ERROR = 99; 
+    }
+    Progress progress_state = 1;                        // 経過状態
+    uint32 progress = 2;                                // 各経過状態の経過量（0-100）
+    Mission mission = 3;                                // ルート計算を行った結果のミッションのリスト
+    string info = 4 ;                                   // 詳細情報
+}
+
+message GotoProgress {
+    enum GotoStatusDef {
+        GOTO_STATUS_DEF_UNSPECIFIED = 0 ;
+        PROCESSING = 1 ;                                // 処理中
+        TRYING = 2 ;                                    // 目標に向けて飛行中
+        REACHED = 3 ;                                   // 目標点到達しPause（ホバリング中）
+        COMPLETE = 4 ;                                  // Resume実行中
+        OTHER_GOTO = 5 ;                                // 別のGotoを受け入れ
+        RETURNED = 6 ;                                  // Puase実行不可で自動Resume
+        CANCELED = 7 ;                                  // キャンセル
+        ERROR = 10 ;                                    // エラー
+        ERROR_NO_UAV = 11 ;                             // UAVオブジェクトが取得できない
+        ERROR_NO_EXECUTING = 12 ;                       // 飛行中でない
+        ERROR_PAUSE = 13 ;                              // Pauseコマンド失敗
+        ERROR_PARAMETER = 14 ;                          // パラメータエラー
+    }
+    GotoStatusDef status = 1 ;
+}
+
+message ApproachingPort {
+    int64 port_id = 1;
+    optional int64 spot_id = 2;
+}
+
+message Position { // 要削除🟥 このPositionが他に存在すればいらない 🟥
+    // 高度属性
+    AltitudeAttr altitudeAttr = 1; // TR_DEV-1047
+
+    enum AltitudeAttr {
+        ELLIPSOIDE = 0 ;// 楕円球体高。default値。
+        RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+        AGL = 2 ; // 地表面高度。
+        MSL = 3; // 海抜高度（標高）。
+    }    
+
+    // 緯度
+    double latitude = 2;
+    // 経度
+    double longitude = 3;
+    // 高度
+    float altitude = 4;
+}
+
+message XYZPosition {
+    // 経度方向距離(m)　北＋
+     double y = 1;   
+    // 緯度方向距離(m)　東＋
+    double x = 2;
+    // 高さ距離(m) 右手系 上+
+    double z = 3;
+}
+
+/*
+ * 管制エリア
+ */
+message ControlArea {
+    // エリアID(ユニーク)
+    int64 id = 1;
+    
+    // エリア名
+    string name = 2;
+
+    // // 公開種別
+    // //  - 指定なし(nil) : 全て(パブリック/プライベート)
+    // //  - false指定 : パブリック管制エリア
+    // //  - true : プライベート管制エリア
+    // optional bool is_private = 4;
+    
+    // 管制エリア範囲
+    oneof area {
+        // 円指定(当面円だけサポート)
+        Circle circle = 5;
+    }
+
+    // 円
+    message Circle {
+        // 中心位置
+        Position2D center = 1;
+        // 半径
+        double radius = 2;
+
+        message Position2D {
+            // 緯度
+            double latitude = 1;
+             // 経度
+            double longitude = 2;
+        }
+    }
+}
+
+
+// 離発着機体状態
+message TakingOffAndLandingUAVStatus {
+
+    oneof status {
+     TakingOffStatus takeoff_status = 2; // 離陸機体状態
+     LandingStatus landing_status = 3; // 着陸機体状態
+    }
+
+    enum TakingOffStatus {
+     TAKING_OFF_STATUS_UNSPECIFIED = 0;
+     TAKING_OFF_STATUS_QUEUING = 1; // 離陸キュー(申請中)状態
+     TAKING_OFF_STATUS_WAITING_FOR_TAKE_OFF = 2; // 離陸前状態
+     TAKING_OFF_STATUS_TAKING_OFF = 3; // 離陸中状態
+    }
+
+    enum LandingStatus {
+     LANDING_STATUS_UNSPECIFIED = 0;
+     LANDING_STATUS_QUEUING = 1; // 着陸キュー(申請中)状態
+     LANDING_STATUS_WAITING_FOR_LANDING = 2; // 着陸前状態
+     LANDING_STATUS_LANDING = 3; // 着陸中状態
+    }
+}
+
+// ユーザID
+message UserID{
+    string user_id = 1; // ユーザID
+}
+
+message OrganizationID {
+    int32 identifier = 1;
+}

@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+
+service MissionService {
+    // CreateMission: ミッションの生成
+    rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
+
+    // CreateMissionRecord: ミッションをデータベースに追加する
+    rpc CreateMissionRecord(MissionRecord) returns (MissionID) {}
+
+    // GetMissionRecord: ミッションの取得
+    rpc GetMissionRecord(MissionID) returns (MissionRecord) {}
+
+    // DeleteMission: ミッションの削除
+    rpc DeleteMissionRecord(MissionID) returns (google.protobuf.Empty) {}
+
+    // UpdateMission: ミッションの更新
+    rpc UpdateMissionRecord(UpdateMissionRecordRequest) returns (MissionRecord) {}
+
+    // ListMissionIDRecords: ミッションIDのリスト取得
+    rpc ListMissionIDRecords(ListMissionIDRecordsRequest) returns (ListMissionIDRecordsResponse) {}
+
+    // ミッションの表現形式を変換する
+    rpc ConvertMissionFormat(ConvertMissionFormatRequest)returns (ConvertMissionFormatResponse){}
+}
+
+message CreateMissionRequest { 
+    ProjectID project_id = 7;
+    TransactionID transaction_id = 2 ; // WideArea切替。未指定はWide。
+    oneof Select {
+        WithUAV create_with_property = 4 ; // 機体情報に基づいた時刻計算。ルート設計のみ（機体位置取得なし）
+        WithUAV create_with_uav = 5; // 機体位置からのルート設計。機体への割付なし。
+        WithUAV create_and_assign = 6; // 従来のCreateMissionAndAssign（機体割付）
+        OnlyAssgin only_assign = 8; // ルート設計なし。機体割り付けのみ。ルートの安全性は保証されないことに注意（ローバー利用想定）。
+    }
+    message WithUAV {
+        UAVID uav_id = 1;
+        bool tie_straight = 13 ; // trueでWP優先（入力WPを真っ直ぐ結ぶ）。onlyAssignでは無効。
+    }
+    message OnlyAssgin {
+        UAVID uav_id = 1;
+    }
+    optional ScheduledTime start_time = 10; //　onlyAssignでは無効。
+    optional ScheduledTime arrival_time = 11; // 到着時間。onlyAssignでは無効。
+
+    Mission mission = 12; // ルート計算を行うMissionItemのリスト。
+
+    trajectory.trjx_api_service.Standard output_altitude = 14; // 出力高度属性。
+
+    bool uses_public_channels_whenever_possible = 15; // パブリックな航路（UASL）を可能な限り使うか否か
+    bool uses_private_channels_whenever_possible = 16; // プライベートな航路を可能な限り使うか否か
+}
+
+message CreateMissionResponse {
+    MissionControllerResult result = 1; // 処理結果
+    Mission mission = 2; // ルート計算を行った結果のミッションのリスト
+    repeated string reserved_route_ids = 3 ; // 予約ID
+}
+
+message MissionRecord {
+    Mission mission = 1; // MissionItemのリスト
+    string name = 2; // 保存名
+    ProjectID project_id = 3; // 所有組織
+    TransactionID transaction_id = 4;
+    UAVID uav_id = 5;
+    ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
+    optional Timestamps timestamps = 7; // ミッションの作成/更新日時　リクエスト時は設定しない
+}
+
+
+message UpdateMissionRecordRequest {
+    MissionID mission_id = 1; // データベースレコードキー。必須
+    MissionRecord mission_record = 2; // ミッションのデータベースレコード
+}
+
+message ListMissionIDRecordsRequest {
+    ProjectID project_id = 1;  // 取得対象のプロジェクトID。未指定の場合は組織内全てのプロジェクトが対象
+}
+
+message ListMissionIDRecordsResponse {
+    repeated MissionIDRecord mission_id_records = 1;  // ミッションIDのリスト。ミッションの情報はGetMissionRecordで取得する
+}
+
+message MissionIDRecord {
+    MissionID mission_id = 1;
+    string name = 2;
+    Timestamps timestamps = 3; // ミッションの作成/更新日時
+}
+
+// ミッションの作成/更新日時
+message Timestamps {
+    // 作成日時
+    google.protobuf.Timestamp create_time = 1;
+    // 更新日時
+    google.protobuf.Timestamp update_time = 2;
+}
+
+
+message ConvertMissionFormatRequest {
+    Mission mission =1;
+    string uav_id = 2;
+
+    oneof selectOutput {
+        LitchiFormatSt litchiFormat = 4 ; // 出力は相対高度 Litchi形式の場合は、高度はMSLまたは楕円球体高を指定すること。機首方向パラメータは未サポート。
+        MavlinkFormatSt mavlinkFormat = 5 ;
+    }
+
+    message LitchiFormatSt {
+        // MissionはAGL不可
+        oneof baseAltitude {
+            int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー、itemsのキー（非優先）でDEPRECATED）
+            AltitudeSt altitude = 2 ; // 基準高度
+            DifferentialPointSt differentialPoint = 3 ; // 指定WPのAGLを指定する。MissionItemはAGL不可。
+        }
+    }
+
+    message MavlinkFormatSt {
+        /*
+          0:Ellipsoid
+          1:Relative
+          2:AGL
+          3:MSL
+        */
+        uint32 outputAltitude = 1 ;
+        oneof baseAltitude { // outputAltitudeがRelative の場合のみ有効
+            int32 missionItemNumber = 2 ; // 指定したWPの位置を基準
+            AltitudeSt altitude = 3 ; // 基準高度
+            DifferentialPointSt differentialPoint = 4 ; // 指定WPのAGLを指定する。MissionItemはAGL不可。
+        }
+    }
+
+
+    message AltitudeSt {
+        /*
+          0:Ellipsoid
+          1:Relative
+          2:AGL
+          3:MSL
+        */
+        uint32 attr = 1 ;
+        float altitude = 2 ;
+    }
+
+    message DifferentialPointSt {
+        int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー、itemsのキー（非優先）でDEPRECATED）
+        float agl = 2 ; // missionItemNumberで指定したWPの地上高
+    }
+}
+
+message ConvertMissionFormatResponse {
+    bool result = 1 ;
+    string status = 2 ;
+    /*
+      0:TrjxFormat,
+      1:LitchiFormat,
+      2:MavlinkFormat,
+    */
+    uint32 attr = 3 ;
+    oneof MissionFormat { // output file format
+        Mission Trjx = 4 ;
+        string Csv = 5 ;
+        string JsonMission = 6 ; // .mission拡張子(mavlink)
+    }
+}

@@ -1,0 +1,186 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+
+service UAVService {
+
+    // 機体認証状態を確認する
+    // アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
+    rpc CheckUavAuth(CheckUavAuthRequest) returns (CheckUavAuthResponse) {}
+    // 機体認証をブロックする
+    // アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
+    rpc BlockUavAuth(BlockUavAuthRequest) returns (BlockUavAuthResponse) {}
+    // 機体認証をクリアする
+    // アクセス権限: 機体種別に応じた機体権限(Drone(実機) auth / SITL auth)
+    rpc ClearUavAuth(ClearUavAuthRequest) returns (ClearUavAuthResponse) {}
+    // シリアルナンバーから機体IDを取得する
+    rpc GetUavId(GetUavIdRequest) returns (GetUavIdResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "シリアルナンバーから機体IDを取得します";
+            description: "シリアルナンバーから機体IDを取得します。\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                         "- `4001`\n"
+            parameters: {
+              headers: {
+                name: "user_id"
+                type: STRING
+                description: "ユーザID"
+                required: true
+              }
+              headers: {
+                name: "Authorization"
+                type: STRING
+                description: "Bearer Token"
+                required: true
+              }
+            }
+            responses: {
+              key: "400";
+              value: {
+                description: "Invalid request.";
+                schema: {
+                  json_schema: {
+                    ref: "#/definitions/rpcStatus";
+                  }
+                };
+                examples: {
+                  key: "application/json";
+                  value: "{\n"
+                         "  \"code\": 3,\n"
+                         "  \"message\": \"the serial is not found\",\n"
+                         "  \"details\": [\n"
+                         "    {\n"
+                         "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                         "      \"errorCode\": 4001\n"
+                         "    }\n"
+                         "  ]\n"
+                         "}";
+                }
+              }
+            }
+          };
+    }
+    // 組織内の機体リストを取得する
+    rpc ListUsedUavs(ListUsedUavsRequest) returns (ListUsedUavsResponse) {} 
+
+    // 機体情報を取得する ※自組織機体のみ指定可能
+    rpc GetAircraftInfo(GetAircraftInfoRequest) returns (GetAircraftInfoResponse){
+      option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+          summary: "機体情報を取得する";
+          description: "機体の設定値を更新する\n\n"
+                       "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+                       "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+                       "- `4011`\n"
+          responses: {
+            key: "400";
+            value: {
+              description: "Invalid request.";
+              schema: {
+                json_schema: {
+                  ref: "#/definitions/rpcStatus";
+                }
+              };
+              examples: {
+                key: "application/json";
+                value: "{\n"
+                       "  \"code\": 3,\n"
+                       "  \"message\": \"the uav is not found\",\n"
+                       "  \"details\": [\n"
+                       "    {\n"
+                       "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                       "      \"errorCode\": 4011\n"
+                       "    }\n"
+                       "  ]\n"
+                       "}";
+              }
+            }
+          }
+        };
+  };
+}
+
+
+message BlockUavAuthRequest {
+    string uav_id = 1;
+}
+  
+message BlockUavAuthResponse {
+    
+    /*
+        0:succeeded
+    */
+    uint32 status = 1 [deprecated = true]; // success:0しか返却しないため非推奨
+}
+  
+
+message GetUavIdRequest {
+    string serial_number = 1; //機体シリアルナンバー
+}
+  
+message GetUavIdResponse {
+    int32 aircrafts_id = 1; // 機体ID
+    string model = 2;
+}
+  
+
+message CheckUavAuthRequest {
+    string uav_id = 1; // 機体ID
+}
+  
+message CheckUavAuthResponse {
+    
+    /*
+      0:Accepted,
+      1:Wait user,
+      2:Block
+    */
+    uint32 status  = 1;
+}
+  
+
+message ClearUavAuthRequest {
+    string uav_id = 1; // 機体ID
+}
+  
+message ClearUavAuthResponse {
+    /*
+      0:succeeded
+    */
+    uint32 success = 1 [deprecated = true]; // success:0しか返却しないため非推奨
+}
+  
+
+message ListUsedUavsRequest {
+}
+  
+message ListUsedUavsResponse {
+    message Uav {
+        int32 aircrafts_id = 1; // 機体ID
+        string uav_id = 2; // 機体ID(文字列)
+        string aircrafts_name = 3; // 機体名
+        string model = 4;
+    }
+    repeated Uav used_uavs = 1;
+}
+
+message GetAircraftInfoRequest {
+  int32 uav_id = 1; // 機体Id
+}
+
+message GetAircraftInfoResponse {
+  optional string name = 1;         // 機体名
+  optional int32 duration = 2;      // 機体飛行時間
+  optional string description = 3;  // 説明
+  optional string landing_type = 4; // 着陸種別
+  optional bool simulator = 5;      // true シュミレーター | false 実機
+  optional string maker = 6;        // 機体メーカー
+  optional string model = 7;
+  optional string model3d_url = 8;  // 機体3DデータURL
+  optional string video_url = 9;    // リアルタイム動画表示URL
+  optional bool stealth = 10;       // true ステルス機体 | false 非ステルス機体
+}

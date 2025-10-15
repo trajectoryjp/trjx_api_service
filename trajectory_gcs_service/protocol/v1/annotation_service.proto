@@ -1,0 +1,1663 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+service AnnotationService {
+    rpc CreatePointAnnotation(CreatePointAnnotationRequest) returns (CreatePointAnnotationResponse)
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "CreatePointAnnotation:PointAnnotationの作成"            
+            description: "PointAnnotationの新規作成を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Argument."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"not supported altitudeAttr.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 13,\n"
+                            " \"message\": \"Internal Error.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+
+    rpc CreateRoadAnnotation(CreateRoadAnnotationRequest) returns (CreateRoadAnnotationResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "CreateRoadAnnotation:RoadAnnotationの作成"
+            description: "RoadAnnotationの新規作成を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 13,\n"
+                            " \"message\": \"Internal Error.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc CreateAreaAnnotation(CreateAreaAnnotationRequest) returns (CreateAreaAnnotationResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "CreateAreaAnnotation:AreaAnnotationの作成"
+            description: "AreaAnnotationの新規作成を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Argument"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"points must have at least 3 point\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Argument"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"not supported altitudeAttr\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 13,\n"
+                            " \"message\": \"createErr\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc DeletePointAnnotation(DeletePointAnnotationRequest) returns (DeletePointAnnotationResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "DeletePointAnnotation:PointAnnotationの削除"
+            description: "PointAnnotationの削除を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Request."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Invalid Request.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc DeleteRoadAnnotation(DeleteRoadAnnotationRequest) returns (DeleteRoadAnnotationResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "DeleteRoadAnnotation:RoadAnnotationの削除"
+            description: "RoadAnnotationの削除を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Request."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Invalid Request.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc DeleteAreaAnnotation(DeleteAreaAnnotationRequest) returns (DeleteAreaAnnotationResponse)
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "DeleteAreaAnnotation:AreaAnnotationの削除"
+            description: "AreaAnnotationの削除を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Request."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Invalid Request.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc GetPointAnnotationsWithinRange(GetPointAnnotationsWithinRangeRequest) returns (GetPointAnnotationsWithinRangeResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetPointAnnotationsWithinRange:特定範囲内のPointAnnotationの取得"
+            description: "特定範囲内のPointAnnotationの取得を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Request."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Invalid Request.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc GetRoadAnnotationsWithinRange(GetRoadAnnotationsWithinRangeRequest) returns (GetRoadAnnotationsWithinRangeResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetRoadAnnotationsWithinRange:特定範囲内のRoadAnnotationの取得"
+            description: "特定範囲内のRoadAnnotationの取得を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Request."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Invalid Request.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc GetAreaAnnotationsWithinRange(GetAreaAnnotationsWithinRangeRequest) returns (GetAreaAnnotationsWithinRangeResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetAreaAnnotationsWithinRange:特定範囲内のAreaAnnotationの取得"
+            description: "特定範囲内のAreaAnnotationの取得を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `4001`\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400"
+                value: {
+                    description: "Invalid Request."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Invalid Request.\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 4001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc GetAllPointAnnotationsWithinRange(GetAllPointAnnotationsWithinRangeRequest) returns (GetAllPointAnnotationsWithinRangeResponse) {
+        option deprecated = true;
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetAllPointAnnotationsWithinRange:特定範囲内のPointAnnotation（他組織の公開Annotation含める）を取得"
+            description: "特定範囲内のPointAnnotation（他組織の公開Annotation含める）の取得を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc GetAllRoadAnnotationsWithinRange(GetAllRoadAnnotationsWithinRangeRequest) returns (GetAllRoadAnnotationsWithinRangeResponse) 
+    {
+        option deprecated = true;
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetAllRoadAnnotationsWithinRange:特定範囲内のRoadAnnotation（他組織の公開Annotation含める）を取得"
+            description: "特定範囲内のRoadAnnotation（他組織の公開Annotation含める）の取得を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc GetAllAreaAnnotationsWithinRange(GetAllAreaAnnotationsWithinRangeRequest) returns (GetAllAreaAnnotationsWithinRangeResponse) 
+    {
+        option deprecated = true;
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "GetAllAreaAnnotationsWithinRange:特定範囲内のAreaAnnotation（他組織の公開Annotation含める）を取得"
+            description: "特定範囲内のAreaAnnotationの取得を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc FilterPointAnnotations(FilterPointAnnotationsRequest) returns (FilterPointAnnotationsResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "FilterPointAnnotations:指定したPointAnnotationのリストから絞り込み"
+            description: "指定したPointAnnotationのリストから各条件を全て満たすものを絞り込みます。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc FilterRoadAnnotations(FilterRoadAnnotationsRequest) returns (FilterRoadAnnotationsResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "FilterRoadAnnotations:指定したRoadAnnotationのリストから絞り込み"
+            description: "指定したPointAnnotationのリストから各条件を全て満たすものを絞り込みます。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc FilterAreaAnnotations(FilterAreaAnnotationsRequest) returns (FilterAreaAnnotationsResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "FilterAreaAnnotations:指定したAreaAnnotationのリストから絞り込み"
+            description: "指定したPointAnnotationのリストから各条件を全て満たすものを絞り込みます。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc UpdatePointAnnotation(UpdatePointAnnotationRequest) returns (UpdatePointAnnotationResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "UpdatePointAnnotation:PointAnnotationを更新（更新対象はIDで指定）"
+            description: "PointAnnotationの更新を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc UpdateRoadAnnotation(UpdateRoadAnnotationRequest) returns (UpdateRoadAnnotationResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "UpdateRoadAnnotation:RoadAnnotationを更新（更新対象はIDで指定）"
+            description: "RoadAnnotationの更新を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    rpc UpdateAreaAnnotation(UpdateAreaAnnotationRequest) returns (UpdateAreaAnnotationResponse) 
+    {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)
+        = {
+            summary: "UpdateAreaAnnotation:AreaAnnotationを更新（更新対象はIDで指定）"
+            description: "AreaAnnotationの更新を⾏う。\n\n"
+            "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性があります。\n"
+            "エラーコードの詳細はhttps://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照してください。\n\n"
+            "- `5001`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "Internal Error."
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/googlerpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                            " \"code\": 3,\n"
+                            " \"message\": \"Internal Error\",\n"
+                            " \"details\": [\n"
+                                " {\n"
+                                    " \"@type\":\"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                                    " \"errorCode\": 5001\n"
+                                " }\n"
+                            " ]\n"
+                        "}"
+                    }
+                }
+            }
+        };
+    }
+    // ListPointAnnotationsByColumn:PointAnnotationを条件で抽出する（各条件をANDで指定）
+    rpc ListPointAnnotationsByColumn(ListPointAnnotationsByColumnRequest) returns (ListPointAnnotationsResult) {}
+    // CreateWaypointForRoadAnnotation:RoadAnnotationを指定してMissionを生成する
+    // CreateMissionを行うには本APIの結果をMissionに組み入れること
+    rpc CreateWaypointForRoadAnnotation(CreateWaypointForRoadAnnotationRequest) returns (CreateWaypointForRoadAnnotationResponse) {}
+}
+
+message AnnotationPosition{
+    double altitude = 1; // 高度
+    double latitude = 2; // 緯度
+    double longitude = 3; // 経度
+}
+
+message PointAnnotation {
+    // Annotationを設定する地点
+    AnnotationPosition position = 1;
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    bool is_secret = 2;
+    // Annotationの名前
+    string name = 3;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    int32 altitude_attr = 4;
+    // Annotationの説明
+    string description = 5;
+    // AnnotationのID
+    int32 id = 6; 
+    // Annotationを設定する組織
+    int32 organization_id = 7;
+    // Annotationの種別（CityGML用）（）
+    string facility_name = 8;
+    // Annotationのデータ元
+    string source_data = 9;
+    // waypointとして利用可能か.  
+    // デフォルト:false.  
+    bool is_waypoint = 10;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 11;
+}
+
+message AreaAnnotation {
+    // Annotationを設定する地点
+    repeated AnnotationPosition positions = 1;
+    // Annotationの名前
+    string name = 2;
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    bool is_secret = 3;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL. 
+    int32 altitude_attr = 4;
+    // Annotationの説明
+    string description = 5;
+    // AnnotationのID
+    int32 id = 6;
+    // Annotationを設定する組織
+    int32 organization_id = 7;
+    // Annotationの種別（CityGML用）（CityGML用）
+    string facility_name = 8;
+    // Annotationのデータ元
+    string source_data = 9;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 10;
+}
+
+message RoadAnnotation {
+    // Annotationを設定する地点
+    repeated AnnotationPosition positions = 1;
+    // Annotationの名前
+    string name = 2;
+    // 他組織へと公開するか(true:非公開 false:公開).    
+    // デフォルト:false.  
+    bool is_secret = 3;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL. 
+    int32 altitude_attr = 4;
+    // Annotationの説明
+    string description = 5;
+    // AnnotationのID
+    int32 id = 6;
+    // Annotationを設定する組織
+    int32 organization_id = 7;
+    // Annotationの種別（CityGML用）（CityGML用））
+    string facility_name = 8;
+    // Annotationのデータ元
+    string source_data = 9;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 10;
+}
+
+message CreatePointAnnotationRequest {
+    AnnotationPosition position = 1;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    optional int32 altitude_attr = 2; 
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    optional bool is_secret = 3;
+    // 名前
+    string name = 4;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 5;
+    // Annotationの説明
+    optional string description = 6;
+    // waypointとして利用可能か.  
+    // デフォルト:false.  
+    optional bool is_waypoint = 7;
+    // Annotationの種別（CityGML用）
+    optional string facility_name = 8;
+    // Annotationのデータ元
+    optional string source_data = 9;
+}
+
+message CreatePointAnnotationResponse {
+    string status = 1 [deprecated = true] ; // if ok, return "ok"
+    int32 id = 2; // 作成されたAnnotationのID
+}
+
+message CreateAreaAnnotationRequest {
+    repeated AnnotationPosition positions = 1;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    int32 altitude_attr = 2;
+    // Annotationの名前
+    string name = 3;
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    bool is_secret = 4;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 5;
+    // Annotationの説明
+    optional string description = 6;
+    // Annotationの種別（CityGML用）
+    optional string facility_name = 7;
+    // Annotationのデータ元
+    optional string source_data = 8;
+}
+
+message CreateAreaAnnotationResponse {
+    int32 id = 1;  // 作成されたAnnotationのID
+}
+
+message CreateRoadAnnotationRequest {
+    repeated AnnotationPosition positions = 1;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.   
+    int32 altitude_attr = 2;
+    // Annotationの名前
+    string name = 3;
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    bool is_secret = 4;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 5;
+    // Annotationの説明
+    optional string description = 6;
+    // Annotationの種別（CityGML用）
+    optional string facility_name = 7;
+    // Annotationのデータ元
+    optional string source_data = 8;
+}
+
+message CreateRoadAnnotationResponse {
+    int32 id = 1; // 追加されたAnnotationのID
+}
+
+message DeletePointAnnotationRequest {
+    int32 id = 1; // 削除対象のAnnotationのID
+}
+
+message DeletePointAnnotationResponse {
+    string status = 1 [deprecated = true] ; // if ok, return "ok"
+}
+
+message DeleteRoadAnnotationRequest { 
+    int32 id = 1; // 削除対象のAnnotationのID
+}
+
+message DeleteRoadAnnotationResponse {
+    string status = 1 [deprecated = true] ; // if ok, return "ok"
+}
+
+message DeleteAreaAnnotationRequest {
+    int32 id = 1; // 削除対象のAnnotationのID
+}
+
+message DeleteAreaAnnotationResponse {
+    string status = 1 [deprecated = true] ; // if ok, return "ok
+}
+
+message GetPointAnnotationsWithinRangeRequest {
+    optional double min_altitude = 1; // 指定しない場合は任意の高度 
+    optional double max_altitude = 2; // 指定しない場合は任意の高度
+    optional double min_latitude = 3; // 指定しない場合は任意の緯度
+    optional double max_latitude = 4; // 指定しない場合は任意の緯度
+    optional double min_longitude = 5; // 指定しない場合は任意の経度
+    optional double max_longitude = 6; // 指定しない場合は任意の経度
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL. 
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 7;
+    // 0:All.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 8;
+    // true:自組織のみ false:他組織のpublicなものも含める
+    bool ownOrganization = 9;
+    // 取得件数上限（対象データがこれより多い場合でも、この件数までしか取得しない）.  
+    // デフォルト:100
+    optional int32 limit = 10;
+    // 何件目のデータから取得するか.  
+    // デフォルト:0
+    optional int32 offset = 11;
+}
+
+message GetPointAnnotationsWithinRangeResponse {
+    repeated PointAnnotation point_annotations = 1;
+}
+
+message Box {
+    double left = 1;
+    double right = 2;
+    double top = 3;
+    double bottom = 4;
+}
+
+message GetRoadAnnotationsWithinRangeRequest {
+    // 検索範囲
+    Box box = 1;
+    // 0:All.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 2;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL. 
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 3;
+    // true:自組織のみ false:他組織のpublicなものも含める
+    bool ownOrganization = 4;
+    // 取得件数上限（対象データがこれより多い場合でも、この件数までしか取得しない）.  
+    // デフォルト:100
+    optional int32 limit = 5;
+    // 何件目のデータから取得するか.  
+    // デフォルト:0
+    optional int32 offset = 6;
+}
+
+message GetRoadAnnotationsWithinRangeResponse {
+    repeated RoadAnnotation road_annotations = 1;
+}
+
+message GetAreaAnnotationsWithinRangeRequest {
+    // 検索範囲
+    Box box = 1;
+    // 0:All.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 2;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 3;
+    // true:自組織のみ false:他組織のpublicなものも含める
+    bool ownOrganization = 4;
+    // 取得件数上限（対象データがこれより多い場合でも、この件数までしか取得しない）.  
+    // デフォルト:100
+    optional int32 limit = 5;
+    // 何件目のデータから取得するか.  
+    // デフォルト:0
+    optional int32 offset = 6;
+}
+
+message GetAreaAnnotationsWithinRangeResponse {
+    repeated AreaAnnotation area_annotations = 1;
+}
+
+message GetAllPointAnnotationsWithinRangeRequest {
+    optional double min_altitude = 1; //指定しない場合は任意の高度
+    optional double max_altitude = 2; //指定しない場合は任意の高度
+    optional double min_latitude = 3; //指定しない場合は任意の緯度
+    optional double max_latitude = 4; //指定しない場合は任意の緯度
+    optional double min_longitude = 5; //指定しない場合は任意の経度
+    optional double max_longitude = 6; //指定しない場合は任意の経度
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 7;
+    // 0:All.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 8;
+    // 取得件数上限（対象データがこれより多い場合でも、この件数までしか取得しない）.  
+    // デフォルト:100
+    optional int32 limit = 9;
+    // 何件目のデータから取得するか.  
+    // デフォルト:0
+    optional int32 offset = 10;
+}
+
+message GetAllPointAnnotationsWithinRangeResponse {
+    repeated PointAnnotation point_annotations = 1;
+}
+
+message GetAllRoadAnnotationsWithinRangeRequest {
+    // 対象範囲
+    Box box = 1;
+    // 0:All.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 2;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 3;
+    // 取得件数上限（対象データがこれより多い場合でも、この件数までしか取得しない）.  
+    // デフォルト:100
+    optional int32 limit = 4;
+    // 何件目のデータから取得するか.  
+    // デフォルト:0
+    optional int32 offset = 5;
+}
+
+message GetAllRoadAnnotationsWithinRangeResponse {
+    repeated RoadAnnotation road_annotations = 1;
+}
+
+message GetAllAreaAnnotationsWithinRangeRequest {
+    // 対象範囲
+    Box box = 1;
+    // 0:All.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 2;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 3;
+    // 取得件数上限（対象データがこれより多い場合でも、この件数までしか取得しない）.  
+    // デフォルト:100
+    optional int32 limit = 4;
+    // 何件目のデータから取得するか.  
+    // デフォルト:0
+    optional int32 offset = 5;
+}
+
+message GetAllAreaAnnotationsWithinRangeResponse {
+    repeated AreaAnnotation area_annotations = 1;
+}
+
+message FilterPointAnnotationsRequest {
+    // Annotationの名前
+    optional string name = 1;
+    // Annotationの説明
+    optional string description = 2;
+    // Annotationのデータ元
+    optional string source_data = 3;
+    // Annotationの種別（CityGML用）
+    optional string facility_name = 4;
+    // 検索対象のAnnotationのIDリスト
+    repeated int32 annotation_id_list = 5;
+    // 検索対象の属性リスト
+    repeated int32 attr_list = 6;
+}
+
+message FilterPointAnnotationsResponse {
+    repeated PointAnnotation point_annotations = 1;
+}
+
+// 各条件をORで指定
+message FilterRoadAnnotationsRequest {
+    // Annotationの名前
+    optional string name = 1;
+    // Annotationの説明
+    optional string description = 2;
+    // Annotationのデータ元
+    optional string source_data = 3;
+    // Annotationの種別（CityGML用）
+    optional string facility_name = 4;
+    // 検索対象のAnnotationのIDリスト
+    repeated int32 annotation_id_list = 5;
+    // 検索対象の属性リスト
+    repeated int32 attr_list = 6;
+}
+
+
+message FilterRoadAnnotationsResponse {
+    repeated RoadAnnotation road_annotations = 1;
+}
+
+message FilterAreaAnnotationsRequest {
+    // Annotationの名前
+    optional string name = 1;
+    // Annotationの説明
+    optional string description = 2;
+    // Annotationのデータ元
+    optional string source_data = 3;
+    // Annotationの種別（CityGML用）
+    optional string facility_name = 4;
+    // 検索対象のAnnotationのIDリスト
+    repeated int32 annotation_id_list = 5;
+    // 検索対象の属性リスト
+    repeated int32 attr_list = 6;
+}
+
+message FilterAreaAnnotationsResponse {
+    repeated AreaAnnotation area_annotations = 1;
+}
+
+message UpdateRoadAnnotationRequest {
+    // 更新対象のAnnotationのID
+    int32 id = 1;
+    repeated AnnotationPosition positions = 2;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 3;
+    // Annotationの名前
+    string name = 4;
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    bool is_secret = 5;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 6;
+    // Annotationの説明
+    string description = 7;
+    // Annotationの種別（CityGML用）
+    string facility_name = 8;
+}
+
+message UpdateRoadAnnotationResponse {
+    string status = 1 [deprecated = true]; // ok
+}
+
+message UpdateAreaAnnotationRequest {
+    // 更新対象のAnnotationのID
+    int32 id = 1;
+    repeated AnnotationPosition positions = 2;
+    // 0:Ellipsoid.  
+    // 1:Relative.  
+    // 2:AGL.  
+    // 3:MSL.  
+    // 0(Ellipsoid),3(MSL)のみ有効.  
+    int32 altitude_attr = 3;
+    // Annotationの名前
+    string name = 4;
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    bool is_secret = 5;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 6;
+    // Annotationの説明
+    string description = 7;
+    // Annotationの種別（CityGML用）
+    string facility_name = 8;
+}
+
+message UpdateAreaAnnotationResponse {
+    string status = 1 [deprecated = true]; // ok
+}
+
+message UpdatePointAnnotationRequest {
+    // 更新対象のAnnotationのID
+    int32 id = 1;
+    // Annotationの名前
+    string name = 2;
+    // 他組織へと公開するか(true:非公開 false:公開).   
+    // デフォルト:false.  
+    bool is_secret = 3;
+    // Annotationの説明
+    string description = 4;
+    // waypointとして利用可能か.  
+    // デフォルト:false.  
+    bool is_waypoint = 5;
+    // Annotationの種別（CityGML用）
+    string facility_name = 6;
+    // 0:Default.  
+    // 1:Safe.  
+    // 2:Warning.  
+    // 3:Danger.  
+    int32 attr = 7;
+}
+
+message UpdatePointAnnotationResponse {
+    string status = 1 [deprecated = true]; // ok
+}
+message SearchColumn {
+    // Annotationの名前
+	optional string name = 1;
+    // Annotationの説明
+    optional string description = 2;
+    // Annotationのデータ元
+    optional string source_data = 3;
+    // Annotationの種別（CityGML用）
+    optional string facility_name = 4;
+}
+
+message ListPointAnnotationsByColumnRequest {
+    // Annotation検索条件（各条件をANDで記載）
+    SearchColumn search_column = 1;
+    // 組織ID
+    OrganizationID organization_id = 2;
+    // 取得件数上限（対象データがこれより多い場合でも、この件数までしか取得しない）.  
+    // デフォルト:100
+    optional int32 limit = 3;
+    // 何件目のデータから取得するか.  
+    // デフォルト:0
+    optional int32 offset = 4;
+}
+
+message ListPointAnnotationsResult {
+    repeated PointAnnotation annotation_list = 1;
+}
+
+message PointWithAttr{
+    int32 altitude_attr = 1;
+    double latitude = 2;
+    double longitude = 3;
+    float altitude = 4;
+}
+
+message Annotation {
+    // tagOfGroupのタグ名
+    string tag = 1;
+    // name
+    string name = 6;
+
+    oneof Target {
+        // Annotationポイント
+        Position point = 7;
+        // Road ANnotation。Annotationは開始点のWP（のtagOfGroup）に設定する
+        RoadAnnotation road = 8;
+    }
+
+    message RoadAnnotation {
+        Position start = 1;
+        Position end = 2;
+        // 起点WPとターゲットの距離からの差
+        float offset = 3;
+    }
+
+    // number of reroute and goto. avilable only response.
+    int32 append_id = 10;
+}
+
+message CreateWaypointForRoadAnnotationRequest {
+    Position waypoint = 1 ; // Road Annotationの起点Waypoint
+    Annotation.RoadAnnotation annotation = 2 ; 
+    string annotation_tag = 3 ; // 未設定の場合は自動設定
+}
+
+message CreateWaypointForRoadAnnotationResponse {
+    Result result = 1 ; // RM#2415
+    MissionItem waypoint_start = 2 ; // 入力のWP（起点WP）に対応するWaypointミッション
+    MissionItem waypoint_end = 3 ; // 自動生成Waypoint
+    Annotation annotation = 4 ; // MissionのAnnotationGroupsに設定すること
+    enum Result {
+        Complete = 0 ;
+        Barrier = 1 ; // 経路に障害物あり。（期待通りのトレース不可）
+        StartPointInBarrier = 2 ; // 起点がバリア内
+        EndPointInBarrier = 3 ; // 終点がバリア内
+        ParameterError = 4 ;
+    }
+    string info = 5 ;
+}
