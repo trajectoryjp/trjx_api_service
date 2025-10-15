@@ -124,6 +124,8 @@ message Mission {
     optional string flight_plan_id = 21 ;
     // 航路予約ID　※航路使用時のみ使用
     optional string airway_reservation_id = 22 ;
+    // パスが上限高度を超えているか否か。public航路内のみで超えた場合はfalse。ユーザ編集不可(リクエストで指定しても無視)。
+    bool over_maximum_altitude  = 23 ;
 }
 
 // MissionItem（ミッションの構成要素）

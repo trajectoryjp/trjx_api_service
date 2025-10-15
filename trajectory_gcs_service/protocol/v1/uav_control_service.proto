@@ -100,6 +100,7 @@ message GotoRequest {
 
     optional bool uses_public_channels_whenever_possible = 7; // パブリックな航路（UASL）を可能な限り使うか否か
     optional bool uses_private_channels_whenever_possible = 8; // プライベートな航路を可能な限り使うか否か
+    bool has_maximum_altitude_limit = 9 ; // 上限高度を超えるルート設計を行うか否か
 }
 
 // Goto経過情報
@@ -285,6 +286,7 @@ message UpdateMissionAtFlyingRequest{
     Mission mission = 2;
     optional bool uses_public_channels_whenever_possible = 3; // パブリックな航路（UASL）を可能な限り使うか否か
     optional bool uses_private_channels_whenever_possible = 4; // プライベートな航路を可能な限り使うか否か
+    bool has_maximum_altitude_limit = 5 ; // 上限高度を超えるルート設計を行うか否か
 }
 
 message UpdateMissionAtFlyingResponse{
@@ -365,6 +367,7 @@ message RerouteRequest{
 
     optional bool uses_public_channels_whenever_possible = 6; // パブリックな航路（UASL）を可能な限り使うか否か
     optional bool uses_private_channels_whenever_possible = 7; // プライベートな航路を可能な限り使うか否か
+    bool has_maximum_altitude_limit = 8 ; // 上限高度を超えるルート設計を行うか否か
 }
 
 message RerouteResponse{

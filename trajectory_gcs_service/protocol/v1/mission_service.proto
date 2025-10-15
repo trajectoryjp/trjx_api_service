@@ -57,6 +57,8 @@ message CreateMissionRequest {
 
     bool uses_public_channels_whenever_possible = 15; // パブリックな航路（UASL）を可能な限り使うか否か
     bool uses_private_channels_whenever_possible = 16; // プライベートな航路を可能な限り使うか否か
+
+    bool has_maximum_altitude_limit = 17 ; // 上限高度を超えるルート設計を行うか否か
 }
 
 message CreateMissionResponse {
