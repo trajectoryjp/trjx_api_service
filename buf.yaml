@@ -7,3 +7,6 @@ lint:
 breaking:
   use:
     - FILE
+deps:
+  - buf.build/grpc-ecosystem/grpc-gateway:v2.27.2
+  - buf.build/googleapis/googleapis
