@@ -37,7 +37,8 @@ prepare_googleapis() {
 if ! command -v buf 2>&1 >/dev/null;then
     echo "using buf"
     buf dep update
-    buf generate
+    buf generate \
+      && echo "build success"
 else
     echo "using protoc"
     # installing dependency protoc-gen-openapiv2/options/annotations.proto via go cmd
@@ -48,7 +49,8 @@ else
         -I $(go list -f '{{ .Dir }}' -m github.com/grpc-ecosystem/grpc-gateway/v2@v2.27.2) \
         -I "${GOOGLEAPIS_DIR}" \
         --go_out=. --go-grpc_out=. \
-        github.com/trajectoryjp/trjx_api_service/**/*.proto
+        github.com/trajectoryjp/trjx_api_service/**/*.proto \
+      && echo "build success"
 fi
 
 
