@@ -47,6 +47,7 @@ service AirwayAgent {
         post: "/airway_agent/airway_usage/{airwayReservationId}/register"
         body: "*"
       };
+      option deprecated = true;
     }
 
     // [254_2 航路利用BE 3.2航路策定]
@@ -59,6 +60,49 @@ service AirwayAgent {
         body: "*"
       };
     }
+
+
+    // [314 フェーズ1 運営事業者による航路策定 WP由来航路策定とMissionRecord同時作成]
+    // 指定されたウェイポイント配列から航路を登録し、同時に基本ミッションレコードを作成する
+    // 1) Wrapper.ConvertWaypointsToCrossSectionsを呼び出してウェイポイントから空間断面に変換する
+    // 2) CommandService.RegisterAirwaySectionCrossSectionInfoを呼び出して航路断面情報を登録する
+    // 3) MissionController.DBSaveBaseMissionRecord(ウェイポイント配列, 航路ID)を呼び出して基本ミッションレコードを作成する
+    rpc RegisterAirwayAndBaseMissionRecord(RegisterAirwayRequest) returns (RegisterAirwayResponse) {
+      option (google.api.http) = {
+        post: "/airway_agent/airway/register_and_base_mission_record"
+        body: "*"
+      };
+    }
+
+
+    // [314 フェーズ1 運営事業者による航路策定 策定済み航路取り込み]
+    // 指定された航路情報を空間情報に割り当てる
+    // 1) CommandService.GetAirwayを呼び出して航路情報を取得する
+    // 2) UASLService.CreateUASLを呼び出してUASLを作成する
+    // 3) Wrapper.ConvertCrossSectionToWireGeoJSONを呼び出して航路断面形状配列からGeoJSONに変換する
+    // 4) ARBorder POST: v1/ar/borders/uploadを呼び出してGeoJSONを登録する
+    // 5) UASLService.UpdateUASLを呼び出してUASLにARBorder情報を設定する
+    rpc AssignObjectWithAirway(AssinObjectWithAirwayRequest) returns (AssignObjectWithAirwayResponse) {
+      option (google.api.http) = {
+        post: "/airway_agent/assign_object_with_airway"
+        body: "*"
+      };
+    }
+
+    // [314 フェーズ1 運営事業者による航路策定 取り込み済み航路削除]
+    // 空間情報に割り当てられた航路情報を削除する
+    // 1) CommandService.DeleteAirwayを呼び出して航路情報を削除する
+    // 2) UASLService.GetUASLを呼び出してUASL情報を取得する
+    // 3) ARBorder DELETE: v1/ar/borders/{uasl_id}を呼び出してGeoJSONを削除する
+    // 4) UASLService.DeleteUASLを呼び出してUASLを削除する
+    // 5) MissionController.DeleteBaseMissionRecordByAirwayID(航路ID)を呼び出して基本ミッションレコードを削除する
+    rpc DeleteObjectWithAirway(DeleteObjectWithAirwayRequest) returns (DeleteObjectWithAirwayResponse) {
+      option (google.api.http) = {
+        delete: "/airway_agent/delete_object_with_airway"
+        body: "*"
+      };
+    }
+
 }
 
 // 基本パラメータ：Mission識別子
@@ -136,6 +180,8 @@ message ListAirwayReservationsUiRequest {
     // 予約終了日時
     bool use_filter_end_at = 7;
     google.protobuf.Timestamp end_at = 8;
+    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 9;
 }
 
 // 航路予約一覧の各行
@@ -156,6 +202,8 @@ message AirwayReservationUiListItem {
 message GetAirwayReservationDetailsUiRequest {
     // 航路予約ID: 航路システムの航路予約APIから返された予約ID
     string airway_reservation_id = 1;
+    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 2;
 }
 
 // 航路予約情報詳細
@@ -204,6 +252,8 @@ message RegisterAirwayRequest {
         // 型式(モデル)
         string model_number = 2;
     }
+    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 8;
 }
 
 // 航路登録結果
@@ -214,4 +264,40 @@ message RegisterAirwayResponse {
     string airway_id = 2;
     // エラーメッセージ
     string message = 3;
+}
+
+// 航路情報をオブジェクトに割り当てるリクエスト
+message AssinObjectWithAirwayRequest {
+    // 航路ID
+    string airway_id = 1;
+    // 組織ID
+    string organization_id = 2;
+    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 3;
+}
+
+// 航路情報割り当て結果
+message AssignObjectWithAirwayResponse {
+    // 割り当て結果
+    bool result = 1;
+    // UASL ID
+    string uasl_id = 2;
+    // エラーメッセージ
+    string message = 3;
+}
+
+// 航路情報をオブジェクトから削除するリクエスト
+message DeleteObjectWithAirwayRequest {
+    // 航路ID
+    string uasl_id = 1;
+    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 2;
+}
+
+// 航路情報をオブジェクトから削除するレスポンス
+message DeleteObjectWithAirwayResponse {
+    // 削除結果
+    bool result = 1;
+    // エラーメッセージ
+    string message = 2;
 }
