@@ -78,10 +78,9 @@ service AirwayAgent {
     // [314 フェーズ1 運営事業者による航路策定 策定済み航路取り込み]
     // 指定された航路情報を空間情報に割り当てる
     // 1) CommandService.GetAirwayを呼び出して航路情報を取得する
-    // 2) UASLService.CreateUASLを呼び出してUASLを作成する
-    // 3) Wrapper.ConvertCrossSectionToWireGeoJSONを呼び出して航路断面形状配列からGeoJSONに変換する
-    // 4) ARBorder POST: v1/ar/borders/uploadを呼び出してGeoJSONを登録する
-    // 5) UASLService.UpdateUASLを呼び出してUASLにARBorder情報を設定する
+    // 2) Wrapper.ConvertCrossSectionToWireGeoJSONを呼び出して航路断面形状配列からGeoJSONに変換する
+    // 3) ARBorder POST: v1/ar/borders/uploadを呼び出してGeoJSONを登録する
+    // 4) UASLService.CreateUASLを呼び出してUASLを作成する
     rpc AssignObjectWithAirway(AssinObjectWithAirwayRequest) returns (AssignObjectWithAirwayResponse) {
       option (google.api.http) = {
         post: "/airway_agent/assign_object_with_airway"
@@ -180,7 +179,7 @@ message ListAirwayReservationsUiRequest {
     // 予約終了日時
     bool use_filter_end_at = 7;
     google.protobuf.Timestamp end_at = 8;
-    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
     string airway_system_id = 9;
 }
 
@@ -202,7 +201,7 @@ message AirwayReservationUiListItem {
 message GetAirwayReservationDetailsUiRequest {
     // 航路予約ID: 航路システムの航路予約APIから返された予約ID
     string airway_reservation_id = 1;
-    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
     string airway_system_id = 2;
 }
 
@@ -252,8 +251,28 @@ message RegisterAirwayRequest {
         // 型式(モデル)
         string model_number = 2;
     }
-    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
     string airway_system_id = 8;
+
+    Shape shape = 9; // ジャンクションの形状(航路断面)
+
+    message Shape {
+        oneof shape {
+            Circle circle = 1; // 円
+            Rectangle rectangle = 2; // 長方形
+        }
+
+        // 円
+        message Circle {
+            double radius = 1; // 半径
+        }
+
+        // 長方形
+        message Rectangle {
+            double width = 1; // 幅
+            double height = 2; // 高さ
+        }
+    }
 }
 
 // 航路登録結果
@@ -272,7 +291,7 @@ message AssinObjectWithAirwayRequest {
     string airway_id = 1;
     // 組織ID
     string organization_id = 2;
-    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
     string airway_system_id = 3;
 }
 
@@ -290,7 +309,7 @@ message AssignObjectWithAirwayResponse {
 message DeleteObjectWithAirwayRequest {
     // 航路ID
     string uasl_id = 1;
-    // 航路システムID(address) TODO: 将来機能拡張対応。リクエストかmetaデータどちらが良いかは検討
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
     string airway_system_id = 2;
 }
 
