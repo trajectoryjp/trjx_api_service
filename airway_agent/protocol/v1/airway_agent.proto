@@ -61,20 +61,6 @@ service AirwayAgent {
       };
     }
 
-
-    // [314 フェーズ1 運営事業者による航路策定 WP由来航路策定とMissionRecord同時作成]
-    // 指定されたウェイポイント配列から航路を登録し、同時に基本ミッションレコードを作成する
-    // 1) Wrapper.ConvertWaypointsToCrossSectionsを呼び出してウェイポイントから空間断面に変換する
-    // 2) CommandService.RegisterAirwaySectionCrossSectionInfoを呼び出して航路断面情報を登録する
-    // 3) MissionController.DBSaveBaseMissionRecord(ウェイポイント配列, 航路ID)を呼び出して基本ミッションレコードを作成する
-    rpc RegisterAirwayAndBaseMissionRecord(RegisterAirwayRequest) returns (RegisterAirwayResponse) {
-      option (google.api.http) = {
-        post: "/airway_agent/airway/register_and_base_mission_record"
-        body: "*"
-      };
-    }
-
-
     // [314 フェーズ1 運営事業者による航路策定 策定済み航路取り込み]
     // 指定された航路情報を空間情報に割り当てる
     // 1) CommandService.GetAirwayを呼び出して航路情報を取得する
