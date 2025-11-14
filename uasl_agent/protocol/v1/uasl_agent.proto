@@ -1,0 +1,301 @@
+/*
+ * <アクセス方法>
+ * このサービスを使用するために、以下をmetadata（ヘッダー）に指定してください。
+ * "x-grpc-service": "UASLAgent"
+ * "user_id": システムユーザID
+ * "Authorization": アクセストークン
+ */
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+// パッケージ名を変更
+package Trajectory.UASLAgent.Protocol.v1;
+// go_package を変更
+option go_package = "github.com/trajectoryjp/trjx_api_service/uasl_agent/v1";
+
+// 航路システム対向バックエンド
+// 認証用の注意事項を追記　HTTPヘッダの必要事項
+// サービス名を変更
+service UASLAgentService {
+    // TODO: aiway_agent/protocol/v1/airway_agent.proto からの切り替えができるタイミングで以下を実装する
+    // // [254_3 UASL利用UI]
+    // // UASL予約一覧取得
+    // rpc ListUASLReservations(ListUASLReservationsUiRequest) returns (stream UASLReservationUiListItem) {
+    //   option (google.api.http) = {
+    //     // URLパスを変更
+    //     get: "/uasl_agent/uasl_reservations"
+    //   };
+    // }
+
+    // TODO: aiway_agent/protocol/v1/airway_agent.proto からの切り替えができるタイミングで以下を実装する
+    // // UASL予約詳細取得
+    // // 1) UASL予約情報を取得する
+    // // 2) UASL断面情報を取得する
+    // // 3) UASL断面形状配列からウェイポイント配列を取得する
+    // rpc GetUASLReservationDetails(GetUASLReservationDetailsUiRequest) returns (UASLReservationUiDetails) {
+    //   option (google.api.http) = {
+    //     // URLパスとパラメータ名を変更
+    //     get: "/uasl_agent/uasl_reservations/{uasl_reservation_id}"
+    //   };
+    // }
+
+    // TODO: aiway_agent/protocol/v1/airway_agent.proto からの切り替えができるタイミングで以下を実装する
+    // // [254_2 UASL利用BE 3.2UASL策定]
+    // // 指定されたウェイポイント配列からUASLシステムにUASLを登録する
+    // // 1) ウェイポイントから空間断面に変換する
+    // // 2) UASL断面情報を登録する
+    // rpc RegisterUASL(RegisterUASLRequest) returns (RegisterUASLResponse) {
+    //   option (google.api.http) = {
+    //     post: "/uasl_agent/uasl/register"
+    //     body: "*"
+    //   };
+    // }
+
+    // [314 フェーズ1 運営事業者によるUASL策定 策定済みUASL取り込み]
+    // 指定されたUASL情報を空間情報に割り当てる
+    // 1) UASL情報を取得する
+    // 2) UASL断面形状配列からGeoJSONに変換する
+    // 3) ARBorderにGeoJSONを登録する(ARBorderサーバーが存在する場合)
+    // 4) UASLを作成する
+    rpc AssignUASL(AssignUASLRequest) returns (AssignUASLResponse) {
+      option (google.api.http) = {
+        post: "/uasl_agent/assign_uasl"
+        body: "*"
+      };
+    }
+
+    // [314 フェーズ1 運営事業者によるUASL策定 取り込み済みUASL削除]
+    // 空間情報に割り当てられたUASL情報を削除する
+    // 1) 航路システムのUASL情報を削除する
+    // 2) TRJX内部のUASL情報を取得する
+    // 3) ARBordeのGeoJSONを削除する(ARBorderサーバーが存在する場合)
+    // 4) UASLを削除する
+    // 5) 航路策定の元となる基本ミッションレコードを削除する
+    rpc DeleteUASL(DeleteUASLRequest) returns (DeleteUASLResponse) {
+      option (google.api.http) = {
+        delete: "/uasl_agent/delete_uasl"
+        body: "*"
+      };
+    }
+
+}
+
+// 基本パラメータ：Mission識別子
+// DBに保存されたMissionの識別子（プライムキー）
+// message MissionID {
+//     string identifier = 1; 
+// }
+
+// message Position {
+//     message Altitude {
+//         Standard standard = 1;
+//         float altitude = 2; // m
+    
+//         enum Standard { 
+//             ALTITUDE_ATTR_UNSPECIFIED = 0 ;
+//             RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
+//             AGL = 2 ; // 地表面高度。
+//             MSL = 3; // 海抜高度（標高）。
+//             ELLIPSOIDE = 4 ;// 楕円球体高。default値。
+//         }
+//     }
+//     // 緯度
+//     double latitude = 1;
+//     // 経度
+//     double longitude = 2;
+//     // 高度
+//     Altitude altitude = 3;
+// }
+
+// // UASL利用登録リクエスト
+// message RegisterUASLUsageRequest {
+//     // UASL予約ID
+//     string uaslReservationId = 1;
+//     string missionName = 2;
+// }
+
+// // UASL利用登録結果
+// message RegisterUASLUsageResponse {
+//     // UASL利用登録結果
+//     bool result = 1;
+//     // ミッションID：DBSaveMissionResult.missionId
+//     MissionID missionID = 2;
+//     // エラー情報
+//     RegisterUASLUsageError error = 3;
+// }
+
+// // UASL利用登録エラー
+// // エラーのマッピング：gRPCでは正常でもアプリケーションの論理エラーの場合に定義など、考慮
+// message RegisterUASLUsageError {
+//     // エラー種別
+//     RegisterUASLUsageErrorType type = 1;
+//     // エラーメッセージ
+//     string message = 2;
+
+//     // gRPCの標準エラーコードに出来るだけ当てはめる
+//     enum RegisterUASLUsageErrorType    {
+//         NONE = 0;
+//         INVALID_UASL_RESERVATION_ID = 1;
+//         ALREADY_REGISTERED = 2;
+//         EXCEPTION = 99;
+//     }
+// }
+
+// // UASL予約一覧取得リクエスト
+// message ListUASLReservationsUiRequest {
+//     // 運航事業者ID
+//     bool use_filter_operator_id = 1;
+//     string operator_id = 2;
+//     // UASL予約ID
+//     bool use_filter_reservation_id = 3;
+//     string uasl_reservation_id = 4;
+//     // 予約開始日時
+//     bool use_filter_start_at = 5;
+//     google.protobuf.Timestamp start_at = 6;
+//     // 予約終了日時
+//     bool use_filter_end_at = 7;
+//     google.protobuf.Timestamp end_at = 8;
+//     // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+//     string uasl_system_id = 9;
+// }
+
+// // UASL予約一覧の各行
+// message UASLReservationUiListItem {
+//     // 運航事業者ID
+//     string operatorId = 1;
+//     // UASL予約ID
+//     string uasl_reservation_id = 2;
+//     // 予約開始日時
+//     google.protobuf.Timestamp start_at = 3;
+//     // 予約終了日時
+//     google.protobuf.Timestamp end_at = 4;
+//     // UASL区画ID配列
+//     repeated string uasl_section_ids = 5;
+// }
+
+// // UASL予約情報詳細取得リクエスト
+// message GetUASLReservationDetailsUiRequest {
+//     // UASL予約ID: UASLシステムのUASL予約APIから返された予約ID
+//     string uasl_reservation_id = 1;
+//     // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+//     string uasl_system_id = 2;
+// }
+
+// // UASL予約情報詳細
+// message UASLReservationUiDetails {
+//     // UASL予約ID
+//     string uasl_reservation_id = 1;
+//     // 運航事業者ID
+//     string operator_id = 2;
+//     // UASL区画ID配列
+//     repeated string uasl_section_ids = 3;
+//     // 予約開始日時
+//     google.protobuf.Timestamp start_at = 4;
+//     // 予約終了日時
+//     google.protobuf.Timestamp end_at = 5;
+//     // 予約日時
+//     google.protobuf.Timestamp  reserved_at = 6;
+//     // ウェイポイントの配列
+//     repeated Position waypoints = 7;
+// }
+
+// // UASL登録リクエスト
+// message RegisterUASLRequest {
+//     // 最大落下許容範囲ID
+//     // 落下空間取得API(/airway-design/fall-space)に指定するID
+//     // 落下空間までは予めUASLシステムに登録済みの想定
+//     string fall_tolerance_range_id = 1;
+//     // UASL名
+//     string uasl_name = 2;
+//     // 飛行目的
+//     string flight_purpose = 3;
+//     // ウェイポイントの配列
+//     repeated Position waypoints = 4;
+//     // ジャンクション名の配列
+//     // ウェイポイント各点がジャンクションとなる。ウェイポイント配列と同じ要素数
+//     repeated string junction_names = 5;
+//     // UASL区画名の配列
+//     // ジャンクション間がUASL区画となる。ウェイポイント配列より１少ない要素数
+//     repeated string section_names = 6;
+//     // 使用可能機体リスト
+//     // 機体情報候補リストの取得API(/airway-design/aircraft)で得られる一覧に存在する機体のみ指定可能
+//     repeated UAVModel available_uav_models = 7;
+
+//     message UAVModel {
+//         // メーカー名
+//         string maker = 1;
+//         // 型式(モデル)
+//         string model_number = 2;
+//     }
+//     // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+//     string uasl_system_id = 8;
+
+//     Shape shape = 9; // ジャンクションの形状(UASL断面)
+
+//     message Shape {
+//         oneof shape {
+//             Circle circle = 1; // 円
+//             Rectangle rectangle = 2; // 長方形
+//         }
+
+//         // 円
+//         message Circle {
+//             double radius = 1; // 半径
+//         }
+
+//         // 長方形
+//         message Rectangle {
+//             double width = 1; // 幅
+//             double height = 2; // 高さ
+//         }
+//     }
+// }
+
+// // UASL登録結果
+// message RegisterUASLResponse {
+//     // UASL登録結果
+//     bool result = 1;
+//     // UASL ID
+//     string uasl_id = 2;
+//     // エラーメッセージ
+//     string message = 3;
+// }
+
+// UASL情報をオブジェクトに割り当てるリクエスト
+message AssignUASLRequest {
+    // 航路システムで管理されているUASL ID
+    string uasl_systems_uasl_id = 1;
+    // 組織ID
+    string organization_id = 2;
+    // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+    string uasl_system_id = 3;
+}
+
+// UASL情報割り当て結果
+message AssignUASLResponse {
+    // 割り当て結果
+    bool result = 1;
+    // UASL ID
+    string uasl_id = 2;
+    // エラーメッセージ
+    string message = 3;
+}
+
+// UASL情報をオブジェクトから削除するリクエスト
+message DeleteUASLRequest {
+    // UASL ID
+    string uasl_id = 1;
+    // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+    string uasl_system_id = 2;
+}
+
+// UASL情報をオブジェクトから削除するレスポンス
+message DeleteUASLResponse {
+    // 削除結果
+    bool result = 1;
+    // エラーメッセージ
+    string message = 2;
+}
