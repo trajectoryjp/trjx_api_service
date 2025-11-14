@@ -3,6 +3,9 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
+
 service UaslService {
     // UI 表示範囲内の航路ピクセルを取得する (2D 向け)
     rpc ListUaslPixelsInView(ListUaslPixelsInViewRequest) returns (ListUaslPixelsInViewResponse);
@@ -17,7 +20,7 @@ message ListUaslPixelsInViewRequest {
     // 前回のリクエストで返されたページトークン。初回は指定しない。
     string page_token = 2;
     // View の範囲
-    UaslViewRange view_range = 3;
+    trajectory.trjx_api_service.BoundingBox bounding_box = 3;
 }
 
 // 航路ピクセル取得レスポンス
@@ -35,7 +38,7 @@ message ListUaslVoxelsInViewRequest {
     // 前回のリクエストで返されたページトークン。初回は指定しない。
     string page_token = 2;
     // View の範囲
-    UaslViewRange view_range = 3;
+    trajectory.trjx_api_service.BoundingBox bounding_box = 3;
 }
 
 // 航路ボクセル取得レスポンス
@@ -84,8 +87,8 @@ message UaslLocation {
 
 // 航路ピクセル
 message UaslPixel {
-    // 空間 ID (f = 0 になる以外は UaslVoxel と同じ)
-    UaslSpatialId spatial_id = 1;
+    // 空間 ID (2D; z/x/y)
+    generic.v2.SpatialIdentification spatial_2d_id = 1;
 }
 
 // 航路サービスの空間 ID (z/f/x/y)
@@ -114,7 +117,7 @@ message UaslViewRange {
 // 航路ボクセル
 message UaslVoxel {
     // 空間 ID
-    UaslSpatialId spatial_id = 1;
+    generic.v2.SpatialIdentification spatial_id = 1;
 }
 
 // ボクセル表現の航路
