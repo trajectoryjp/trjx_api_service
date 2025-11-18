@@ -77,41 +77,10 @@ message UaslId {
     }
 }
 
-// 地図上の位置情報
-message UaslLocation {
-    // 緯度 [˚]
-    double latitude = 1;
-    // 経度 [˚]
-    double longitude = 2;
-}
-
 // 航路ピクセル
 message UaslPixel {
     // 空間 ID (2D; z/x/y)
     generic.v2.SpatialIdentification spatial_2d_id = 1;
-}
-
-// 航路サービスの空間 ID (z/f/x/y)
-// ズームレベル 31 (2^31 - 1) まで対応できる
-// 言語の互換性や誤って負の値が渡された場合を考慮して符号付き整数型を採用する
-message UaslSpatialId {
-    // ズームレベル (サイズを縮小したい場合は byte の利用を検討する)
-    int32 z = 1;
-    // f インデックス
-    int32 f = 2;
-    // x インデックス
-    int32 x = 3;
-    // y インデックス
-    int32 y = 4;
-}
-
-// View の範囲
-// ユーザーは対角線の端点によって View の範囲 (長方形) を指定できる
-message UaslViewRange {
-    // View の始点
-    UaslLocation start = 1;
-    // View の終点
-    UaslLocation end = 2;
 }
 
 // 航路ボクセル
