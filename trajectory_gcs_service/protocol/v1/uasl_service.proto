@@ -25,7 +25,7 @@ message ListUaslPixelsInViewRequest {
 
 // 航路ピクセル取得レスポンス
 message ListUaslPixelsInViewResponse {
-    // 次の項目へのページトークン。全て読み切った場合は nil が返る。
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
     string next_page_token = 1;
     // 航路
     repeated PixelBasedUasl uasls = 2;
@@ -43,7 +43,7 @@ message ListUaslVoxelsInViewRequest {
 
 // 航路ボクセル取得レスポンス
 message ListUaslVoxelsInViewResponse {
-    // 次の項目へのページトークン。全て読み切った場合は nil が返る。
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
     string next_page_token = 1;
     // 航路
     repeated VoxelBasedUasl uasls = 2;
