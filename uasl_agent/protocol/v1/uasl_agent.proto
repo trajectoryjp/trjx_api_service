@@ -80,6 +80,7 @@ service UASLAgentService {
       };
     }
 
+    // TODO: 取得APIの実装検討
 }
 
 // 基本パラメータ：Mission識別子
@@ -263,34 +264,28 @@ service UASLAgentService {
 //     string message = 3;
 // }
 
-// UASL情報をオブジェクトに割り当てるリクエスト
+// 路システムのUASLに空間情報を割り当てるリクエスト
 message AssignUASLRequest {
-    // 航路システムで管理されているUASL ID
-    string uasl_systems_uasl_id = 1;
+    // UASL ID
+    UASLID uasl_id = 1;
     // 組織ID
     string organization_id = 2;
-    // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-    string uasl_system_id = 3;
 }
 
-// UASL情報割り当て結果
+// 路システムのUASLに空間情報を割り当てた結果
 message AssignUASLResponse {
     // 割り当て結果
     bool result = 1;
-    // 航路システムで管理されているUASL ID(airway ID)
-    string uasl_systems_uasl_id = 2;
-    // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-    string uasl_system_id = 3;
+    // UASL ID
+    UASLID uasl_id = 2;
     // エラーメッセージ
-    string message = 4;
+    string message = 3;
 }
 
 // UASL情報をオブジェクトから削除するリクエスト
 message DeleteUASLRequest {
-    // 航路システムで管理されているUASL ID(airway ID)
-    string uasl_systems_uasl_id = 1;
-    // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-    string uasl_system_id = 2;
+    // UASL ID
+    UASLID uasl_id = 1;
 }
 
 // UASL情報をオブジェクトから削除するレスポンス
@@ -299,4 +294,12 @@ message DeleteUASLResponse {
     bool result = 1;
     // エラーメッセージ
     string message = 2;
+}
+
+// 航路システムのUASLを識別するID
+message UASLID {
+    // 航路システムで管理されているUASL ID(airway ID)
+    string uasl_systems_uasl_id = 2;
+    // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+    string uasl_system_id = 3;
 }
