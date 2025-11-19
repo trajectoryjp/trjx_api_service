@@ -26,9 +26,9 @@ service AirwayAgent {
     }
 
     // 航路予約詳細取得
-    // 1) CommandService.GetAirwayReservationDetailsを呼び出して航路予約情報を取得する
-    // 2) CommandService.GetAirwaySectionCrossSectionInfoを呼び出して航路断面情報を取得する
-    // 3) Wrapper.ConvertCrossSectionsToWaypointsを呼び出して航路断面形状配列からウェイポイント配列を取得する
+    // 1) 航路予約情報を取得する
+    // 2) 航路断面情報を取得する
+    // 3) 航路断面形状配列からウェイポイント配列を取得する
     rpc GetAirwayReservationDetails(GetAirwayReservationDetailsUiRequest) returns (AirwayReservationUiDetails) {
       option (google.api.http) = {
         get: "/airway_agent/airway_reservations/{airway_reservation_id}"
@@ -38,27 +38,29 @@ service AirwayAgent {
     // [254_2 航路利用BE]
     // [263 MissionDB]
     // 航路利用登録
-    // 1) CommandService.GetAirwayReservationDetailsを呼び出して航路予約情報を取得する
-    // 2) CommandService.GetAirwaySectionCrossSectionInfoを呼び出して航路断面情報を取得する
-    // 3) Wrapper.ConvertCrossSectionsToWaypointsを呼び出して航路断面形状配列からウェイポイント配列を取得する
-    // 4) MissionController.DBSaveMission(ウェイポイント配列, 航路予約ID, supervisor=true)を呼び出してミッションDBに登録する
+    // 1) 航路予約情報を取得する
+    // 2) 航路断面情報を取得する
+    // 3) 航路断面形状配列からウェイポイント配列を取得する
+    // 4) ミッションDBに登録する
     rpc RegisterAirwayUsage(RegisterAirwayUsageRequest) returns (RegisterAirwayUsageResponse) {
       option (google.api.http) = {
         post: "/airway_agent/airway_usage/{airwayReservationId}/register"
         body: "*"
       };
+      option deprecated = true;
     }
 
     // [254_2 航路利用BE 3.2航路策定]
     // 指定されたウェイポイント配列から航路システムに航路を登録する
-    // 1) Wrapper.ConvertWaypointsToCrossSectionsを呼び出してウェイポイントから空間断面に変換する
-    // 2) CommandService.RegisterAirwaySectionCrossSectionInfoを呼び出して航路断面情報を登録する
+    // 1) ウェイポイントから空間断面に変換する
+    // 2) 航路断面情報を登録する
     rpc RegisterAirway(RegisterAirwayRequest) returns (RegisterAirwayResponse) {
       option (google.api.http) = {
         post: "/airway_agent/airway/register"
         body: "*"
       };
     }
+
 }
 
 // 基本パラメータ：Mission識別子
@@ -136,6 +138,8 @@ message ListAirwayReservationsUiRequest {
     // 予約終了日時
     bool use_filter_end_at = 7;
     google.protobuf.Timestamp end_at = 8;
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 9;
 }
 
 // 航路予約一覧の各行
@@ -156,6 +160,8 @@ message AirwayReservationUiListItem {
 message GetAirwayReservationDetailsUiRequest {
     // 航路予約ID: 航路システムの航路予約APIから返された予約ID
     string airway_reservation_id = 1;
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 2;
 }
 
 // 航路予約情報詳細
@@ -203,6 +209,28 @@ message RegisterAirwayRequest {
         string maker = 1;
         // 型式(モデル)
         string model_number = 2;
+    }
+    // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
+    string airway_system_id = 8;
+
+    Shape shape = 9; // ジャンクションの形状(航路断面)
+
+    message Shape {
+        oneof shape {
+            Circle circle = 1; // 円
+            Rectangle rectangle = 2; // 長方形
+        }
+
+        // 円
+        message Circle {
+            double radius = 1; // 半径
+        }
+
+        // 長方形
+        message Rectangle {
+            double width = 1; // 幅
+            double height = 2; // 高さ
+        }
     }
 }
 
