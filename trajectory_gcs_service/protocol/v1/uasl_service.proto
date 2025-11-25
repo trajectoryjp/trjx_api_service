@@ -8,13 +8,13 @@ import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
 
 service UaslService {
     // UI 表示範囲内の航路ピクセルを取得する (2D 向け)
-    rpc ListUaslPixelsInView(ListUaslPixelsInViewRequest) returns (ListUaslPixelsInViewResponse);
+    rpc ListUaslPixels(ListUaslPixelsRequest) returns (ListUaslPixelsResponse);
     // UI 表示範囲内の航路ボクセルを取得する (3D 向け)
-    rpc ListUaslVoxelsInView(ListUaslVoxelsInViewRequest) returns (ListUaslVoxelsInViewResponse);
+    rpc ListUaslVoxels(ListUaslVoxelsRequest) returns (ListUaslVoxelsResponse);
 }
 
 // 航路ピクセル取得リクエスト
-message ListUaslPixelsInViewRequest {
+message ListUaslPixelsRequest {
     // 取得する航路ピクセルの最大数 (初期値 = 0)。0 の場合はサーバー側の設定値が代入されます。
     int32 page_size = 1;
     // 前回のリクエストで返されたページトークン。初回は指定しない。
@@ -24,7 +24,7 @@ message ListUaslPixelsInViewRequest {
 }
 
 // 航路ピクセル取得レスポンス
-message ListUaslPixelsInViewResponse {
+message ListUaslPixelsResponse {
     // 次の項目へのページトークン。全て読み切った場合は "" が返る。
     string next_page_token = 1;
     // 航路
@@ -32,7 +32,7 @@ message ListUaslPixelsInViewResponse {
 }
 
 // 航路ボクセル取得リクエスト
-message ListUaslVoxelsInViewRequest {
+message ListUaslVoxelsRequest {
     // 取得する航路ボクセルの最大数 (初期値 = 0)。0 の場合はサーバー側の設定値が代入されます。
     int32 page_size = 1;
     // 前回のリクエストで返されたページトークン。初回は指定しない。
@@ -42,7 +42,7 @@ message ListUaslVoxelsInViewRequest {
 }
 
 // 航路ボクセル取得レスポンス
-message ListUaslVoxelsInViewResponse {
+message ListUaslVoxelsResponse {
     // 次の項目へのページトークン。全て読み切った場合は "" が返る。
     string next_page_token = 1;
     // 航路
@@ -51,20 +51,24 @@ message ListUaslVoxelsInViewResponse {
 
 // ピクセル表現の航路
 message PixelBasedUasl {
-    // 航路 ID
-    UaslId uasl_id = 1;
+    // 航路セクション
+    UaslSection uasl_section = 1;
     // 航路ピクセルのリスト
     repeated UaslPixel uasl_pixels = 2;
 }
 
 // 航路 ID
-message UaslId {
-    // オブジェクト ID
+message UaslSection {
+    // オブジェクト ID (セクションごとに一意)
     int64 object_id = 1;
     // 名前
     string name = 2;
+    // 航路 ID
+    string uasl_id = 3;
+    // 航路名
+    string uasl_name = 4;
     // オブジェクトの表示範囲
-    UaslVisibility visibility = 3;
+    UaslVisibility visibility = 5;
 
     // 表示範囲の種別
     enum UaslVisibility {
@@ -91,8 +95,8 @@ message UaslVoxel {
 
 // ボクセル表現の航路
 message VoxelBasedUasl {
-    // 航路 ID
-    UaslId uasl_id = 1;
+    // 航路セクション
+    UaslSection uasl_section = 1;
     // 航路ボクセルのリスト
     repeated UaslVoxel uasl_voxels = 2;
 }
