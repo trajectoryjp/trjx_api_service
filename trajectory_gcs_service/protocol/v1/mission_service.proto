@@ -103,15 +103,32 @@ message MissionIDRecord {
 // MissionRecord一覧リクエスト
 // 必須パラメータ以外は絞り込み(AND指定)要素として働く
 message ListMissionRecordsRequest {
-    ProjectID project_id = 1; // プロジェクトID ※自組織のプロジェクトのみ指定可
-    int32 page_size = 2; // レスポンスで返却するMissionRecordの最大件数
-    string page_token = 3; // 最初は空文字を指定し、前回のレスポンスで返却されたnext_page_tokenを指定する。
-    optional UAVID uav_id = 4;   // UavId(完全一致)　※自組織の機体のみ指定可
-    optional string name = 5; // ミッション名(完全一致)
-    optional AssignedUASLMission assigned_uasl_mission = 6; // 策定済み航路ミッションのプロパティ指定
-    optional MissionUsingUASL mission_using_uasl = 7; // 航路利用ミッションのプロパティ指定
-    optional ReservedUASLMission reserved_uasl_mission = 8; // 航路予約済みミッションのプロパティ指定
-    optional ReservedMission reserved_mission = 9; // 事前予約済みミッションのプロパティ指定
+    // プロジェクトID ※自組織のプロジェクトのみ指定可
+    // AND条件でフィルタリングされる。
+    ProjectID project_id = 1;
+    // レスポンスで返却するMissionRecordの最大件数
+    int32 page_size = 2;
+    // ページング指定値
+    // 最初は空文字を指定し、前回のレスポンスで返却されたnext_page_tokenを指定する。
+    string page_token = 3;
+    // UAVID(完全一致)
+    // AND条件でフィルタリングされる。
+    optional UAVID uav_id = 4;
+    // ミッション名(完全一致)
+    // AND条件でフィルタリングされる。
+    optional string name = 5;
+    // 策定済み航路ミッションのプロパティ指定
+    // OR条件でフィルタリングされる。
+    optional AssignedUASLMission assigned_uasl_mission = 6;
+    // 航路利用ミッションのプロパティ指定
+    // OR条件でフィルタリングされる。
+    optional MissionUsingUASL mission_using_uasl = 7;
+    // 航路予約済みミッションのプロパティ指定
+    // OR条件でフィルタリングされる。
+    optional ReservedUASLMission reserved_uasl_mission = 8;
+    // 事前予約済みミッションのプロパティ指定
+    // OR条件でフィルタリングされる。
+    optional ReservedMission reserved_mission = 9;
 }
 
 message ListMissionRecordsResponse {
