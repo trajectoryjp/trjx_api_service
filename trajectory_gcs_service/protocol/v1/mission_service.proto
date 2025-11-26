@@ -5,6 +5,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "google/api/field_behavior.proto"; 
 
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
@@ -75,8 +76,60 @@ message MissionRecord {
     UAVID uav_id = 5;
     ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
     optional Timestamps timestamps = 7; // ミッションの作成/更新日時　リクエスト時は設定しない
+    // 下記の作成時に指定する追加項目(通常のレコード作成では不要)
+    // - 策定済み航路の経路表現
+    // - 航路を利用する経路
+    // - 航路予約を含むミッション
+    // - 事前予約されたミッション
+    optional SpecialMissionAttribute special_attribute = 8;
+    MissionID mission_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY]; // リクエスト時の指定は無効。IDはサーバーで生成されます。
 }
 
+message SpecialMissionAttribute {
+    oneof mission_type {
+        // 策定済み航路ミッション
+        AssignedUASLMission assigned_uasl_mission = 1;
+        // 航路利用ミッション
+        // このミッションは複数の航路の区間、または航路でない区間、もしくはその両方を含む。
+        MissionUsingUASL mission_using_uasl = 2;
+        // 航路予約済みミッション
+        ReservedUASLMission reserved_uasl_mission = 3;
+        // 事前予約済みミッション
+        ReservedMission reserved_mission = 4;
+    }
+}
+
+message AssignedUASLMission {
+    // 策定済み航路ID
+    string assigned_uasl_id = 1;
+}
+
+message MissionUsingUASL {
+    // 利用する航路セクションID群
+    repeated string uasl_section_ids = 1;
+}
+
+message ReservedUASLMission {
+    // 航路予約ID
+    string uasl_reservation_id = 1;
+    // 利用している策定済み航路ミッションのIDリスト
+    repeated string assigned_uasl_ids = 2;
+    // 予約時間帯 開始時刻
+    google.protobuf.Timestamp scheduled_start_time = 3;
+    // 予約時間帯 終了時刻
+    google.protobuf.Timestamp scheduled_end_time = 4;
+}
+
+message ReservedMission {
+    // 利用している航路予約済みミッションIDリスト
+    repeated string reserved_uasl_mission_ids = 1;
+    // 機体情報(現在はID)
+    UAVID uav_id = 2;
+    // 予約時間帯 開始時刻
+    google.protobuf.Timestamp scheduled_start_time = 3;
+    // 予約時間帯 終了時刻
+    google.protobuf.Timestamp scheduled_end_time = 4;
+}
 
 message UpdateMissionRecordRequest {
     MissionID mission_id = 1; // データベースレコードキー。必須
