@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+service BorderService {
+    // 指定された組織からARBorderの一覧（認証が必要）
+    rpc ListUaslBorders(ListUaslBordersRequest) returns (ListUaslBordersResponse);
+    // パブリックARBorderの一覧（認証不要）
+    // NoAut?
+    rpc ListPublicUaslBorders(ListPublicUaslBordersRequest) returns (ListPublicUaslBordersResponse);
+}
+
+
+
+// Challanges:
+// 1. retrival of whole Airway (if request search_space has some part of airway)
+// 2. Difficult to determine max page size (length of airway is unknown)
+// 3. weather or not to add view field to request:
+//  3.1 response will contain only border name(is it acceptable?)
+
+message ListUaslBordersRequest{
+    // 取得するBorderの最大数
+    int32 page_size = 1;
+    string page_token = 2;
+    // 検索ボックス 検索範囲の制限を設ける
+    SearchSpace search_space = 3;
+
+    // // retrival mode:
+    // UaslBorderView view = 4;
+}
+
+
+message ListUaslBordersResponse{
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
+    string next_page_token = 1;
+    repeated Border borders = 2; 
+    
+    
+}
+
+message ListPublicUaslBordersRequest{
+    // 取得するBorderの最大数
+    int32 page_size = 1;
+    string page_token = 2;
+    // 検索ボックス 検索範囲の制限を設ける
+    SearchSpace search_space = 3;
+
+
+    // // retrival mode:
+    // UaslBorderView view = 4;
+
+}
+
+message ListPublicUaslBordersResponse{
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
+    string next_page_token = 1;
+    repeated Border borders = 2; 
+}
+
+
+message Border {
+    string name = 1; // name of the border, unique for each border
+    string type = 2; // border item type line
+    string description = 3; 
+    repeated LineItem items = 5; // lines(items) of the border
+    int64 created_at = 6; // created date, unix milli
+    int64 updated_at = 7; // updated date, unix milli
+    bool default = 8; // ?
+    bool is_public = 9; // Whether the border is public
+}
+
+// items 配列の中身
+message LineItem {
+    Coordinate from = 1; //previous coordinate
+    Coordinate to = 2; // next coordinate
+    string color = 3;  // color of the item
+    string width = 4; // width of item
+
+    message Coordinate{
+        string latitude = 1;
+        string longitude = 2;
+        string altitude = 3;
+    }
+}
+
+    // 取得内容
+    enum UaslBorderView {
+        // 非指定
+        UASL_BORDER_VIEW_UNSPECIFIED = 0;
+
+        // retrive only border file name
+        UASL_BORDER_VIEW_BASIC = 1;
+
+        // 全て
+        UASL_BORDER_VIEW_FULL = 2;
+    }
