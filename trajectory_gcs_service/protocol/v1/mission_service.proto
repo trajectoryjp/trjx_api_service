@@ -112,8 +112,8 @@ message AssignMissionWithMissionIDRequest {
 }
 
 message AssignMissionWithMissionIDResponse {
-    CreateMissionResultStatus status = 1; // 処理結果ステータス
-    missionController.Mission mission = 2; // ルート計算後のMission。createWithProperty以外ではターミナルルートも含む。
+    MissionControllerResult result = 1; // 処理結果
+    Mission mission = 2; // ルート計算後のMission。createWithProperty以外ではターミナルルートも含む。
     optional MissionID mission_id = 3; // リクエストでsave=true時に保存された新規ミッションのID。save=false時は指定なし。
 }
 
