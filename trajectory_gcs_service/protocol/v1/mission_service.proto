@@ -5,6 +5,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "google/api/field_behavior.proto"; 
 
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
@@ -12,6 +13,9 @@ import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
 service MissionService {
     // CreateMission: ミッションの生成
     rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
+
+    // AssignMissionWithMissionID: ミッションIDを指定してミッションを機体にアサインする
+    rpc AssignMissionWithMissionID(AssignMissionWithMissionIDRequest) returns (AssignMissionWithMissionIDResponse){}
 
     // CreateMissionRecord: ミッションをデータベースに追加する
     rpc CreateMissionRecord(MissionRecord) returns (MissionID) {}
@@ -78,6 +82,96 @@ message MissionRecord {
     UAVID uav_id = 5;
     ApplicationAttr app =6 ; // Saveを要求したアプリケーション。CreateMissionの応答を透過的にセーブする場合は設定しない。MissionのappIDに反映される
     optional Timestamps timestamps = 7; // ミッションの作成/更新日時　リクエスト時は設定しない
+    // 下記の作成時に指定する追加項目(通常のレコード作成では不要)
+    // - 策定済み航路の経路表現
+    // - 航路を利用する経路
+    // - 航路予約を含むミッション
+    // - 事前予約されたミッション
+    optional SpecialMissionAttribute special_attribute = 8;
+    MissionID mission_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY]; // リクエスト時の指定は無効。IDはサーバーで生成されます。
+}
+
+message SpecialMissionAttribute {
+    oneof mission_type {
+        // 策定済み航路ミッション
+        AssignedUASLMission assigned_uasl_mission = 1;
+        // 航路利用ミッション
+        // このミッションは複数の航路の区間、または航路でない区間、もしくはその両方を含む。
+        MissionUsingUASL mission_using_uasl = 2;
+        // 航路予約済みミッション
+        ReservedUASLMission reserved_uasl_mission = 3;
+        // 事前予約済みミッション
+        ReservedMission reserved_mission = 4;
+    }
+}
+
+message AssignedUASLMission {
+    // 策定済み航路ID
+    string assigned_uasl_id = 1;
+}
+
+message MissionUsingUASL {
+    // 利用する航路セクションID群
+    repeated string uasl_section_ids = 1;
+}
+
+message ReservedUASLMission {
+    // 航路予約ID
+    string uasl_reservation_id = 1;
+    // 利用している策定済み航路ミッションのIDリスト
+    repeated string assigned_uasl_ids = 2;
+    // 予約時間帯 開始時刻
+    google.protobuf.Timestamp scheduled_start_time = 3;
+    // 予約時間帯 終了時刻
+    google.protobuf.Timestamp scheduled_end_time = 4;
+}
+
+message ReservedMission {
+    // 利用している航路予約済みミッションIDリスト
+    repeated string reserved_uasl_mission_ids = 1;
+    // 機体情報(現在はID)
+    UAVID uav_id = 2;
+    // 予約時間帯 開始時刻
+    google.protobuf.Timestamp scheduled_start_time = 3;
+    // 予約時間帯 終了時刻
+    google.protobuf.Timestamp scheduled_end_time = 4;
+}
+
+message AssignMissionWithMissionIDRequest {
+
+    MissionID mission_id = 1; // MissionRecordのID(必須)
+    bool save = 2 ; // trueでレスポンスの生成ミッションをDBSaveする。IDは新規作成(mission_idで指定されたIDには上書きしない)。
+
+    ProjectID project_id = 7;
+
+    oneof Select {
+        WithUAV create_with_property = 4 ; // 機体情報に基づいた時刻計算。ルート設計のみ（機体位置取得なし）
+        WithUAV create_with_uav = 5; // 機体位置からのルート設計。機体への割付なし。
+        WithUAV create_and_assign = 6; // 従来のCreateMissionAndAssign（機体割付）
+    }
+    message WithUAV {
+        UAVID uav_id = 1;
+        bool tie_straight = 13 ; // trueでWP優先（入力WPを真っ直ぐ結ぶ）
+    }
+    message OnlyAssgin {
+        UAVID uav_id = 1;
+    }
+
+    optional ScheduledTime start_time = 10;
+    optional ScheduledTime arrival_time = 11; // 到着時間
+
+    trajectory.trjx_api_service.Standard output_altitude = 14; // 出力高度属性。
+
+    bool uses_public_channels_whenever_possible = 15; // パブリックな航路（UASL）を可能な限り使うか否か
+    bool uses_private_channels_whenever_possible = 16; // プライベートな航路を可能な限り使うか否か
+
+    bool has_maximum_altitude_limit = 17 ; // 上限高度を超えるルート設計を行うか否か
+}
+
+message AssignMissionWithMissionIDResponse {
+    MissionControllerResult result = 1; // 処理結果
+    Mission mission = 2; // ルート計算後のMission。createWithProperty以外ではターミナルルートも含む。
+    optional MissionID mission_id = 3; // リクエストでsave=true時に保存された新規ミッションのID。save=false時は指定なし。
 }
 
 
