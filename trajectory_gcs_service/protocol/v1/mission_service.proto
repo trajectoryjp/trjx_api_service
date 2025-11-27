@@ -14,6 +14,9 @@ service MissionService {
     // CreateMission: ミッションの生成
     rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
 
+    // AssignMissionWithMissionID: ミッションIDを指定してミッションを機体にアサインする
+    rpc AssignMissionWithMissionID(AssignMissionWithMissionIDRequest) returns (AssignMissionWithMissionIDResponse){}
+
     // CreateMissionRecord: ミッションをデータベースに追加する
     rpc CreateMissionRecord(MissionRecord) returns (MissionID) {}
 
@@ -130,6 +133,44 @@ message ReservedMission {
     // 予約時間帯 終了時刻
     google.protobuf.Timestamp scheduled_end_time = 4;
 }
+
+message AssignMissionWithMissionIDRequest {
+
+    MissionID mission_id = 1; // MissionRecordのID(必須)
+    bool save = 2 ; // trueでレスポンスの生成ミッションをDBSaveする。IDは新規作成(mission_idで指定されたIDには上書きしない)。
+
+    ProjectID project_id = 7;
+
+    oneof Select {
+        WithUAV create_with_property = 4 ; // 機体情報に基づいた時刻計算。ルート設計のみ（機体位置取得なし）
+        WithUAV create_with_uav = 5; // 機体位置からのルート設計。機体への割付なし。
+        WithUAV create_and_assign = 6; // 従来のCreateMissionAndAssign（機体割付）
+    }
+    message WithUAV {
+        UAVID uav_id = 1;
+        bool tie_straight = 13 ; // trueでWP優先（入力WPを真っ直ぐ結ぶ）
+    }
+    message OnlyAssgin {
+        UAVID uav_id = 1;
+    }
+
+    optional ScheduledTime start_time = 10;
+    optional ScheduledTime arrival_time = 11; // 到着時間
+
+    trajectory.trjx_api_service.Standard output_altitude = 14; // 出力高度属性。
+
+    bool uses_public_channels_whenever_possible = 15; // パブリックな航路（UASL）を可能な限り使うか否か
+    bool uses_private_channels_whenever_possible = 16; // プライベートな航路を可能な限り使うか否か
+
+    bool has_maximum_altitude_limit = 17 ; // 上限高度を超えるルート設計を行うか否か
+}
+
+message AssignMissionWithMissionIDResponse {
+    MissionControllerResult result = 1; // 処理結果
+    Mission mission = 2; // ルート計算後のMission。createWithProperty以外ではターミナルルートも含む。
+    optional MissionID mission_id = 3; // リクエストでsave=true時に保存された新規ミッションのID。save=false時は指定なし。
+}
+
 
 message UpdateMissionRecordRequest {
     MissionID mission_id = 1; // データベースレコードキー。必須
