@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
+
+service UaslService {
+    // UI 表示範囲内の航路ピクセルを取得する (2D 向け)
+    rpc ListUaslPixels(ListUaslPixelsRequest) returns (ListUaslPixelsResponse);
+    // UI 表示範囲内の航路ボクセルを取得する (3D 向け)
+    rpc ListUaslVoxels(ListUaslVoxelsRequest) returns (ListUaslVoxelsResponse);
+}
+
+// 航路ピクセル取得リクエスト
+message ListUaslPixelsRequest {
+    // 取得する航路ピクセルの最大数 (初期値 = 0)。0 の場合はサーバー側の設定値が代入されます。
+    int32 page_size = 1;
+    // 前回のリクエストで返されたページトークン。初回は指定しない。
+    string page_token = 2;
+    // View の範囲
+    trajectory.trjx_api_service.BoundingBox bounding_box = 3;
+}
+
+// 航路ピクセル取得レスポンス
+message ListUaslPixelsResponse {
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
+    string next_page_token = 1;
+    // 航路
+    repeated PixelBasedUasl uasls = 2;
+}
+
+// 航路ボクセル取得リクエスト
+message ListUaslVoxelsRequest {
+    // 取得する航路ボクセルの最大数 (初期値 = 0)。0 の場合はサーバー側の設定値が代入されます。
+    int32 page_size = 1;
+    // 前回のリクエストで返されたページトークン。初回は指定しない。
+    string page_token = 2;
+    // View の範囲
+    trajectory.trjx_api_service.BoundingBox bounding_box = 3;
+}
+
+// 航路ボクセル取得レスポンス
+message ListUaslVoxelsResponse {
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
+    string next_page_token = 1;
+    // 航路
+    repeated VoxelBasedUasl uasls = 2;
+}
+
+// ピクセル表現の航路
+message PixelBasedUasl {
+    // 航路セクション
+    UaslSection uasl_section = 1;
+    // 航路ピクセルのリスト
+    repeated UaslPixel uasl_pixels = 2;
+}
+
+// 航路 ID
+message UaslSection {
+    // オブジェクト ID (セクションごとに一意)
+    int64 object_id = 1;
+    // 名前
+    string name = 2;
+    // 航路 ID
+    string uasl_id = 3;
+    // 航路名
+    string uasl_name = 4;
+    // オブジェクトの表示範囲
+    UaslVisibility visibility = 5;
+
+    // 表示範囲の種別
+    enum UaslVisibility {
+        // 未指定
+        UNSPECIFIED = 0;
+        // 公開
+        PUBLIC = 1;
+        // プライベート
+        PRIVATE = 2;
+    }
+}
+
+// 航路ピクセル
+message UaslPixel {
+    // 空間 ID (2D; z/x/y)
+    generic.v2.SpatialIdentification spatial_2d_id = 1;
+}
+
+// 航路ボクセル
+message UaslVoxel {
+    // 空間 ID
+    generic.v2.SpatialIdentification spatial_id = 1;
+}
+
+// ボクセル表現の航路
+message VoxelBasedUasl {
+    // 航路セクション
+    UaslSection uasl_section = 1;
+    // 航路ボクセルのリスト
+    repeated UaslVoxel uasl_voxels = 2;
+}
