@@ -35,6 +35,12 @@ service MissionService {
     // ListMissionRecords: ミッションレコードのリストを取得する
     rpc ListMissionRecords(ListMissionRecordsRequest) returns (ListMissionRecordsResponse) {}
 
+    // SpceialMissionAttributeを持つMissionRecordを予約により派生させる(属性を変更した新規MissionRecordを作成する)
+    // 派生時に必要な副作用が発生する(航路予約の作成など)
+    // 内容は派生元と派生先の組み合わせに依存する
+    // SpecialMissionRecordを持たないMissionRecordの予約(派生)はサポートしない(エラーとする)
+    rpc ReserveSpecialMissionRecord(ReserveSpecialMissionRecordRequest) returns (ReserveSpecialMissionRecordResponse) {}
+
     // ミッションの表現形式を変換する
     rpc ConvertMissionFormat(ConvertMissionFormatRequest)returns (ConvertMissionFormatResponse){}
 }
@@ -229,6 +235,68 @@ message ListMissionRecordsResponse {
     repeated MissionRecord mission_records = 1; // ミッションレコード
     string next_page_token = 2; // 分割取得の際の2回目以降のリクエスト時に指定が必要
 }
+
+message ReserveSpecialMissionRecordRequest {
+    // 派生元のMissionRecordのID
+    // 指定したMissionRecordが存在しない場合エラーとなる
+    MissionID source_mission_record_id = 1;
+    // 派生先のSpecialMissionAttributeの指定
+    // 派生元と派生先の組み合わせは、下記の条件を満たす必要がある(満たさない場合はエラー)
+    // - 派生元MissionRecord IDのMissionRecordのspecial_attribute(S)と本メッセージ内ののspecial_attribute(D)が下記の組み合わせであること
+    //   1. (S)MissionUsingUASL - (D)ReservedUASLMission
+    //   2. (S)ReservedUASLMission - (D)ReservedMission
+    //
+    // それぞれの組み合わせにおける副作用は下記
+    // - 1の組み合わせを指定した場合: 航路システムへ航路予約が行われる
+    // - 2の組み合わせを指定した場合: ミッション予約が行われる(時刻記録のみであり、空間予約はTBD)
+    // 副作用の実行に失敗した場合はエラーとなり、派生先MissionRecordは作成されない
+    MissionReservationAttribute destination_attribute = 2;
+}
+
+// 予約属性判別用のフィールド
+message MissionReservationAttribute {
+    oneof mission_type {
+        // 航路予約
+        ReservedUASLMission reserved_uasl_mission = 1;
+        // ミッション予約
+        ReservedMission reserved_mission = 2;
+    }
+}
+
+// ReserveSpecialMissionRecord　レスポンス
+message ReserveSpecialMissionRecordResponse {
+    MissionDatabaseResult result = 1;
+    // 予約(派生)されて新規作成されたMissionRecord
+    MissionRecord mission_record = 2;
+}
+
+// MissionDatabaseの処理結果の基本形
+message MissionDatabaseResult {
+    enum Status {
+        STATUS_UNSPECIFIED = 0; 
+        STATUS_CONTINUE = 5; // 継続　（streamの場合のみ）
+        STATUS_END = 1;        // 終了　（streamの場合のみ）
+        STATUS_COMPLETE = 2;   // 完了
+        STATUS_ERROR = 3;
+        STATUS_INVALID_UAV = 4; // 無効なUAVID DEPRICATED
+        STATUS_INTERNAL_ERROR = 9;
+        STATUS_ERROR_PARAMETER = 11; // UAVコマンドエラー
+        STATUS_ERROR_UN_STABLE = 13; // 飛行可能状態でない
+        STATUS_ERROR_EMPTY_MISSION = 14; // 指定したミッションが空
+        STATUS_ERROR_FC_BUSY = 15; // FCがビジー 
+        STATUS_ERROR_FLIGHT_PATH_STRATA_CONFIG = 51; 
+        STATUS_ERROR_FLIGHT_PATH_NOT_FOUND_AREA = 52; 
+        STATUS_ERROR_FLIGHT_PATH_NOT_FOUND_MODEL = 53; 
+        STATUS_ERROR_FLIGHT_PATH_OUT_OF_AREA = 54; 
+        STATUS_ERROR_FLIGHT_PATH_ILLIGAL_POSITION = 55; 
+        STATUS_ERROR_COMMUNICATION_FC = 60; // FCとの通信エラー。Timeout含む。
+        STATUS_ERROR_FLIGHT_PATH_UNKNOWN = 50;
+    }
+    Status status = 1; // 処理結果
+    string detail = 2; // 詳細情報
+    Timestamps timestamps = 8; // ミッションの作成/更新日時
+}
+
 
 // ミッションの作成/更新日時
 message Timestamps {
