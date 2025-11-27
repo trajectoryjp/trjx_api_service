@@ -13,8 +13,8 @@ service MissionService {
     // CreateMission: ミッションの生成
     rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
 
-    // CreateMissionReservation: 指定のミッションIDに対する予約を作成する
-    rpc CreateMissionReservation(CreateMissionReservationRequest) returns (CreateMissionReservationResponse){}
+    // AssignMissionWithMissionID: ミッションIDを指定してミッションを機体にアサインする
+    rpc AssignMissionWithMissionID(AssignMissionWithMissionIDRequest) returns (AssignMissionWithMissionIDResponse){}
 
     // CreateMissionRecord: ミッションをデータベースに追加する
     rpc CreateMissionRecord(MissionRecord) returns (MissionID) {}
@@ -80,7 +80,7 @@ message MissionRecord {
     optional Timestamps timestamps = 7; // ミッションの作成/更新日時　リクエスト時は設定しない
 }
 
-message CreateMissionReservationRequest {
+message AssignMissionWithMissionIDRequest {
 
     MissionID mission_id = 1; // MissionRecordのID(必須)
     bool save = 2 ; // trueでレスポンスの生成ミッションをDBSaveする。IDは新規作成(mission_idで指定されたIDには上書きしない)。
@@ -111,7 +111,7 @@ message CreateMissionReservationRequest {
     bool has_maximum_altitude_limit = 17 ; // 上限高度を超えるルート設計を行うか否か
 }
 
-message CreateMissionReservationResponse {
+message AssignMissionWithMissionIDResponse {
     CreateMissionResultStatus status = 1; // 処理結果ステータス
     missionController.Mission mission = 2; // ルート計算後のMission。createWithProperty以外ではターミナルルートも含む。
     optional MissionID mission_id = 3; // リクエストでsave=true時に保存された新規ミッションのID。save=false時は指定なし。
