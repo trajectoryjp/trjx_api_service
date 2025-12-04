@@ -3,6 +3,7 @@ syntax = "proto3";
 package trajectory.trajectory_gcs_service.protocol.v1;
 option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
 
 service BorderService {
     // 指定された組織からARBorderの一覧（認証が必要）
@@ -20,7 +21,7 @@ message ListUaslBordersRequest{
     SearchSpace search_space = 3;
     // 予想される応答Border高度モード
     // リクエストとして有効なのは、EllipsoidとMSLのみ
-    Position.AltitudeAttr altitude_attr = 4;
+    trajectory.trjx_api_service.Standard altitude_attr = 4;
 }
 
 
@@ -39,7 +40,7 @@ message ListPublicUaslBordersRequest{
     SearchSpace search_space = 3;
     // 予想される応答Border高度モード
     // リクエストとして有効なのは、EllipsoidとMSLのみ
-    Position.AltitudeAttr altitude_attr = 4;
+    trajectory.trjx_api_service.Standard altitude_attr = 4;
 }
 
 message ListPublicUaslBordersResponse{
@@ -63,8 +64,8 @@ message Border {
 
 // items 配列の中身
 message LineItem {
-    Position from = 1; //previous coordinate
-    Position to = 2; // next coordinate
+    trajectory.trjx_api_service.Position from = 1; //previous coordinate
+    trajectory.trjx_api_service.Position to = 2; // next coordinate
     string color = 3;  // color of the item
     int32 width = 4; // width of item
 }
