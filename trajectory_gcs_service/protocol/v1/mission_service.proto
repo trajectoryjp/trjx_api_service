@@ -85,17 +85,18 @@ message MissionRecord {
     // 下記の作成時に指定する追加項目(通常のレコード作成では不要)
     // - 策定済み航路の経路表現
     // - 航路を利用する経路
-    // - 航路予約を含むミッション
-    // - 事前予約されたミッション
+    // - 航路予約を表現するミッション
+    // - 事前予約を表現するミッション
     optional SpecialMissionAttribute special_attribute = 8;
     MissionID mission_id = 9 [(google.api.field_behavior) = OUTPUT_ONLY]; // リクエスト時の指定は無効。IDはサーバーで生成されます。
 }
 
+// 特殊なミッションを表現する追加プロパティ
 message SpecialMissionAttribute {
     oneof mission_type {
-        // 策定済み航路ミッション
+        // 策定済み航路の経路表現
         AssignedUASLMission assigned_uasl_mission = 1;
-        // 航路利用ミッション
+        // 航路利用経路
         // このミッションは複数の航路の区間、または航路でない区間、もしくはその両方を含む。
         MissionUsingUASL mission_using_uasl = 2;
         // 航路予約済みミッション
@@ -118,8 +119,8 @@ message MissionUsingUASL {
 message ReservedUASLMission {
     // 航路予約ID
     string uasl_reservation_id = 1;
-    // 利用している策定済み航路ミッションのIDリスト
-    repeated string assigned_uasl_ids = 2;
+    // 利用している策定済み航路ミッションレコードのIDリスト
+    repeated MissionID assigned_uasl_mission_record_ids = 2;
     // 予約時間帯 開始時刻
     google.protobuf.Timestamp scheduled_start_time = 3;
     // 予約時間帯 終了時刻
@@ -127,8 +128,8 @@ message ReservedUASLMission {
 }
 
 message ReservedMission {
-    // 利用している航路予約済みミッションIDリスト
-    repeated string reserved_uasl_mission_ids = 1;
+    // 利用している航路予約済みミッションレコードのIDリスト
+    repeated MissionID reserved_uasl_mission_record_ids = 1;
     // 機体情報(現在はID)
     UAVID uav_id = 2;
     // 予約時間帯 開始時刻
