@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+
+service BorderService {
+    // 指定された組織からARBorderの一覧（認証が必要）
+    rpc ListUaslBorders(ListUaslBordersRequest) returns (ListUaslBordersResponse);
+    // パブリックARBorderの一覧（認証不要）
+    rpc ListPublicUaslBorders(ListPublicUaslBordersRequest) returns (ListPublicUaslBordersResponse);
+}
+
+
+message ListUaslBordersRequest{
+    // 取得するBorderの最大数
+    int32 page_size = 1;
+    string page_token = 2;
+    // 検索ボックス 検索範囲の制限を設ける
+    SearchSpace search_space = 3;
+    // 予想される応答Border高度モード
+    // リクエストとして有効なのは、EllipsoidとMSLのみ
+    trajectory.trjx_api_service.Standard altitude_attr = 4;
+}
+
+
+message ListUaslBordersResponse{
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
+    string next_page_token = 1;
+    repeated Border borders = 2; 
+    
+}
+
+message ListPublicUaslBordersRequest{
+    // 取得するBorderの最大数
+    int32 page_size = 1;
+    string page_token = 2;
+    // 検索ボックス 検索範囲の制限を設ける
+    SearchSpace search_space = 3;
+    // 予想される応答Border高度モード
+    // リクエストとして有効なのは、EllipsoidとMSLのみ
+    trajectory.trjx_api_service.Standard altitude_attr = 4;
+}
+
+message ListPublicUaslBordersResponse{
+    // 次の項目へのページトークン。全て読み切った場合は "" が返る。
+    string next_page_token = 1;
+    repeated Border borders = 2; 
+}
+
+
+message Border {
+    string id = 1; // Border id
+    string uasl_name = 2; // UASLの名称 (AssignedUASL.Name)
+    string type = 3; // border item type(line)
+    string description = 4; // border description
+    repeated LineItem items = 5; // lines(items) of the border
+    int64 created_at = 6; // 作成日, unix milli
+    int64 updated_at = 7; // 更新日, unix milli
+    bool default = 8; // trueの場合、この項目はデフォルトで自動的に読み込まれ、選択される
+    bool is_public = 9; // BorderがPublicのものかどうか
+}
+
+// items 配列の中身
+message LineItem {
+    trajectory.trjx_api_service.Position from = 1; //previous coordinate
+    trajectory.trjx_api_service.Position to = 2; // next coordinate
+    string color = 3;  // color of the item
+    int32 width = 4; // width of item
+}
