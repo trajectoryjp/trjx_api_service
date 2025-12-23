@@ -159,7 +159,7 @@ service UASLAgentService {
 //     bool use_filter_end_at = 7;
 //     google.protobuf.Timestamp end_at = 8;
 //     // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-//     string uasl_system_id = 9;
+//     int64 uasl_system_id = 9;
 // }
 
 // // UASL予約一覧の各行
@@ -181,7 +181,7 @@ service UASLAgentService {
 //     // UASL予約ID: UASLシステムのUASL予約APIから返された予約ID
 //     string uasl_reservation_id = 1;
 //     // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-//     string uasl_system_id = 2;
+//     int64 uasl_system_id = 2;
 // }
 
 // // UASL予約情報詳細
@@ -231,7 +231,7 @@ service UASLAgentService {
 //         string model_number = 2;
 //     }
 //     // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-//     string uasl_system_id = 8;
+//     int64 uasl_system_id = 8;
 
 //     Shape shape = 9; // ジャンクションの形状(UASL断面)
 
@@ -269,7 +269,7 @@ message AssignUASLRequest {
     // UASL ID
     UASLID uasl_id = 1;
     // 組織ID
-    string organization_id = 2;
+    int32 organization_id = 2;
 }
 
 // 路システムのUASLに空間情報を割り当てた結果
@@ -301,5 +301,5 @@ message UASLID {
     // 航路システムで管理されているUASL ID(airway ID)
     string uasl_systems_uasl_id = 2;
     // UASLシステムID TODO: 将来機能拡張対応。2025年度はUASLシステムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-    string uasl_system_id = 3;
+    int64 uasl_system_id = 3;
 }
