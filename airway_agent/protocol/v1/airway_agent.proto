@@ -139,7 +139,7 @@ message ListAirwayReservationsUiRequest {
     bool use_filter_end_at = 7;
     google.protobuf.Timestamp end_at = 8;
     // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-    string airway_system_id = 9;
+    int64 airway_system_id = 9;
 }
 
 // 航路予約一覧の各行
@@ -161,7 +161,7 @@ message GetAirwayReservationDetailsUiRequest {
     // 航路予約ID: 航路システムの航路予約APIから返された予約ID
     string airway_reservation_id = 1;
     // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-    string airway_system_id = 2;
+    int64 airway_system_id = 2;
 }
 
 // 航路予約情報詳細
@@ -211,7 +211,7 @@ message RegisterAirwayRequest {
         string model_number = 2;
     }
     // 航路システムID TODO: 将来機能拡張対応。2025年度は航路システムIDに対応する接続先を設定ファイルにもつ。将来は外部向けDirectoryServerから動的取得する。リクエストかmetaデータどちらが良いかは検討
-    string airway_system_id = 8;
+    int64 airway_system_id = 8;
 
     Shape shape = 9; // ジャンクションの形状(航路断面)
 
