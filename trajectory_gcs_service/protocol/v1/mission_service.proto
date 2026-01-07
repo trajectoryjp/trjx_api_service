@@ -116,7 +116,7 @@ message ConvertMissionFormatRequest {
     message LitchiFormatSt {
         // MissionはAGL不可
         oneof baseAltitude {
-            int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー、itemsのキー（非優先）でDEPRECATED）
+            int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー。0未満を指定した場合は最初のWPを基準にする。
             AltitudeSt altitude = 2 ; // 基準高度
             DifferentialPointSt differentialPoint = 3 ; // 指定WPのAGLを指定する。MissionItemはAGL不可。
         }
@@ -131,7 +131,7 @@ message ConvertMissionFormatRequest {
         */
         uint32 outputAltitude = 1 ;
         oneof baseAltitude { // outputAltitudeがRelative の場合のみ有効
-            int32 missionItemNumber = 2 ; // 指定したWPの位置を基準
+            int32 missionItemNumber = 2 ; // 指定したWPの位置を基準。0未満を指定した場合は最初のWPを基準にする。
             AltitudeSt altitude = 3 ; // 基準高度
             DifferentialPointSt differentialPoint = 4 ; // 指定WPのAGLを指定する。MissionItemはAGL不可。
         }
@@ -150,7 +150,7 @@ message ConvertMissionFormatRequest {
     }
 
     message DifferentialPointSt {
-        int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー、itemsのキー（非優先）でDEPRECATED）
+        int32 missionItemNumber = 1 ; // 指定したWPの位置を基準（itemsArrayのインデックス値（優先）であってWPでなければエラー。0未満を指定した場合は最初のWPを基準にする。
         float agl = 2 ; // missionItemNumberで指定したWPの地上高
     }
 }
