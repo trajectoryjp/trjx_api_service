@@ -120,6 +120,8 @@ message AssignedUASLMission {
 message MissionUsingUASL {
     // 利用する航路セクションID群
     repeated string uasl_section_ids = 1;
+    // 利用している策定航路内経路レコードのIDリスト
+    repeated MissionID assigned_uasl_mission_record_ids = 2;
 }
 
 message ReservedUASLMission {
@@ -134,8 +136,10 @@ message ReservedUASLMission {
 }
 
 message ReservedMission {
-    // 利用している航路予約済みミッションレコードのIDリスト
-    repeated MissionID reserved_uasl_mission_record_ids = 1;
+    // 本レコードで利用している航路に対応する予約航路内経路レコードのIDリスト
+    repeated MissionID reserved_uasl_mission_record_ids = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+    // 元となる航路利用ミッションレコードのID
+    MissionID mission_using_uasl_record_id = 5;
     // 機体情報(現在はID)
     UAVID uav_id = 2;
     // 予約時間帯 開始時刻
@@ -245,7 +249,7 @@ message ReserveSpecialMissionRecordRequest {
     // 派生元と派生先の組み合わせは、下記の条件を満たす必要がある(満たさない場合はエラー)
     // - 派生元MissionRecord IDのMissionRecordのspecial_attribute(S)と本メッセージ内ののspecial_attribute(D)が下記の組み合わせであること
     //   1. (S)MissionUsingUASL - (D)ReservedUASLMission
-    //   2. (S)ReservedUASLMission - (D)ReservedMission
+    //   2. (S)MissionUsingUASL - (D)ReservedMission
     //
     // それぞれの組み合わせにおける副作用は下記
     // - 1の組み合わせを指定した場合: 航路システムへ航路予約が行われる
