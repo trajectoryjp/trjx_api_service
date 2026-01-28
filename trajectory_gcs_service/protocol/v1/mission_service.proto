@@ -209,6 +209,9 @@ message MissionIDRecord {
 // 必須パラメータ以外は絞り込み(AND指定)要素として働く
 message ListMissionRecordsRequest {
     // プロジェクトID ※自組織のプロジェクトのみ指定可
+    // project_idは原則指定する。
+    // ただし、projectID指定を省略されてもエラーとはせず、project横断の検索として機能する。
+    // この挙動は暫定対処であり、将来的に廃止される可能性あり。
     // AND条件でフィルタリングされる。
     ProjectID project_id = 1;
     // レスポンスで返却するMissionRecordの最大件数
@@ -222,18 +225,76 @@ message ListMissionRecordsRequest {
     // ミッション名(完全一致)
     // AND条件でフィルタリングされる。
     optional string name = 5;
+    reserved 6 to 9;
     // 策定済み航路ミッションのプロパティ指定
     // OR条件でフィルタリングされる。
-    optional AssignedUASLMission assigned_uasl_mission = 6;
+    optional AssignedUASLMissionQuery assigned_uasl_mission = 10;
     // 航路利用ミッションのプロパティ指定
     // OR条件でフィルタリングされる。
-    optional MissionUsingUASL mission_using_uasl = 7;
+    optional MissionUsingUASLQuery mission_using_uasl = 11;
     // 航路予約済みミッションのプロパティ指定
     // OR条件でフィルタリングされる。
-    optional ReservedUASLMission reserved_uasl_mission = 8;
+    optional ReservedUASLMissionQuery reserved_uasl_mission = 12;
     // 事前予約済みミッションのプロパティ指定
     // OR条件でフィルタリングされる。
-    optional ReservedMission reserved_mission = 9;
+    optional ReservedMissionQuery reserved_mission = 13;
+
+    // 航路内経路検索条件
+    // フィールド同士はAND条件
+    // どのフィールドも指定しなかった場合はListMissionRecordsRequestトップレベルで指定された条件下でReservedMissionを持つMissionRecordをすべて検索する
+    message AssignedUASLMissionQuery {
+        // 策定済み航路ID
+        optional string assigned_uasl_id = 1;
+    }
+
+    // 航路利用ミッション検索条件
+    // フィールド同士はAND条件
+    // どのフィールドも指定しなかった場合はListMissionRecordsRequestトップレベルで指定された条件下でReservedMissionを持つMissionRecordをすべて検索する
+    message MissionUsingUASLQuery {
+        // 該当レコードが利用する航路セクションID群
+        // 指定したID列のいずれかを含むレコードを検索する(OR)
+        repeated string uasl_section_ids = 1;
+        // 利用している策定航路内経路レコードのIDリスト
+        // 指定したID列のいずれかを含むレコードを検索する(OR)
+        repeated MissionID assigned_uasl_mission_record_ids = 2;
+    }
+
+    // 予約航路内経路検索条件
+    // フィールド同士はAND条件
+    // どのフィールドも指定しなかった場合はListMissionRecordsRequestトップレベルで指定された条件下でReservedMissionを持つMissionRecordをすべて検索する
+    message ReservedUASLMissionQuery {
+        // 航路予約ID(完全一致)
+        optional string uasl_reservation_id = 1;
+        // 該当レコードが利用している策定航路内経路レコードのIDリスト
+        // 指定したID列のいずれかを含むレコードを検索する(OR条件)
+        repeated MissionID assigned_uasl_mission_record_ids = 2;
+        // 同じ航路を利用する航路利用ミッションレコードのIDリスト
+        // 指定したID列のいずれかを含むレコードを検索する(OR条件)
+        repeated MissionID mission_using_uasl_record_ids = 3;
+        // 同じ航路を利用する事前予約ミッションレコードのIDリスト
+        // 指定したID列のいずれかを含むレコードを検索する(OR条件)
+        repeated MissionID reserved_mission_record_ids = 4;
+        // 予約時間帯 開始時刻
+        // 指定した時刻以上のレコードを検索する(record >= scheduled_start_time)
+        optional google.protobuf.Timestamp scheduled_start_time = 5;
+        // 予約時間帯 終了時刻
+        // 指定した時刻より前のレコードを検索する(record < scheduled_end_time)
+        optional google.protobuf.Timestamp scheduled_end_time = 6;
+    }
+
+    // 事前予約ミッション検索条件
+    // フィールド同士はAND条件
+    // どのフィールドも指定しなかった場合はListMissionRecordsRequestトップレベルで指定された条件下でReservedMissionを持つMissionRecordをすべて検索する
+    // ReservedMission.uav_idはトップレベルのuav_idで絞り込みされる
+    message ReservedMissionQuery {
+        // 該当レコードが利用している予約航路内経路レコードのIDリスト
+        // 指定したID列のいずれかを含むレコードを検索する(OR条件)
+        repeated MissionID reserved_uasl_mission_record_ids = 1;
+        // 予約時間帯 開始時刻
+        optional google.protobuf.Timestamp scheduled_start_time = 2;
+        // 予約時間帯 終了時刻
+        optional google.protobuf.Timestamp scheduled_end_time = 3;
+    }
 }
 
 message ListMissionRecordsResponse {
