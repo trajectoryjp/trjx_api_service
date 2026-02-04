@@ -209,9 +209,6 @@ message MissionIDRecord {
 // 必須パラメータ以外は絞り込み(AND指定)要素として働く
 message ListMissionRecordsRequest {
     // プロジェクトID ※自組織のプロジェクトのみ指定可
-    // project_idは原則指定する。
-    // ただし、projectID指定を省略されてもエラーとはせず、project横断の検索として機能する。
-    // この挙動は暫定対処であり、将来的に廃止される可能性あり。
     // AND条件でフィルタリングされる。
     ProjectID project_id = 1;
     // レスポンスで返却するMissionRecordの最大件数
