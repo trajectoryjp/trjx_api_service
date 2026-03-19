@@ -79,7 +79,7 @@ message Position {
             RELATIVE= 1; // 離陸地点を基準とする相対高度。ItemParameterにより使用可
             AGL = 2 ; // 地表面高度。
             MSL = 3; // 海抜高度（標高）。
-            ELLIPSOIDE = 4 ;// 楕円球体高。default値。
+            ELLIPSOIDE = 4 ; // 楕円球体高。default値。
         }
     }
     // 緯度
@@ -231,6 +231,37 @@ message RegisterAirwayRequest {
             double width = 1; // 幅
             double height = 2; // 高さ
         }
+    }
+
+    // [MVP2] UASLポイント拡張情報配列
+    // junction_names配列と同じ要素数。不要なインデックスは空のUaslPointExtensionを設定する
+    // - 既存ジャンクションに接続する場合: external_point_idを設定
+    // - 外部航路システムのジャンクションをリンクする場合: external_guarantee, external_system_infoを設定
+    // - どちらも不要な場合: 空のUaslPointExtension{}を設定
+    repeated UaslPointExtension uasl_point_extensions = 10;
+
+    // [MVP2] UASLポイント(旧:ジャンクション)の拡張情報
+    message UaslPointExtension {
+        // 外部ポイントID (externalPointId)
+        // 既存のジャンクション(UASLポイント)を参照して接続する場合に指定
+        // 不要な場合は未設定(has判定でnull相当を区別可能)
+        optional string external_point_id = 1;
+        // 外部保証フラグ (externalGuarantee)
+        // 外部システムで保証済みかどうか
+        optional bool external_guarantee = 2;
+        // 外部システム情報 (externalSystemInfo)
+        // 外部航路システムのジャンクション情報。外部リンク不要な場合は未設定
+        optional ExternalSystemInfo external_system_info = 3;
+    }
+
+    // [MVP2] 外部システム情報
+    message ExternalSystemInfo {
+        // システムID
+        string system_id = 1;
+        // UASL ID
+        string uasl_id = 2;
+        // UASLポイントID
+        string uasl_point_id = 3;
     }
 }
 
