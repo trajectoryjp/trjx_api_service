@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package Trajectory.TrafficControl.Protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/traffic_control/proto_go;traffic_control";
+
+// 外部Protoの型流用
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/uav_control_service.proto";
+
+// 管制・他組織機体監視用サービス (Read-Only)
+// フロントエンドの trafficMonitoring 画面向けBFF
+service TrafficMonitorService {
+    // 1. 管制用 機体位置情報監視 (他組織隠蔽なし)
+    rpc MonitorMobilityPositions(MonitorMobilityPositionsRequest) returns (stream MonitorMobilityPositionsResponse) {}
+
+    // 2. 管制用 アサイン済み経路監視
+    rpc MonitorAssignedMission(MonitorAssignedMissionRequest) returns (MonitorAssignedMissionResponse) {}
+
+    //TODO: 衝突検知
+
+    //TODO: 逸脱検知
+
+    //TODO: Telemetry
+}
+
+// ---------------------------------------------------------
+// 1. 機体位置情報監視
+// ---------------------------------------------------------
+message MonitorMobilityPositionsRequest {
+    oneof reference_position {
+        trajectory.trjx_api_service.Position fixed_point = 1 ;
+        string mobility_id = 2 ;
+    }
+    float radius = 3;
+}
+
+message MonitorMobilityPositionsResponse {
+    // --- 動的情報 (from PositionPredictor) ---
+    string mobility_id = 1; 
+    optional float heading = 2 ;
+    float cog = 3 ;
+    float distance = 4 ;
+    trajectory.trjx_api_service.Position absolute_position = 5 ;
+    
+    // --- 静的マスタ情報 (from FP(未実装)) ---
+    trajectory.trjx_api_service.MobilityType mobility_type = 7; // 機体種別　ここはFP側で実装済
+    string name = 8; // 機体名　FP未実装のため、FPからかえるuav_idを文字列にしてそのまま返す
+    optional string remote_id = 9; // リモートID　FP未実装のため、返らない
+    int64 organization_id = 10; // 所有組織ID　FP未実装のため、返らない
+}
+
+// ---------------------------------------------------------
+// 2. 経路表示
+// ---------------------------------------------------------
+message MonitorAssignedMissionRequest {
+    string mobility_id = 1;
+}
+
+message MonitorAssignedMissionResponse {
+    string mobility_id = 1;
+    trajectory.trajectory_gcs_service.protocol.v1.Mission mission = 2; 
+    trajectory.trajectory_gcs_service.protocol.v1.UAVControllerResult result = 3;
+}
