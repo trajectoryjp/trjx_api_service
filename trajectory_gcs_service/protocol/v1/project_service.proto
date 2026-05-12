@@ -49,11 +49,11 @@ service ProjectService {
                         key: "application/json";
                         value: "{\n"
                                "  \"code\": 3,\n"
-                               "  \"message\": \"uavId is empty\",\n"
+                               "  \"message\": \"project name is empty\",\n"
                                "  \"details\": [\n"
                                "    {\n"
                                "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
-                               "      \"errorCode\": 4001\n"
+                               "      \"errorCode\": 4009\n"
                                "    }\n"
                                "  ]\n"
                                "}";
@@ -64,204 +64,17 @@ service ProjectService {
     }
 
     // GetProject: プロジェクトの取得
-    rpc GetProject(GetProjectRequest) returns (Project) {
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "プロジェクトの取得する";
-            description: "プロジェクトの取得を行う。\n\n"
-                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
-                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
-                         "- `4009`\n"
-                         "- `5039`";
-            parameters: {
-                headers: {
-                    name: "user_id"
-                    type: STRING
-                    description: "ユーザID"
-                    required: true
-                }
-                headers: {
-                    name: "Authorization"
-                    type: STRING
-                    description: "Bearer Token"
-                    required: true
-                }
-            }
-            responses: {
-                key: "400";
-                value: {
-                    description: "Invalid request.";
-                    schema: {
-                        json_schema: {
-                            ref: "#/definitions/rpcStatus";
-                        }
-                    };
-                    examples: {
-                        key: "application/json";
-                        value: "{\n"
-                               "  \"code\": 3,\n"
-                               "  \"message\": \"uavId is empty\",\n"
-                               "  \"details\": [\n"
-                               "    {\n"
-                               "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
-                               "      \"errorCode\": 4001\n"
-                               "    }\n"
-                               "  ]\n"
-                               "}";
-                    }
-                }
-            }
-        };
-    }
+    rpc GetProject(GetProjectRequest) returns (Project);
 
     // ListProjects: プロジェクトのリスト取得
-    rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse) {
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "プロジェクトのリストを取得する";
-            description: "プロジェクトのリストを取得する。\n\n"
-                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
-                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
-                         "- `4009`\n"
-                         "- `5039`";
-            parameters: {
-                headers: {
-                    name: "user_id"
-                    type: STRING
-                    description: "ユーザID"
-                    required: true
-                }
-                headers: {
-                    name: "Authorization"
-                    type: STRING
-                    description: "Bearer Token"
-                    required: true
-                }
-            }
-            responses: {
-                key: "400";
-                value: {
-                    description: "Invalid request.";
-                    schema: {
-                        json_schema: {
-                            ref: "#/definitions/rpcStatus";
-                        }
-                    };
-                    examples: {
-                        key: "application/json";
-                        value: "{\n"
-                               "  \"code\": 3,\n"
-                               "  \"message\": \"uavId is empty\",\n"
-                               "  \"details\": [\n"
-                               "    {\n"
-                               "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
-                               "      \"errorCode\": 4001\n"
-                               "    }\n"
-                               "  ]\n"
-                               "}";
-                    }
-                }
-            }
-        };
-    }
+    rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse);
 
     // UpdateProject: プロジェクトの更新
-    rpc UpdateProject(UpdateProjectRequest) returns (Project) {
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "プロジェクトの更新する";
-            description: "プロジェクトの更新を行う。admin権限が必要。\n\n"
-                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
-                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
-                         "- `4009`\n"
-                         "- `5039`";
-            parameters: {
-                headers: {
-                    name: "user_id"
-                    type: STRING
-                    description: "ユーザID"
-                    required: true
-                }
-                headers: {
-                    name: "Authorization"
-                    type: STRING
-                    description: "Bearer Token"
-                    required: true
-                }
-            }
-            responses: {
-                key: "400";
-                value: {
-                    description: "Invalid request.";
-                    schema: {
-                        json_schema: {
-                            ref: "#/definitions/rpcStatus";
-                        }
-                    };
-                    examples: {
-                        key: "application/json";
-                        value: "{\n"
-                               "  \"code\": 3,\n"
-                               "  \"message\": \"uavId is empty\",\n"
-                               "  \"details\": [\n"
-                               "    {\n"
-                               "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
-                               "      \"errorCode\": 4001\n"
-                               "    }\n"
-                               "  ]\n"
-                               "}";
-                    }
-                }
-            }
-        };
-    }
+    rpc UpdateProject(UpdateProjectRequest) returns (Project);
 
     // DeleteProject: プロジェクトの削除
-    rpc DeleteProject(DeleteProjectRequest) returns (google.protobuf.Empty) {
-        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "プロジェクトの削除をする";
-            description: "プロジェクトの削除をする。admin権限が必要。\n\n"
-                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
-                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
-                         "- `5039`\n"
-                         "- `5019`";
-            parameters: {
-                headers: {
-                    name: "user_id"
-                    type: STRING
-                    description: "ユーザID"
-                    required: true
-                }
-                headers: {
-                    name: "Authorization"
-                    type: STRING
-                    description: "Bearer Token"
-                    required: true
-                }
-            }
-            responses: {
-                key: "400";
-                value: {
-                    description: "Invalid request.";
-                    schema: {
-                        json_schema: {
-                            ref: "#/definitions/rpcStatus";
-                        }
-                    };
-                    examples: {
-                        key: "application/json";
-                        value: "{\n"
-                               "  \"code\": 3,\n"
-                               "  \"message\": \"uavId is empty\",\n"
-                               "  \"details\": [\n"
-                               "    {\n"
-                               "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
-                               "      \"errorCode\": 4001\n"
-                               "    }\n"
-                               "  ]\n"
-                               "}";
-                    }
-                }
-            }
-        };
-    }
+    rpc DeleteProject(DeleteProjectRequest) returns (google.protobuf.Empty);
+    
 }
 
 message Project {
