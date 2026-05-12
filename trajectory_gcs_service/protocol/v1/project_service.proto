@@ -266,7 +266,7 @@ service ProjectService {
 
 message Project {
     // プロジェクトID
-    ProjectID id = 1 [(google.api.field_behavior) = IDENTIFIER];
+    ProjectID id = 1;
     // プロジェクト名
     string name = 2;
     // プロジェクトの説明
@@ -280,6 +280,9 @@ message Project {
 
 // プロジェクト作成リクエスト
 message CreateProjectRequest {
+    // 作成対象のプロジェクト情報。
+    // project.id はサーバー側で自動生成されるため、リクエスト時に設定する必要はありません。
+    // 値が設定されている場合でも、サーバー側で無視または上書きされます。
     Project project = 1[(google.api.field_behavior) = REQUIRED];
 }
 
@@ -291,7 +294,10 @@ message GetProjectRequest {
 
 // プロジェクトリスト取得リクエスト
 message ListProjectsRequest {
-    int32 page_size = 1;  // ページサイズ, default= 25
+    // 取得するプロジェクトの最大件数。
+    // 0 または未指定の場合、サーバー側でデフォルト値 (20) が適用されます。
+    // 最大値は 70 です。
+    int32 page_size = 1;
     string page_token = 2; // ページトークン
 }
 
