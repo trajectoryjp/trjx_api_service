@@ -16,8 +16,8 @@ service ProjectService {
     // CreateProject: プロジェクトの作成
     rpc CreateProject(CreateProjectRequest) returns (Project) {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-            summary: "プロジェクトの作成する";
-            description: "プロジェクトの作成をする。admin権限が必要\n\n"
+            summary: "プロジェクトを作成する";
+            description: "プロジェクトを作成する。admin権限が必要。\n\n"
                          "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
                          "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
                          "- `4009`\n"
@@ -108,7 +108,7 @@ message GetProjectRequest {
 // プロジェクトリスト取得リクエスト
 message ListProjectsRequest {
     // 取得するプロジェクトの最大件数。
-    // 0 または未指定の場合、サーバー側でデフォルト値 (20) が適用されます。
+    // 0 の場合、サーバー側でデフォルト値 (20) が適用されます。
     // 最大値は 70 です。
     int32 page_size = 1;
     string page_token = 2; // ページトークン
