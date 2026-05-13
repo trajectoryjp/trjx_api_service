@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/field_mask.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+// Project Service: プロジェクトの作成、リスト取得、更新、削除を行うサービス
+service ProjectService {
+    // CreateProject: プロジェクトの作成
+    rpc CreateProject(CreateProjectRequest) returns (Project) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "プロジェクトを作成する";
+            description: "プロジェクトを作成する。admin権限が必要。\n\n"
+                         "エラーレスポンスの`details`には、以下のエラーコードが含まれる可能性がある。\n"
+                         "エラーコードの詳細は https://trjxdoc.trajectory.jp/BEGatewaySpesification/error_codes.html を参照。\n\n"
+                         "- `4009`\n"
+                         "- `5039`";
+            parameters: {
+                headers: {
+                    name: "user_id"
+                    type: STRING
+                    description: "ユーザID"
+                    required: true
+                }
+                headers: {
+                    name: "Authorization"
+                    type: STRING
+                    description: "Bearer Token"
+                    required: true
+                }
+            }
+            responses: {
+                key: "400";
+                value: {
+                    description: "Invalid request.";
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus";
+                        }
+                    };
+                    examples: {
+                        key: "application/json";
+                        value: "{\n"
+                               "  \"code\": 3,\n"
+                               "  \"message\": \"project name is empty\",\n"
+                               "  \"details\": [\n"
+                               "    {\n"
+                               "      \"@type\": \"type.googleapis.com/trajectory.trajectory_gcs_service.protocol.v1.ErrorCode\",\n"
+                               "      \"errorCode\": 4009\n"
+                               "    }\n"
+                               "  ]\n"
+                               "}";
+                    }
+                }
+            }
+        };
+    }
+
+    // GetProject: プロジェクトの取得
+    rpc GetProject(GetProjectRequest) returns (Project);
+
+    // ListProjects: プロジェクトのリスト取得
+    rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse);
+
+    // UpdateProject: プロジェクトの更新
+    rpc UpdateProject(UpdateProjectRequest) returns (Project);
+
+    // DeleteProject: プロジェクトの削除
+    rpc DeleteProject(DeleteProjectRequest) returns (google.protobuf.Empty);
+    
+}
+
+message Project {
+    // プロジェクトID
+    ProjectID id = 1;
+    // プロジェクト名
+    string name = 2;
+    // プロジェクトの説明
+    string description = 3;
+    // プロジェクトの位置情報
+    trajectory.trjx_api_service.Position position = 4;
+    // 地図の初期表示半径 (単位: メートル)
+    // プロジェクトの中心座標から、この半径の範囲が収まるように地図のズームレベルを調整するために使用します。
+    optional float radius_meters = 5;
+}
+
+// プロジェクト作成リクエスト
+message CreateProjectRequest {
+    // 作成対象のプロジェクト情報。
+    // project.id はサーバー側で自動生成されるため、リクエスト時に設定する必要はありません。
+    // 値が設定されている場合でも、サーバー側で無視または上書きされます。
+    Project project = 1[(google.api.field_behavior) = REQUIRED];
+}
+
+// プロジェクト取得リクエスト
+message GetProjectRequest {
+    // 取得するプロジェクトID
+    ProjectID id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// プロジェクトリスト取得リクエスト
+message ListProjectsRequest {
+    // 取得するプロジェクトの最大件数。
+    // 0 の場合、サーバー側でデフォルト値 (20) が適用されます。
+    // 最大値は 70 です。
+    int32 page_size = 1;
+    string page_token = 2; // ページトークン
+}
+
+// プロジェクトリスト取得レスポンス
+message ListProjectsResponse {
+    // プロジェクトのリスト
+    repeated Project projects = 1;
+    // 次のページトークン
+    string next_page_token = 2;
+}
+
+// プロジェクト更新リクエスト
+message UpdateProjectRequest {
+    // 更新するプロジェクトのフィールド。project.id は更新対象の特定に使用される（変更不可）
+    Project project = 1 [(google.api.field_behavior) = REQUIRED];
+    // 更新するフィールドのマスク
+    google.protobuf.FieldMask update_mask = 2;
+}
+
+// プロジェクト削除リクエスト
+message DeleteProjectRequest {
+    // 削除するプロジェクトID
+    ProjectID id = 1 [(google.api.field_behavior) = REQUIRED];
+}
