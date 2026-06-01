@@ -44,10 +44,17 @@ message MonitorMobilityPositionsResponse {
     trajectory.trjx_api_service.Position absolute_position = 5 ;
     
     // --- 静的マスタ情報 (from FP(未実装)) ---
+    // FCに情報があるのはTRとADだけ
     trajectory.trjx_api_service.MobilityType mobility_type = 7; // 機体種別　ここはFP側で実装済
-    string name = 8; // 機体名　FP未実装のため、FPからかえるuav_idを文字列にしてそのまま返す
-    optional string remote_id = 9; // リモートID　FP未実装のため、返らない
-    int64 organization_id = 10; // 所有組織ID　FP未実装のため、返らない
+    string name = 8; // 機体名　FPからかえるuav_idをprefix抜いて文字列にしてそのまま返す、TRのものはnameあるので返すとか？
+    optional int64 organization_id = 9; // 所有組織ID　機体のprefixがTRはFCに問い合わせる,EX(外部GCSのもの)のものは入れて返す、組織ID_機体IDorリモートIDの文字列を返す, spec244種別
+
+    // --- 機体の固有識別情報 (排他) ---
+    oneof identifier {
+        string remote_id = 10; // リモートID　機体のprefixがTR(管理内)はFCに問い合わせる,RI(リモートID受信機)のものは入れて返す
+        string aviation_id = 11;     // 有人機用のID, 国として規定されているIDのようなものを持たせるフィールドを用意するか、ADS-B?などの外部データを入れるフィールドを用意するかは要検討,257(219,244,249)、AD,MB(有人機)、oneofにする
+    // 実装はFPに問い合わせてprefixによってFC問い合わせの制御やresponse fieldに詰める内容を変える
+    }
 }
 
 // ---------------------------------------------------------
