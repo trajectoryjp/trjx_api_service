@@ -10,6 +10,8 @@ import "google/api/field_behavior.proto";
 import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
 
+import "protoc-gen-openapiv2/options/annotations.proto";
+
 service MissionService {
     // CreateMission: ミッションの生成
     rpc CreateMission(CreateMissionRequest) returns (CreateMissionResponse) {}
@@ -43,6 +45,367 @@ service MissionService {
 
     // ミッションの表現形式を変換する
     rpc ConvertMissionFormat(ConvertMissionFormatRequest)returns (ConvertMissionFormatResponse){}
+
+    // ConvertExternalMissionFormatToMission
+    rpc ConvertExternalMissionFormatToMission(ConvertExternalMissionFormatToMissionRequest) returns (ConvertExternalMissionFormatToMissionResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "外部形式ファイルをMissionへ変換する。"
+            responses: {
+                key: "400"
+                value: {
+                    description: "ファイルが壊れている / 対応範囲外 (gRPC: INVALID_ARGUMENT)\n"
+                                 "- ERR_INVALID_KMZ: zip展開不可、template.kml欠落、XMLパース不能\n"
+                                 "- ERR_UNSUPPORTED_TEMPLATE_TYPE: templateType != waypoint\n"
+                                 "- ERR_UNSUPPORTED_HEIGHT_MODE: aboveGroundLevel / realTimeFollowSurface\n"
+                                 "- ERR_UNSUPPORTED_FINISH_ACTION: finishAction = noAction(import時)\n"
+                                 "- ERR_UNSUPPORTED_ALTITUDE_ATTR: フル生成時、MissionのAltitudeAttrがRELATIVE/AGL/未知の値\n"
+                                 "- ERR_UNSUPPORTED_LAND_MODE: フル生成時、Landアイテムが存在するがModeが未知の値\n\n"
+                                 "追加入力があれば成功しうる (gRPC: FAILED_PRECONDITION)\n"
+                                 "- ERR_MISSING_REFERENCE_ALTITUDE: relativeToStartPointでtakeOffRefPointも外部入力もない"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 3,\n"
+                               "  \"message\": \"ERR_INVALID_KMZ\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "429"
+                value: {
+                    description: "入力サイズ・展開量の上限超過 (gRPC: RESOURCE_EXHAUSTED)\n"
+                                 "- ERR_FILE_TOO_LARGE: 入力ファイルサイズが上限を超過\n"
+                                 "- ERR_ZIP_TOO_LARGE: zip展開後バイト数が上限を超過\n"
+                                 "- ERR_XML_TOO_DEEP: XMLのネスト深さが上限を超過"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 8,\n"
+                               "  \"message\": \"ERR_FILE_TOO_LARGE\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "システムエラー (gRPC: INTERNAL)"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 13,\n"
+                               "  \"message\": \"Internal server error\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+        };
+    }
+
+    // ConvertMissionToExternalMissionFormat
+    rpc ConvertMissionToExternalMissionFormat(ConvertMissionToExternalMissionFormatRequest) returns (ConvertMissionToExternalMissionFormatResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "Missionを外部形式ファイルへ変換する。"
+            responses: {
+                key: "400"
+                value: {
+                    description: "ファイルが壊れている / 対応範囲外 (gRPC: INVALID_ARGUMENT)\n"
+                                 "- ERR_INVALID_KMZ: zip展開不可、template.kml欠落、XMLパース不能\n"
+                                 "- ERR_UNSUPPORTED_TEMPLATE_TYPE: templateType != waypoint\n"
+                                 "- ERR_UNSUPPORTED_HEIGHT_MODE: aboveGroundLevel / realTimeFollowSurface\n"
+                                 "- ERR_UNSUPPORTED_FINISH_ACTION: finishAction = noAction(import時)\n"
+                                 "- ERR_UNSUPPORTED_ALTITUDE_ATTR: フル生成時、MissionのAltitudeAttrがRELATIVE/AGL/未知の値\n"
+                                 "- ERR_UNSUPPORTED_LAND_MODE: フル生成時、Landアイテムが存在するがModeが未知の値\n\n"
+                                 "追加入力があれば成功しうる (gRPC: FAILED_PRECONDITION)\n"
+                                 "- ERR_MISSING_REFERENCE_ALTITUDE: relativeToStartPointでtakeOffRefPointも外部入力もない"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 3,\n"
+                               "  \"message\": \"ERR_INVALID_KMZ\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "429"
+                value: {
+                    description: "入力サイズ・展開量の上限超過 (gRPC: RESOURCE_EXHAUSTED)\n"
+                                 "- ERR_FILE_TOO_LARGE: 入力ファイルサイズが上限を超過\n"
+                                 "- ERR_ZIP_TOO_LARGE: zip展開後バイト数が上限を超過\n"
+                                 "- ERR_XML_TOO_DEEP: XMLのネスト深さが上限を超過"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 8,\n"
+                               "  \"message\": \"ERR_FILE_TOO_LARGE\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "システムエラー (gRPC: INTERNAL)"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 13,\n"
+                               "  \"message\": \"Internal server error\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+        };
+    }
+
+    // ImportMissionRecord
+    rpc ImportMissionRecord(ImportMissionRecordRequest) returns (ImportMissionRecordResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "外部形式ファイルをMissionへ変換し新規のMissionRecordとして保存する\n"
+                         "既存レコードの更新は行わない\n"
+                         "元ファイルも保存され、以後そのレコードを元の形式へ戻す際に使われる。"
+            responses: {
+                key: "400"
+                value: {
+                    description: "ファイルが壊れている / 対応範囲外 (gRPC: INVALID_ARGUMENT)\n"
+                                 "- ERR_INVALID_KMZ: zip展開不可、template.kml欠落、XMLパース不能\n"
+                                 "- ERR_UNSUPPORTED_TEMPLATE_TYPE: templateType != waypoint\n"
+                                 "- ERR_UNSUPPORTED_HEIGHT_MODE: aboveGroundLevel / realTimeFollowSurface\n"
+                                 "- ERR_UNSUPPORTED_FINISH_ACTION: finishAction = noAction(import時)\n"
+                                 "- ERR_UNSUPPORTED_ALTITUDE_ATTR: フル生成時、MissionのAltitudeAttrがRELATIVE/AGL/未知の値\n"
+                                 "- ERR_UNSUPPORTED_LAND_MODE: フル生成時、Landアイテムが存在するがModeが未知の値\n\n"
+                                 "追加入力があれば成功しうる (gRPC: FAILED_PRECONDITION)\n"
+                                 "- ERR_MISSING_REFERENCE_ALTITUDE: relativeToStartPointでtakeOffRefPointも外部入力もない"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 3,\n"
+                               "  \"message\": \"ERR_INVALID_KMZ\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "403"
+                value: {
+                    description: "指定したProject(project_id)に対するアクセスする権限がない (gRPC: PERMISSION_DENIED)"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 7,\n"
+                               "  \"message\": \"Permission denied for the Project(project_id:XXX)\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "429"
+                value: {
+                    description: "入力サイズ・展開量の上限超過 (gRPC: RESOURCE_EXHAUSTED)\n"
+                                 "- ERR_FILE_TOO_LARGE: 入力ファイルサイズが上限を超過\n"
+                                 "- ERR_ZIP_TOO_LARGE: zip展開後バイト数が上限を超過\n"
+                                 "- ERR_XML_TOO_DEEP: XMLのネスト深さが上限を超過"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 8,\n"
+                               "  \"message\": \"ERR_FILE_TOO_LARGE\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "システムエラー (gRPC: INTERNAL)"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 13,\n"
+                               "  \"message\": \"Internal server error\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+        };
+    }
+
+    // ExportMissionRecord
+    rpc ExportMissionRecord(ExportMissionRecordRequest) returns (ExportMissionRecordResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            description: "保存済みのMissionRecordを外部形式ファイルへ変換して返す。\n"
+                         "取り込み時の元ファイルを持つレコードでは、それを元ファイルとして使う。"
+            responses: {
+                key: "400"
+                value: {
+                    description: "ファイルが壊れている / 対応範囲外 (gRPC: INVALID_ARGUMENT)\n"
+                                 "- ERR_INVALID_KMZ: zip展開不可、template.kml欠落、XMLパース不能\n"
+                                 "- ERR_UNSUPPORTED_TEMPLATE_TYPE: templateType != waypoint\n"
+                                 "- ERR_UNSUPPORTED_HEIGHT_MODE: aboveGroundLevel / realTimeFollowSurface\n"
+                                 "- ERR_UNSUPPORTED_FINISH_ACTION: finishAction = noAction(import時)\n"
+                                 "- ERR_UNSUPPORTED_ALTITUDE_ATTR: フル生成時、MissionのAltitudeAttrがRELATIVE/AGL/未知の値\n"
+                                 "- ERR_UNSUPPORTED_LAND_MODE: フル生成時、Landアイテムが存在するがModeが未知の値\n\n"
+                                 "追加入力があれば成功しうる (gRPC: FAILED_PRECONDITION)\n"
+                                 "- ERR_MISSING_REFERENCE_ALTITUDE: relativeToStartPointでtakeOffRefPointも外部入力もない"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 3,\n"
+                               "  \"message\": \"ERR_INVALID_KMZ\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "403"
+                value: {
+                    description: "指定したMissionRecord(mission_id)に対するアクセスする権限がない (gRPC: PERMISSION_DENIED)"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 7,\n"
+                               "  \"message\": \"Permission denied for the MissionRecord(mission_id:XXX)\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "404"
+                value: {
+                    description: "指定MissionRecordが存在しない (gRPC: NOT_FOUND)"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 5,\n"
+                               "  \"message\": \"MissionRecord(mission_id:XXX) not found\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "429"
+                value: {
+                    description: "入力サイズ・展開量の上限超過 (gRPC: RESOURCE_EXHAUSTED)\n"
+                                 "- ERR_FILE_TOO_LARGE: 入力ファイルサイズが上限を超過\n"
+                                 "- ERR_ZIP_TOO_LARGE: zip展開後バイト数が上限を超過\n"
+                                 "- ERR_XML_TOO_DEEP: XMLのネスト深さが上限を超過"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 8,\n"
+                               "  \"message\": \"ERR_FILE_TOO_LARGE\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+            responses: {
+                key: "500"
+                value: {
+                    description: "システムエラー (gRPC: INTERNAL)"
+                    schema: {
+                        json_schema: {
+                            ref: "#/definitions/rpcStatus"
+                        }
+                    }
+                    examples: {
+                        key: "application/json"
+                        value: "{\n"
+                               "  \"code\": 13,\n"
+                               "  \"message\": \"Internal server error\",\n"
+                               "  \"details\": []\n"
+                               "}"
+                    }
+                }
+            }
+        };
+    }
+
 }
 
 message CreateMissionRequest { 
@@ -435,4 +798,354 @@ message ConvertMissionFormatResponse {
         string Csv = 5 ;
         string JsonMission = 6 ; // .mission拡張子(mavlink)
     }
+}
+
+message ConvertExternalMissionFormatToMissionRequest {
+    bytes file = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションデータファイル(Base64エンコードされた文字列)"
+            type: STRING,
+            format: "byte",
+            example: "\"UEsDBBQACAgI...\""
+        }
+    ];
+
+    ExternalMissionFormat format = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "fileの形式。内容からの推測はしない(不一致はINVALID_ARGUMENT)\n"
+                         "現状は EXTERNAL_MISSION_FORMAT_DJI_WPML のみサポート"
+        }
+    ];
+
+    optional float reference_altitude = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "基準高度(MSL,単位m)。相対高度指定の形式で、ファイル内から導出できない場合のみ使用"
+        }
+    ];
+}
+
+message ConvertExternalMissionFormatToMissionResponse {
+    Mission mission = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッション"
+        }
+    ];
+
+    ConversionSideData side_data = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "同じミッションをConvertMissionToExternalMissionFormatで再変換する際の入力になる"
+        }
+    ];
+
+    bytes source_file = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "保存用の元ファイル(Base64エンコードされた文字列)\n"
+                         "TRJXが使用しないリソースを除去したもの。\n"
+                         "同じミッションをConvertMissionToExternalMissionFormatで再変換する際の入力になる",
+            type: STRING,
+            format: "byte",
+            example: "\"UEsDBBQACAgI...\""
+        }
+    ];
+
+    repeated ConversionNotice notices = 4 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "通知情報"
+        }
+    ];
+}
+
+message ConvertMissionToExternalMissionFormatRequest {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            description: "format_optionsで渡すのはMissionが持たない値(機体とペイロードの型式)。\n"
+                         "source_fileがある場合は元ファイルの値が優先され、format_optionsは使われない。"
+        }
+    };
+
+    Mission mission = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッション"
+        }
+    ];
+
+    ExternalMissionFormat format = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "出力形式"
+        }
+    ];
+
+    optional bytes source_file = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "同一形式の元ファイル(Base64エンコードされた文字列)。なければMissionだけから生成する",
+            type: STRING,
+            format: "byte",
+            example: "\"UEsDBBQACAgI...\""
+        }
+    ];
+
+    optional float reference_altitude = 4 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "importで採用された基準高度(MSL,単位m)。ConversionSideData参照"
+        }
+    ];
+
+    oneof format_options {
+        DjiWpmlExportOptions dji_wpml = 5;
+    }
+}
+
+message ConvertMissionToExternalMissionFormatResponse {
+    bytes file = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションデータファイル(Base64エンコードされた文字列)",
+            type: STRING,
+            format: "byte",
+            example: "\"UEsDBBQACAgI...\""
+        }
+    ];
+
+    repeated ConversionNotice notices = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "通知情報"
+        }
+    ];
+}
+
+message ConversionSideData {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            description: "Missionに載らない変換由来のデータ"
+        }
+    };
+
+    optional float reference_altitude = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "採用した基準高度(MSL, 単位: m)。相対高度指定のMission形式でのみ設定される。"
+            example: "50.0"
+        }
+    ];
+
+    ReferenceAltitudeSource reference_altitude_source = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "基準高度の入力ソース。\n REFERENCE_ALTITUDE_SOURCE_EXTERNAL の場合、Export時に reference_altitude を渡す必要がある。"
+        }
+    ];
+}
+
+enum ReferenceAltitudeSource {
+    REFERENCE_ALTITUDE_SOURCE_UNSPECIFIED = 0;
+    REFERENCE_ALTITUDE_SOURCE_FILE = 1;     // 元ファイルから導出
+    REFERENCE_ALTITUDE_SOURCE_EXTERNAL = 2; // 外部入力
+}
+
+
+message ImportMissionRecordRequest {
+    bytes file = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションデータファイル(Base64エンコードされた文字列)",
+            type: STRING,
+            format: "byte",
+            example: "\"UEsDBBQACAgI...\""
+        }
+    ];
+
+    ExternalMissionFormat format = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションフォーマット"
+        }
+    ];
+
+    optional double reference_altitude = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "基準高度(MSL,単位m)"
+        }
+    ];
+
+    string name = 4 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "保存名 ※ rpc CreateMissionRecordのリクエストのnameに相当する"
+        }
+    ];
+
+    ProjectID project_id = 5 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "プロジェクトID ※自組織のProjectIDのみ指定可能"
+        }
+    ];
+
+    UAVID uav_id = 6 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "機体ID"
+        }
+    ];
+
+    ApplicationAttr app = 7 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "Createを要求するアプリケーション"
+        }
+    ];
+}
+
+message ImportMissionRecordResponse {
+    MissionID mission_id = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションID"
+        }
+    ];
+
+    repeated ConversionNotice notices = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "通知情報"
+        }
+    ];
+}
+
+
+message ExportMissionRecordRequest {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            description: "機体とペイロードの型式の解決順はformat_options > uav_id > MissionRecordのUAVID。\n"
+                         "いずれからも決まらない場合は既定値を使い、CODE_DRONE_MODEL_DEFAULTEDで通知する。\n"
+                         "取り込み時の元ファイルを持つレコードでは元ファイルの値が優先され、この解決は行わない。"
+        }
+    };
+
+    MissionID mission_id = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションID ※自組織のミッションIDのみ指定可能"
+        }
+    ];
+
+    ExternalMissionFormat format = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションの出力フォーマット"
+        }
+    ];
+
+    UAVID uav_id = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "型式を引く機体id"
+        }
+    ];
+
+    oneof format_options {
+        DjiWpmlExportOptions dji_wpml = 4;
+    }
+}
+
+
+message ExportMissionRecordResponse {
+    bytes file = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ミッションデータファイル(Base64エンコードされた文字列)",
+            type: STRING,
+            format: "byte",
+            example: "\"UEsDBBQACAgI...\""
+        }
+    ];
+    repeated ConversionNotice notices = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "通知情報"
+        }
+    ];
+}
+
+
+message ConversionNotice {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            description: "要素単位の通知(変換自体は成功)\n"
+                         "同一のcode・elementが要素の数だけ並ぶ。まとめて表示するかは呼び出し側の判断"
+        }
+    };
+
+    enum Level {
+        LEVEL_UNSPECIFIED = 0;
+        // 情報は失われていない(importでは元ファイルに保持される)
+        LEVEL_INFO = 1;
+        // 情報が失われた、または渡した入力が使われなかった
+        LEVEL_WARNING = 2;
+    }
+
+    enum Code {
+        CODE_UNSPECIFIED = 0;
+        CODE_ELEMENT_SKIPPED = 1;
+        CODE_REFERENCE_ALTITUDE_INPUT_IGNORED = 100; // ※DJI WPML固有
+        CODE_FINISH_ACTION_DEFAULTED = 101; // ※DJI WPML固有
+        CODE_RESOURCE_DROPPED = 102; // ※DJI WPML固有
+        CODE_DRONE_MODEL_DEFAULTED = 103; // ※DJI WPML固有
+    }
+
+    Level level = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "codeからは一意に決まらず、要素ごとに定まる"
+        }
+    ];
+
+    Code code = 2;
+
+    map<string, string> attributes = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "付帯情報。キーはcodeごとに定まる\n"
+                         "  CODE_ELEMENT_SKIPPED                  : element(要素名), value(値)\n"
+                         "  CODE_REFERENCE_ALTITUDE_INPUT_IGNORED : derived(導出値), input(入力値)\n"
+                         "  CODE_RESOURCE_DROPPED                 : entry(zipエントリ名)\n"
+                         "  CODE_DRONE_MODEL_DEFAULTED            : drone(適用した機体型式), payload(適用したペイロード型式)\n"
+                         "  CODE_FINISH_ACTION_DEFAULTED          : (なし)\n"
+                         "特定の要素に紐づく場合は位置も入る\n"
+                         "  import : index(元ファイル上のWP番号)\n"
+                         "  export : tag(MissionItem.tag)"
+        }
+    ];
+}
+
+
+/*
+　　ミッションのフォーマット
+*/
+enum ExternalMissionFormat {
+    EXTERNAL_MISSION_FORMAT_UNSPECIFIED = 0;
+    EXTERNAL_MISSION_FORMAT_DJI_WPML = 1;
+    EXTERNAL_MISSION_FORMAT_MAVLINK_JSON = 2;
+    EXTERNAL_MISSION_FORMAT_LITCHI_CSV = 3;
+}
+
+
+message DjiWpmlExportOptions {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            description: "DJI WPMLのexportで指定する、Missionが持たない値\n"
+                         "未指定のフィールドは既定値になり、その旨がCODE_DRONE_MODEL_DEFAULTEDで通知される\n"
+                         "DJI WPML仕様(下記リンク)で定義されている値をそのまま入力する\n"
+                         "https://github.com/dji-sdk/Cloud-API-Doc/blob/4ec6b0c7f9472aeb09a0a47949855d19c473ea07/docs/en/60.api-reference/00.dji-wpml/40.common-element.md"
+        }
+    };
+
+    optional int32 drone_enum_value = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "機体型式の値。既定値は60(M300 RTK)",
+            default: "60"
+        }
+    ];
+
+    optional int32 drone_sub_enum_value = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "機体型式の派生種別。一部型式では指定必須(仕様参照)。既定値なし"
+        }
+    ];
+
+    optional int32 payload_enum_value = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ペイロード型式の値。既定値は43(H20T)",
+            default: "43"
+        }
+    ];
+
+    optional int32 payload_position_index = 4 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "ペイロードの搭載位置(0=左側/1=右側/2=上部)。既定値は0",
+            default: "0"
+        }
+    ];
 }
