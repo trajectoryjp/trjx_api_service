@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "google/protobuf/empty.proto";
+
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+
+
+service MaxFallRangeService {
+    rpc CreateMaxFallRange(CreateMaxFallRangeRequest) returns (MaxFallRange);
+    rpc DeleteMaxFallRange(DeleteMaxFallRangeRequest) returns (google.protobuf.Empty);
+    rpc ListMaxFallRanges(ListMaxFallRangesRequest) returns (ListMaxFallRangesResponse);
+}
+
+message CreateMaxFallRangeRequest {
+    MaxFallRange max_fall_range = 1;
+}
+
+message DeleteMaxFallRangeRequest {
+  string max_fall_range_id = 1;
+}
+
+message ListMaxFallRangesRequest {
+    // 取得する最大落下範囲の最大数
+    sint32 page_size = 1;
+
+    // 取得内容
+    MaxFallRange.View view = 2;
+
+    // 取得範囲。ボックスに衝突するオブジェクトを全て返します // TODO: 直感的には空間IDで指定すべきだと思うが需要はありますか？
+    trajectory.trjx_api_service.BoundingBox box = 3;
+
+    // ページトークン。前回のリクエストで返された次のページを取得するために使用します。初回のリクエストの場合は空です
+    string page_token = 4;
+}
+
+message ListMaxFallRangesResponse {
+    repeated MaxFallRange max_fall_ranges = 1;
+
+    // 次のページトークン。次のページがない場合は空です
+    string next_page_token = 2;
+}
+
+message MaxFallRange {
+  string id = 1;
+  string name = 2;
+  repeated trajectory.trjx_api_service.Position polygon = 3;
+
+    // 取得内容
+    enum View {
+        // 非指定
+        VIEW_UNSPECIFIED = 0;
+        
+        // 基本情報のみ
+        VIEW_BASIC = 1;
+
+        // 全て
+        VIEW_FULL = 2;
+    }
+}

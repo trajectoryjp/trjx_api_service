@@ -8,7 +8,6 @@
 
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 // パッケージ名を変更

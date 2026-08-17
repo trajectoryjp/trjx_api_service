@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
+
+service AirRiskService {
+    // エアーリスクを一覧します
+    rpc ListAirRisk(ListAirRiskRequest) returns (ListAirRiskResponse);
+}
+
+// ListAirRiskのリクエスト
+message ListAirRiskRequest {
+    // 取得するデータ項目の最大数。検索範囲の空間ID単位で検索するためこの数を超えることがあります
+    sint32 page_soft_size = 1;
+
+    // 取得内容
+    View view = 2;
+
+    // 検索範囲。衝突するエアーリスクを全て返します // TODO: 直感的には空間IDで指定すべきだと思うが需要はありますか？
+    trajectory.trjx_api_service.BoundingBox box = 3;
+
+    // ページトークン。前回のリクエストで返された次のページを取得するために使用します。初回のリクエストの場合は空です
+    string page_token = 4;
+    
+//   int32 concurrency = 3; // SPへの最大同時通信数 // TODO: 必要ですか？必要ならばストリームにします
+
+    sint32 zoom_level = 6; // TODO: boxで指定しますか？
+
+    // 取得内容
+    enum View {
+        // 非指定
+        VIEW_UNSPECIFIED = 0;
+
+        // 空間IDのみ
+        VIEW_SPATIAL_IDENTIFICATION = 1;
+
+        // 全て
+        VIEW_FULL = 2;
+    }
+}
+
+// ListAirRiskのレスポンス
+message ListAirRiskResponse {
+    // データ
+    repeated Datum data = 1;
+
+    // 次のページトークン。次のページがない場合は空です
+    string next_page_token = 2;
+
+    // データ項目
+    message Datum {
+        // 組織ID
+        sint64 organization_id = 1;
+
+        // 空間 ID (2D; z/x/y)
+        generic.v2.SpatialIdentification spatial_id = 2;
+
+        // エアーリスク
+        AirRisk air_risk = 3;
+    }
+}
+
+message AirRisk {
+    // エアーリスクの平均値
+    float average = 1;
+}
