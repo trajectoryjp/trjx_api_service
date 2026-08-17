@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package trajectory.trajectory_gcs_service.protocol.v1;
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
+
+// FlightArea Service
+service FlightAreaService {
+
+    /*
+     ConvertWaypointsToFlightArea:ウェイポイントから飛行範囲(FlightArea)に変換する
+    */
+    rpc ConvertWaypointsToFlightArea(ConvertWaypointsToFlightAreaRequest) returns (ConvertWaypointsToFlightAreaResponse);
+}
+
+
+message ConvertWaypointsToFlightAreaRequest {
+    // 空間断面の中心となるwaypointの配列。2つ以上のwaypointが必要
+    repeated Position waypoints = 1;
+
+    // 幅[m]
+    double width = 2;
+}
+message ConvertWaypointsToFlightAreaResponse {
+    FlightArea flight_area = 1;
+}
