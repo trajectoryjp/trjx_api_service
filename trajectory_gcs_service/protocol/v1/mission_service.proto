@@ -827,7 +827,7 @@ message ConvertExternalMissionFormatToMissionRequest {
 message ConvertExternalMissionFormatToMissionResponse {
     Mission mission = 1 [
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "ミッション"
+            description: "ミッション ※WP高度はすべてMSL(単位m)に正規化される。入力ファイルが相対高度指定の場合は基準高度を加算する"
         }
     ];
 
@@ -837,11 +837,11 @@ message ConvertExternalMissionFormatToMissionResponse {
         }
     ];
 
-    bytes source_file = 3 [
+    bytes base_file = 3 [
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
             description: "保存用の元ファイル(Base64エンコードされた文字列)\n"
-                         "TRJXが使用しないリソースを除去したもの。\n"
-                         "同じミッションをConvertMissionToExternalMissionFormatで再変換する際の入力になる",
+                         "以後のexportでベースになるファイル。保存して次回に渡す\n"
+                         "リクエストのfileからTRJXが使用しないリソースを除去したもので、送ったbytesとは一致しない",
             type: STRING,
             format: "byte",
             example: "\"UEsDBBQACAgI...\""
@@ -858,8 +858,8 @@ message ConvertExternalMissionFormatToMissionResponse {
 message ConvertMissionToExternalMissionFormatRequest {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
         json_schema: {
-            description: "format_optionsで渡すのはMissionが持たない値(機体とペイロードの型式)。\n"
-                         "source_fileがある場合は元ファイルの値が優先され、format_optionsは使われない。"
+            description: "機体とペイロードの型式の解決順はformat_options > base_file \n"
+                         "いずれからも決まらない場合は既定値を使い、DjiWpmlOptionsDefaultedで通知する。"
         }
     };
 
@@ -875,9 +875,11 @@ message ConvertMissionToExternalMissionFormatRequest {
         }
     ];
 
-    optional bytes source_file = 3 [
+    optional bytes base_file = 3 [
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "同一形式の元ファイル(Base64エンコードされた文字列)。なければMissionだけから生成する",
+            description: "同一形式の元ファイル(Base64エンコードされた文字列)。出力のうちMissionから生成しない部分をここから引き継ぐ \n"
+                         "Missionから生成する部分は、このファイルの内容によらずMissionが使われる(対象要素は形式ごとに定める)。 \n"
+                         "指定しない場合はMissionだけから生成し、Missionが持たない値は既定値になる。\n",
             type: STRING,
             format: "byte",
             example: "\"UEsDBBQACAgI...\""
@@ -886,7 +888,8 @@ message ConvertMissionToExternalMissionFormatRequest {
 
     optional float reference_altitude = 4 [
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "importで採用された基準高度(MSL,単位m)。ConversionSideData参照"
+            description: "基準高度(MSL,単位m)。形式によらない共通の入力 \n"
+                         "相対高度で高度を持つファイルのうち、ファイル内から基準を導出できないものにだけ使う"
         }
     ];
 
@@ -1005,9 +1008,9 @@ message ImportMissionRecordResponse {
 message ExportMissionRecordRequest {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
         json_schema: {
-            description: "機体とペイロードの型式の解決順はformat_options > uav_id > MissionRecordのUAVID。\n"
-                         "いずれからも決まらない場合は既定値を使い、CODE_DRONE_MODEL_DEFAULTEDで通知する。\n"
-                         "取り込み時の元ファイルを持つレコードでは元ファイルの値が優先され、この解決は行わない。"
+            description: "機体とペイロードの型式の解決順は\n"
+                         "format_options > uav_id > 取り込み時の元ファイル > MissionRecordのUAVID。\n"
+                         "いずれからも決まらない場合は既定値を使い、DjiWpmlOptionsDefaultedで通知する。"
         }
     };
 
@@ -1051,12 +1054,11 @@ message ExportMissionRecordResponse {
     ];
 }
 
-
 message ConversionNotice {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
         json_schema: {
             description: "要素単位の通知(変換自体は成功)\n"
-                         "同一のcode・elementが要素の数だけ並ぶ。まとめて表示するかは呼び出し側の判断"
+                         "集約せず要素ごとに1件返すため、同じ要素名の通知が並ぶことがある"
         }
     };
 
@@ -1068,37 +1070,97 @@ message ConversionNotice {
         LEVEL_WARNING = 2;
     }
 
-    enum Code {
-        CODE_UNSPECIFIED = 0;
-        CODE_ELEMENT_SKIPPED = 1;
-        CODE_REFERENCE_ALTITUDE_INPUT_IGNORED = 100; // ※DJI WPML固有
-        CODE_FINISH_ACTION_DEFAULTED = 101; // ※DJI WPML固有
-        CODE_RESOURCE_DROPPED = 102; // ※DJI WPML固有
-        CODE_DRONE_MODEL_DEFAULTED = 103; // ※DJI WPML固有
+    message ElementSkipped {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+            json_schema: { description: "変換先のない要素をスキップした" }
+        };
+
+        string element = 1 [
+            (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                description: "要素名"
+            }
+        ];
+        string value = 2 [
+            (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                description: "値"
+            }
+        ];
+        oneof position {
+            int32 index = 3 [
+                (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                    description: "順序による指定(例: 元ファイル上のWP番号) ※要素の位置。位置を特定できない要素では設定しない"
+                }
+            ];
+            string tag = 4 [
+                (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                    description: "識別子による指定(例: MissionItem.tag) ※要素の位置。位置を特定できない要素では設定しない"
+                }
+            ];
+        }
+    }
+
+    message ReferenceAltitudeInputIgnored {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+            json_schema: { description: "外部入力の基準高度が元ファイルからの導出値と異なるため無視した" }
+        };
+
+        float derived = 1 [
+            (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                description: "元ファイルからの導出値(MSL,単位m)"
+            }
+        ];
+        float input = 2 [
+            (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                description: "無視した入力値(MSL,単位m)"
+            }
+        ];
+    }
+
+    message FinishActionDefaulted {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+            json_schema: { description: "Landアイテムが無くfinishActionを既定値にした通知 ※適用値はnoActionに確定するためフィールドを持たない" }
+        };
+    }
+
+    message ResourceDropped {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+            json_schema: { description: "保存用のファイルの生成時にエントリを除去した" }
+        };
+
+        string entry = 1 [
+            (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                description: "除去したエントリ名"
+            }
+        ];
+    }
+
+    message DjiWpmlOptionsDefaulted {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+            json_schema: { description: "DjiWpmlExportOptionsのうち、指定が無く既定値を使ったものがある" }
+        };
+
+        DjiWpmlExportOptions applied = 1 [
+            (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+                description: "既定値で補ったフィールドだけを設定"
+            }
+        ];
     }
 
     Level level = 1 [
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "codeからは一意に決まらず、要素ごとに定まる"
+            description: "通知レベル（種別からは一意に決まらず要素ごとに定まる）"
         }
     ];
 
-    Code code = 2;
-
-    map<string, string> attributes = 3 [
-        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "付帯情報。キーはcodeごとに定まる\n"
-                         "  CODE_ELEMENT_SKIPPED                  : element(要素名), value(値)\n"
-                         "  CODE_REFERENCE_ALTITUDE_INPUT_IGNORED : derived(導出値), input(入力値)\n"
-                         "  CODE_RESOURCE_DROPPED                 : entry(zipエントリ名)\n"
-                         "  CODE_DRONE_MODEL_DEFAULTED            : drone(適用した機体型式), payload(適用したペイロード型式)\n"
-                         "  CODE_FINISH_ACTION_DEFAULTED          : (なし)\n"
-                         "特定の要素に紐づく場合は位置も入る\n"
-                         "  import : index(元ファイル上のWP番号)\n"
-                         "  export : tag(MissionItem.tag)"
-        }
-    ];
+    oneof detail {
+        ElementSkipped element_skipped = 2;
+        ReferenceAltitudeInputIgnored reference_altitude_input_ignored = 3;
+        FinishActionDefaulted finish_action_defaulted = 4;
+        ResourceDropped resource_dropped = 5;
+        DjiWpmlOptionsDefaulted dji_wpml_options_defaulted = 6;
+    }
 }
+
 
 
 /*
@@ -1116,7 +1178,7 @@ message DjiWpmlExportOptions {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
         json_schema: {
             description: "DJI WPMLのexportで指定する、Missionが持たない値\n"
-                         "未指定のフィールドは既定値になり、その旨がCODE_DRONE_MODEL_DEFAULTEDで通知される\n"
+                         "未指定のフィールドは既定値になり、その旨がDjiWpmlOptionsDefaultedで通知される\n"
                          "DJI WPML仕様(下記リンク)で定義されている値をそのまま入力する\n"
                          "https://github.com/dji-sdk/Cloud-API-Doc/blob/4ec6b0c7f9472aeb09a0a47949855d19c473ea07/docs/en/60.api-reference/00.dji-wpml/40.common-element.md"
         }
