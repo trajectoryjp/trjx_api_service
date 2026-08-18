@@ -43,8 +43,10 @@ service MissionService {
     // SpecialMissionRecordを持たないMissionRecordの予約(派生)はサポートしない(エラーとする)
     rpc ReserveSpecialMissionRecord(ReserveSpecialMissionRecordRequest) returns (ReserveSpecialMissionRecordResponse) {}
 
-    // ミッションの表現形式を変換する
-    rpc ConvertMissionFormat(ConvertMissionFormatRequest)returns (ConvertMissionFormatResponse){}
+    // ミッションの表現形式を変換する(非推奨)
+    rpc ConvertMissionFormat(ConvertMissionFormatRequest)returns (ConvertMissionFormatResponse){
+        option deprecated = true;
+    }
 
     // ConvertExternalMissionFormatToMission
     rpc ConvertExternalMissionFormatToMission(ConvertExternalMissionFormatToMissionRequest) returns (ConvertExternalMissionFormatToMissionResponse) {
