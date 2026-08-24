@@ -159,6 +159,88 @@ service OrganizationService {
     }
   };
   }
+
+  rpc GetDjiFlightHubToken(GetDjiFlightHubTokenRequest) returns (GetDjiFlightHubTokenInfoResponse){
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "GetDjiFlightHubToken:DJIFlightHubTokenを取得する";
+      description: "DJIFlightHubTokenを取得する。\n\nadminのみ実行可能。";
+      responses: {
+        key: "401";
+        value: {
+          description: "Unauthenticated";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus";
+            }
+          };
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Permission Denied (権限エラー adminのみ実行可能)";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus";
+            }
+          };
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal Server Error";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus";
+            }
+          };
+        }
+      }
+    };
+  }
+
+  rpc UpdateDjiFlightHubToken(UpdateDjiFlightHubTokenRequest) returns (UpdateDjiFlightHubTokenResponse){
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "UpdateDjiFlightHubToken:DJIFlightHubTokenを更新する";
+      description: "DJIFlightHubTokenを更新する。\n\n"
+                  "adminのみ実行可能。\n"
+                  "※Tokenの有効性の判断は実施しないため、有効性判定後に実施する必要あり。";
+      responses: {
+        key: "401";
+        value: {
+          description: "Unauthenticated";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus";
+            }
+          };
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Permission Denied (権限エラー adminのみ実行可能)";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus";
+            }
+          };
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal Server Error";
+          schema: {
+            json_schema: {
+              ref: "#/definitions/rpcStatus";
+            }
+          };
+        }
+      }
+    };
+  }
 }
 
 // GetOrganizationのリクエスト
@@ -177,6 +259,9 @@ message GetOrganizationResponse {
   // ただし、この時点ではTRJX-UIに2DMapのみが表示されます。
   // 3DMapを表示するには、SetCesiumToken RPC でcesium_access_tokenを登録する必要があります。
   string default_cesium_access_token = 3;
+
+  // DJIFlightHubTokenが設定されているか true: 値が設定されている / false:値が設定されていない(空である)
+  bool is_dji_flight_hub_token_set = 4;
 }
 
 // GetCesiumTokenのリクエスト
@@ -200,4 +285,18 @@ message SetCesiumTokenResponse {
   // ステータス
   string status = 1 [deprecated=true]; // 「ok」のみを返すため、非推奨です
 
+}
+
+message UpdateDjiFlightHubTokenRequest{
+  string token = 1; // DjiFlightHubToken
+}
+
+message UpdateDjiFlightHubTokenResponse{
+}
+
+message GetDjiFlightHubTokenRequest{
+}
+
+message GetDjiFlightHubTokenInfoResponse{
+  string token = 1; // DjiFlightHubToken
 }
