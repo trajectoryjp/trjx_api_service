@@ -101,6 +101,7 @@ message UpdateUavConfigRequest {
     optional double diagonal_view_angle = 6;     // 対角画角
     optional double moderate_horizontally_speed = 7; // 標準水平速度
     optional double moderate_vertical_speed = 8; // 標準垂直速度
+    optional string camera_model = 9; // カメラ形式名
 }
 
 message UpdateUavConfigResponse {
@@ -119,4 +120,5 @@ message UavConfig {
     optional double diagonal_view_angle = 6;     // 対角画角
     optional double moderate_horizontally_speed = 7; // 標準水平速度
     optional double moderate_vertical_speed = 8; // 標準垂直速度
+    optional string camera_model = 9; // カメラ形式名
 }
