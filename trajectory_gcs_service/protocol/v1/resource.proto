@@ -810,7 +810,7 @@ message ApproachingPort {
     optional int64 spot_id = 2;
 }
 
-message Position { // 要削除🟥 このPositionが他に存在すればいらない 🟥
+message Position {
     // 高度属性
     AltitudeAttr altitudeAttr = 1; // TR_DEV-1047
 
@@ -836,6 +836,13 @@ message XYZPosition {
     double x = 2;
     // 高さ距離(m) 右手系 上+
     double z = 3;
+}
+
+message HorizontalPosition {
+    // 緯度[°]
+    double latitude = 1;
+    // 経度[°]
+    double longitude = 2;
 }
 
 /*
@@ -876,6 +883,11 @@ message ControlArea {
     }
 }
 
+// 飛行範囲
+message FlightArea {
+    // 飛行範囲の頂点の配列。3点以上の頂点が必要
+    repeated HorizontalPosition vertices = 1;
+}
 
 // 離発着機体状態
 message TakingOffAndLandingUAVStatus {
