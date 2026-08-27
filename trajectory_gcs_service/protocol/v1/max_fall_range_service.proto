@@ -29,8 +29,8 @@ message ListMaxFallRangesRequest {
     // 取得内容
     MaxFallRange.View view = 2;
 
-    // 取得範囲。ボックスに衝突するオブジェクトを全て返します // TODO: 直感的には空間IDで指定すべきだと思うが需要はありますか？
-    trajectory.trjx_api_service.BoundingBox box = 3;
+    // 取得範囲。ボックスに衝突するオブジェクトを返します。nilの場合は全て返します
+    optional trajectory.trjx_api_service.BoundingBox box = 3;
 
     // ページトークン。前回のリクエストで返された次のページを取得するために使用します。初回のリクエストの場合は空です
     string page_token = 4;
@@ -43,8 +43,12 @@ message ListMaxFallRangesResponse {
     string next_page_token = 2;
 }
 
+// https://github.com/ODS-IS-UASL/airway-design/blob/main/uasl-design/src/main/resources/generator/apiGeneratorMaxFallRange.yaml
+// TODO: resource.protoに移転します
 message MaxFallRange {
+    // ID
   string id = 1;
+  // 名前
   string name = 2;
   repeated trajectory.trjx_api_service.Position polygon = 3;
 
@@ -53,7 +57,7 @@ message MaxFallRange {
         // 非指定
         VIEW_UNSPECIFIED = 0;
         
-        // 基本情報のみ
+        // IDと名前だけ
         VIEW_BASIC = 1;
 
         // 全て

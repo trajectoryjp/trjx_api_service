@@ -10,7 +10,7 @@ import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
 
 service RouteSpaceService {
     rpc EstimateRouteSpace(EstimateRouteSpaceRequest) returns (EstimateRouteSpaceResponse);
-    rpc CreateRouteSpace(CreateRouteSpaceRequest) returns (CreateRouteSpaceResponse);
+    rpc CreateRouteSpace(CreateRouteSpaceRequest) returns (RouteSpace);
     rpc DeleteRouteSpace(DeleteRouteSpaceRequest) returns (google.protobuf.Empty);
     rpc ListRouteSpaces(ListRouteSpacesRequest) returns (ListRouteSpacesResponse);
 
@@ -47,22 +47,22 @@ enum CalculationMode {
 message GridUniformSpace {
   double slot_width = 1; // スロット1つあたりの幅(m)
   double slot_height = 2; // スロット1つあたりの高さ(m)
-  sint32 columns = 3; // 横列数 // TODO: 効率を定量的に調べる
-  sint32 rows = 4; // 縦行数（高度層数）
+  int32 columns = 3; // 横列数
+  int32 rows = 4; // 縦行数（高度層数）
 }
 
 // カスタムスタック方式における各スロットのグリッドインデックス
 message SlotIndex {
-  sint32 column_index = 1; // 0始まりの横列番号
-  sint32 row_index = 2; // 0始まりの高さ層番号
+  int32 column_index = 1; // 0始まりの横列番号
+  int32 row_index = 2; // 0始まりの高さ層番号
 }
 
 // 方式2: カスタムスタック方式 (セル位置指定で台形等も表現)
 message CustomStackSpace {
   double slot_width = 1; // スロット1つあたりの幅(m)
   double slot_height = 2; // スロット1つあたりの高さ(m)
-  sint32 max_columns = 3; // 全体の最大列数（バウンディング幅）
-  sint32 max_rows = 4; // 全体の最大行数（バウンディング高さ）
+  int32 max_columns = 3; // 全体の最大列数（バウンディング幅）
+  int32 max_rows = 4; // 全体の最大行数（バウンディング高さ）
   repeated SlotIndex active_slots = 5; // 有効化するスロットのインデックス群
 }
 
@@ -77,10 +77,10 @@ message RouteSpaceSpecification {
 // 機体および運行の前提パラメータ
 message VehicleConfig {
   VehicleCategory vehicle_category = 1; // 航空機カテゴリ
-  CalculationMode calculation_mode = 4; // 軌跡計算モード
+  CalculationMode calculation_mode = 2; // 軌跡計算モード
 }
 
-enum VehicleCategory { // TODO: BGのコンフィグにVehicleCategoryを追加する。その際、double cruise_speed_kmh = 2; // 巡航速度 (km/h)、を追加する
+enum VehicleCategory {
   VEHICLE_CATEGORY_UNSPECIFIED = 0;
   VEHICLE_CATEGORY_MULTICOPTER = 1;
   VEHICLE_CATEGORY_VTOL = 2;
@@ -89,7 +89,7 @@ enum VehicleCategory { // TODO: BGのコンフィグにVehicleCategoryを追加�
 // ==========================================
 // 3. 評価結果・形状データ (Responseの要素)
 // ==========================================
-
+// 飛行経路計画可能空間 https://www.nedo.go.jp/content/800055331.pdf
 message RouteSpace {
   string id = 1;
   string name = 2;
@@ -125,12 +125,13 @@ message EstimateRouteSpaceRequest {
 message EstimateRouteSpaceResponse {
   RouteSpace route_space = 1; // 描画用の立体・経路データ
 
-// 逸脱の原因となった軌跡の箇所
-  repeated trajectory.trjx_api_service.Position exceeding_fall_range_error_segments = 2;
+// 逸脱エラーの原因となった軌跡の箇所
+// 逸脱エラーがない場合は空です
+  repeated int32 exceeding_fall_range_error_segments = 2; // TODO: edge_indexにする
 
     // グランドリスクと衝突していて警告を出している軌跡の箇所
     // エラーの際は空です
-  repeated trajectory.trjx_api_service.Position collisions_ground_risk_warning_segments = 3;
+  repeated int32 collisions_ground_risk_warning_segments = 3; // TODO: edge_indexにする
 }
 
 // ==========================================
@@ -140,40 +141,19 @@ message CreateRouteSpaceRequest {
   RouteSpace route_space = 1; // 描画用の立体・経路データ
 }
 
-message CreateRouteSpaceResponse {
-    // 結果
-    oneof result {
-        // 成功
-        Succeeded succeeded = 1;
-
-        // 逸脱エラー
-        ExceedingError exceeding_error = 2;
-    }
-
-    message Succeeded {
-        RouteSpace route_space = 1; // 描画用の立体・経路データ
-    }
-
-    message ExceedingError {
-        // TODO: RouteSpaceは要らない？
-// 逸脱の原因となった軌跡の箇所
-  repeated trajectory.trjx_api_service.Position exceeding_fall_range_error_segments = 2;
-    }
-}
-
 message DeleteRouteSpaceRequest {
   string route_space_id = 1;
 }
 
 message ListRouteSpacesRequest {
     // 取得するオブジェクトの最大数
-    sint32 page_size = 1;
+    int32 page_size = 1;
 
     // 取得内容
     RouteSpace.View view = 2;
 
-    // 取得範囲。ボックスに衝突する飛行経路計画可能空間を全て返します
-    trajectory.trjx_api_service.BoundingBox box = 3;
+    // 取得範囲。ボックスに衝突する飛行経路計画可能空間を返します。nilの場合は全て返します
+    optional trajectory.trjx_api_service.BoundingBox box = 3;
 
     // ページトークン。前回のリクエストで返された次のページを取得するために使用します。初回のリクエストの場合は空です
     string page_token = 4;
