@@ -12,7 +12,7 @@ service AirRiskService {
 }
 
 // ListAirRiskのリクエスト
-message ListAirRiskRequest {
+message ListAirRiskRequest { // TODO: 削除する
     // 取得するデータ項目の最大数。検索範囲の空間ID単位で検索するためこの数を超えることがあります
     sint32 page_soft_size = 1;
 
