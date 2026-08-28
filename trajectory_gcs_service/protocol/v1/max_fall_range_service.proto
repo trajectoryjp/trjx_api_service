@@ -6,6 +6,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 import "google/protobuf/empty.proto";
 
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 
 
 service MaxFallRangeService {
@@ -41,26 +42,4 @@ message ListMaxFallRangesResponse {
 
     // 次のページトークン。次のページがない場合は空です
     string next_page_token = 2;
-}
-
-// https://github.com/ODS-IS-UASL/airway-design/blob/main/uasl-design/src/main/resources/generator/apiGeneratorMaxFallRange.yaml
-// TODO: resource.protoに移転します
-message MaxFallRange {
-    // ID
-  string id = 1;
-  // 名前
-  string name = 2;
-  repeated trajectory.trjx_api_service.Position polygon = 3;
-
-    // 取得内容
-    enum View {
-        // 非指定
-        VIEW_UNSPECIFIED = 0;
-        
-        // IDと名前だけ
-        VIEW_BASIC = 1;
-
-        // 全て
-        VIEW_FULL = 2;
-    }
 }

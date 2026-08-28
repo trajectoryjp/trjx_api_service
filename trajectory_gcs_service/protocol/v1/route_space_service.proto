@@ -6,7 +6,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/trajectory_gcs";
 import "google/protobuf/empty.proto";
 
 import "github.com/trajectoryjp/trjx_api_service/type/resource.proto";
-import "github.com/trajectoryjp/trjx_api_service/uas/generic/v2/sdsp_g.proto";
+import "github.com/trajectoryjp/trjx_api_service/trajectory_gcs_service/protocol/v1/resource.proto";
 
 service RouteSpaceService {
     rpc EstimateRouteSpace(EstimateRouteSpaceRequest) returns (EstimateRouteSpaceResponse);
@@ -21,16 +21,6 @@ service RouteSpaceService {
 // ==========================================
 // 1. 共通・基礎データ型
 // ==========================================
-
-// 3D面データ（上下左右の壁面などの描画用）
-message PolygonFace {
-  repeated trajectory.trjx_api_service.Position vertices = 1;
-}
-
-// ワイヤーフレーム用の線データ
-message WireframeEdge {
-  repeated trajectory.trjx_api_service.Position path = 1;
-}
 
 // 軌跡計算モード
 enum CalculationMode {
@@ -87,31 +77,6 @@ enum VehicleCategory {
 }
 
 // ==========================================
-// 3. 評価結果・形状データ (Responseの要素)
-// ==========================================
-// 飛行経路計画可能空間 https://www.nedo.go.jp/content/800055331.pdf
-message RouteSpace {
-  string id = 1;
-  string name = 2;
-  repeated trajectory.trjx_api_service.Position kinematic_path = 3; // 機体性能をもとに計算された滑らかな中心軌跡
-  repeated PolygonFace space_faces = 4; // 空間トンネルの面ポリゴン (Deck.gl 描画用)
-  repeated WireframeEdge space_edges = 5; // 空間トンネルの枠線ワイヤーフレーム
-  repeated trajectory.trjx_api_service.Position fall_footprint_2d = 6; // 地表投影された2Dの落下予想範囲
-
-    // 取得内容
-    enum View {
-        // 非指定
-        VIEW_UNSPECIFIED = 0;
-
-        // IDと名前のみ
-        VIEW_BASIC = 1;
-
-        // 全て
-        VIEW_FULL = 2;
-    }
-}
-
-// ==========================================
 // 4. API リクエスト / レスポンス
 // ==========================================
 
@@ -119,19 +84,21 @@ message EstimateRouteSpaceRequest {
   repeated trajectory.trjx_api_service.Position center_line = 1; // ユーザーが引いた中心線
   RouteSpaceSpecification space_specification = 2; // 経路空間のスロット定義
   VehicleConfig vehicle_config = 3; // 機体・運行設定
-  repeated trajectory.trjx_api_service.HorizontalPosition max_fall_range = 4; // ユーザー設定の最大落下範囲 (2D)
+  repeated trajectory.trajectory_gcs_service.protocol.v1.HorizontalPosition max_fall_range = 4; // ユーザー設定の最大落下範囲 (2D)
 }
 
 message EstimateRouteSpaceResponse {
   RouteSpace route_space = 1; // 描画用の立体・経路データ
 
-// 逸脱エラーの原因となった軌跡の箇所
+// 逸脱エラーの原因となった辺のインデックス群
+// 辺インデックスは、中心線の始点のインデックスと等しい値です
 // 逸脱エラーがない場合は空です
-  repeated int32 exceeding_fall_range_error_segments = 2; // TODO: edge_indexにする
+  repeated int32 exceeding_fall_range_error_edge_indices = 2;
 
-    // グランドリスクと衝突していて警告を出している軌跡の箇所
-    // エラーの際は空です
-  repeated int32 collisions_ground_risk_warning_segments = 3; // TODO: edge_indexにする
+// グランドリスクと衝突していて警告を出している辺のインデックス群
+// 辺インデックスは、中心線の始点のインデックスと等しい値です
+// エラーの際は空です
+  repeated int32 collisions_ground_risk_warning_edge_indices = 3;
 }
 
 // ==========================================

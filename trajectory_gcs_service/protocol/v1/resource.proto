@@ -912,6 +912,50 @@ message TakingOffAndLandingUAVStatus {
     }
 }
 
+// 飛行経路計画可能空間 https://www.nedo.go.jp/content/800055331.pdf
+message RouteSpace {
+  string id = 1;
+  string name = 2;
+  repeated trajectory.trjx_api_service.Position kinematic_path = 3; // 機体性能をもとに計算された滑らかな中心軌跡
+  repeated PolygonFace space_faces = 4; // 空間トンネルの面ポリゴン (Deck.gl 描画用)
+  repeated WireframeEdge space_edges = 5; // 空間トンネルの枠線ワイヤーフレーム
+  repeated trajectory.trjx_api_service.Position fall_footprint_2d = 6; // 地表投影された2Dの落下予想範囲
+
+    // 取得内容
+    enum View {
+        // 非指定
+        VIEW_UNSPECIFIED = 0;
+
+        // IDと名前のみ
+        VIEW_BASIC = 1;
+
+        // 全て
+        VIEW_FULL = 2;
+    }
+}
+
+// 最大落下範囲
+// https://github.com/ODS-IS-UASL/airway-design/blob/main/uasl-design/src/main/resources/generator/apiGeneratorMaxFallRange.yaml
+message MaxFallRange {
+    // ID
+  string id = 1;
+  // 名前
+  string name = 2;
+  repeated trajectory.trjx_api_service.Position polygon = 3;
+
+    // 取得内容
+    enum View {
+        // 非指定
+        VIEW_UNSPECIFIED = 0;
+        
+        // IDと名前だけ
+        VIEW_BASIC = 1;
+
+        // 全て
+        VIEW_FULL = 2;
+    }
+}
+
 // ユーザID
 message UserID{
     string user_id = 1; // ユーザID
@@ -919,4 +963,14 @@ message UserID{
 
 message OrganizationID {
     int32 identifier = 1;
+}
+
+// 3D面データ（上下左右の壁面などの描画用）
+message PolygonFace {
+  repeated trajectory.trjx_api_service.Position vertices = 1;
+}
+
+// ワイヤーフレーム用の線データ
+message WireframeEdge {
+  repeated trajectory.trjx_api_service.Position path = 1;
 }
