@@ -141,3 +141,4 @@ fabric.properties
 .tmp/
 
 *.go
+go.mod
