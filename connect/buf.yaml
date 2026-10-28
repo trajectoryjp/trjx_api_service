@@ -1,0 +1,14 @@
+version: v2
+lint:
+  use:
+    - STANDARD
+  except:
+    # Allow AIP standard methods (Get/Create/Update) to return the resource itself
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    # Allow the AIP standard Delete method to return google.protobuf.Empty
+    - RPC_RESPONSE_STANDARD_NAME
+breaking:
+  use:
+    - FILE
+deps:
+  - buf.build/googleapis/googleapis
