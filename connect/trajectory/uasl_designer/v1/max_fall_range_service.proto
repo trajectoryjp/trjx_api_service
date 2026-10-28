@@ -9,6 +9,8 @@ import "google/protobuf/field_mask.proto";
 import "trajectory/uasl_designer/v1/common.proto";
 import "trajectory/uasl_designer/v1/max_fall_range.proto";
 
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1";
+
 // ==========================================
 // Service Definition
 // ==========================================

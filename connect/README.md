@@ -18,7 +18,15 @@ connect/
 
 ## go_package などの言語別オプション
 
-proto には `go_package` などの言語別オプションを書きません。利用する側が buf の managed mode で、自分のモジュール配下に生成します。
+言語別のオプションは、次の方針とする（案）。
+
+| 言語 | オプション | 方針 |
+| --- | --- | --- |
+| Go | `go_package` | 必ず書く。`github.com/trajectoryjp/trjx_api_service/connect/<ディレクトリ>;<サービス>v1`（例: `github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1`） |
+| Java / Kotlin（Android のネイティブ） | `java_package` など | 使うことになったら足す |
+| TypeScript / Python / C++ | なし | ファイルのパスかパッケージ名から決まるので書かない |
+
+`go_package` は protoc で生成するときの既定の import パスです。このリポジトリでは connect/ の Go のコードは生成していません。利用する側が buf の managed mode で、自分のモジュール配下に生成することもできます（`go_package` は上書きされる）。
 
 ```yaml
 # 利用側の buf.gen.yaml の例 (Go)

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package Trajectory.UaslDesigner.v1;
 
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1";
+
 // 3D空間上の位置情報を表す。
 message Position3D {
   // 経度（度単位）。
