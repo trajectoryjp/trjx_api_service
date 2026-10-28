@@ -7,7 +7,7 @@ import "google/api/resource.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "trajectory/uasl_designer/v1/common.proto";
-import "trajectory/uasl_designer/v1/route_space.proto";
+import "trajectory/uasl_designer/v1/route_space_grid.proto";
 
 option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1";
 
@@ -15,118 +15,118 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory
 // Service Definition
 // ==========================================
 
-// 飛行経路計画可能空間（RouteSpace）の管理および空間計算を行うサービス。
+// 飛行経路計画可能空間の格子（RouteSpaceGrid）の管理および空間計算を行うサービス。
 //
 // エラーは標準のコードで返す（括弧内は REST で使う場合の HTTP ステータス）。
 // 各 RPC のコメントに書いたもののほか、すべての RPC が次を返しうる。
 // - CANCELED (499) / DEADLINE_EXCEEDED (504): 呼び出し側による取り消し、または時間切れ。
 // - INTERNAL (500): サーバー内部のエラー。原因はクライアントには返さない。
-service RouteSpaceService {
+service RouteSpaceGridService {
   // --- Standard Methods (AIP-131 ~ AIP-135) ---
 
-  // 新しい飛行経路計画可能空間を作成する。
+  // 新しい飛行経路計画可能空間の格子を作成し、格子の中の飛行経路計画可能空間を登録する。
   // エラー:
   // - INVALID_ARGUMENT (400): display_name がない。中心線が 2 点未満、範囲外、AGL、または同じ位置の点が続く。
-  //   格子の定義が誤り。vehicle_category がない。route_space_id の形式が誤り。max_fall_range が存在しない。
-  // - ALREADY_EXISTS (409): 同じ ID の飛行経路計画可能空間がすでにある。
-  // - FAILED_PRECONDITION (400): 航路の登録時に障害物などとの衝突が検出された。
-  //   エラーの詳細に RouteSpaceCollision（最初に衝突したスロットの 1 件）を含める。
+  //   格子の定義が誤り。vehicle_category がない。route_space_grid_id の形式が誤り。max_fall_range が存在しない。
+  // - ALREADY_EXISTS (409): 同じ ID の格子がすでにある。
+  // - FAILED_PRECONDITION (400): 飛行経路計画可能空間の登録時に障害物などとの衝突が検出された。
+  //   エラーの詳細に RouteSpaceCollision（最初に衝突した飛行経路計画可能空間の 1 件）を含める。
   // - UNAVAILABLE (503): 依存するサービスの呼び出しに失敗した。
-  rpc CreateRouteSpace(CreateRouteSpaceRequest) returns (RouteSpace);
-  // 指定されたIDの飛行経路計画可能空間を取得する。
+  rpc CreateRouteSpaceGrid(CreateRouteSpaceGridRequest) returns (RouteSpaceGrid);
+  // 指定されたIDの飛行経路計画可能空間の格子を取得する。
   // エラー:
   // - INVALID_ARGUMENT (400): name の形式が誤り。
-  // - NOT_FOUND (404): 飛行経路計画可能空間がない。
-  rpc GetRouteSpace(GetRouteSpaceRequest) returns (RouteSpace);
-  // 飛行経路計画可能空間のリストを取得する。
+  // - NOT_FOUND (404): 格子がない。
+  rpc GetRouteSpaceGrid(GetRouteSpaceGridRequest) returns (RouteSpaceGrid);
+  // 飛行経路計画可能空間の格子のリストを取得する。
   // エラー:
   // - INVALID_ARGUMENT (400): page_size が負。page_token が不正。
-  rpc ListRouteSpaces(ListRouteSpacesRequest) returns (ListRouteSpacesResponse);
-  // 飛行経路計画可能空間の情報を更新する。
+  rpc ListRouteSpaceGrids(ListRouteSpaceGridsRequest) returns (ListRouteSpaceGridsResponse);
+  // 飛行経路計画可能空間の格子の情報を更新する。
   // エラー:
   // - INVALID_ARGUMENT (400): name の形式が誤り。update_mask に更新できないフィールドがある。
   //   中心線、格子の定義、vehicle_category を変えようとした（現在は変更できない）。display_name が空。
   //   max_fall_range が存在しない。
-  // - NOT_FOUND (404): 飛行経路計画可能空間がない。
-  rpc UpdateRouteSpace(UpdateRouteSpaceRequest) returns (RouteSpace);
-  // 飛行経路計画可能空間を削除する。
+  // - NOT_FOUND (404): 格子がない。
+  rpc UpdateRouteSpaceGrid(UpdateRouteSpaceGridRequest) returns (RouteSpaceGrid);
+  // 飛行経路計画可能空間の格子を削除し、登録した飛行経路計画可能空間も削除する。
   // エラー:
   // - INVALID_ARGUMENT (400): name の形式が誤り。
-  // - NOT_FOUND (404): 飛行経路計画可能空間がない。
-  // - UNAVAILABLE (503): 登録した航路の削除に失敗した（すでに削除されている場合はエラーにしない）。
-  rpc DeleteRouteSpace(DeleteRouteSpaceRequest) returns (google.protobuf.Empty);
+  // - NOT_FOUND (404): 格子がない。
+  // - UNAVAILABLE (503): 登録した飛行経路計画可能空間の削除に失敗した（すでに削除されている場合はエラーにしない）。
+  rpc DeleteRouteSpaceGrid(DeleteRouteSpaceGridRequest) returns (google.protobuf.Empty);
 
   // --- Custom Methods (AIP-136) ---
 
-  // 指定された境界ボックス内に含まれる飛行経路計画可能空間を検索する。
+  // 指定された境界ボックス内に含まれる飛行経路計画可能空間の格子を検索する。
   // エラー:
-  // - INVALID_ARGUMENT (400): bounding_box がない、または最小が最大を超える。page_size、page_token は ListRouteSpaces と同じ。
-  rpc SearchRouteSpaces(SearchRouteSpacesRequest) returns (SearchRouteSpacesResponse);
+  // - INVALID_ARGUMENT (400): bounding_box がない、または最小が最大を超える。page_size、page_token は ListRouteSpaceGrids と同じ。
+  rpc SearchRouteSpaceGrids(SearchRouteSpaceGridsRequest) returns (SearchRouteSpaceGridsResponse);
 
   // ウェイポイントと機体設定から、航路軌跡・空間ゲート・落下フットプリントを推定し、安全性を評価する。
   // 最大落下範囲からの逸脱はエラーにせず、レスポンスの exceeding_fall_range_error_segment_indices で返す。
   // エラー:
-  // - INVALID_ARGUMENT (400): 中心線、格子の定義、vehicle_category は CreateRouteSpace と同じ。
+  // - INVALID_ARGUMENT (400): 中心線、格子の定義、vehicle_category は CreateRouteSpaceGrid と同じ。
   //   max_fall_range が 3 点未満、または範囲外。
   // - UNAVAILABLE (503): 依存するサービスの呼び出しに失敗した。
-  rpc EstimateRouteSpace(EstimateRouteSpaceRequest) returns (EstimateRouteSpaceResponse);
+  rpc EstimateRouteSpaceGrid(EstimateRouteSpaceGridRequest) returns (EstimateRouteSpaceGridResponse);
 }
 
 // ==========================================
 // Standard Method Requests
 // ==========================================
 
-// CreateRouteSpaceメソッドのリクエストメッセージ。
-message CreateRouteSpaceRequest {
-  // 作成する飛行経路計画可能空間のリソース。
-  RouteSpace route_space = 1 [(google.api.field_behavior) = REQUIRED];
+// CreateRouteSpaceGridメソッドのリクエストメッセージ。
+message CreateRouteSpaceGridRequest {
+  // 作成する飛行経路計画可能空間の格子のリソース。
+  RouteSpaceGrid route_space_grid = 1 [(google.api.field_behavior) = REQUIRED];
   // クライアント側で指定するリソースID（オプション）。
-  string route_space_id = 2;
+  string route_space_grid_id = 2;
 }
 
-// GetRouteSpaceメソッドのリクエストメッセージ。
-message GetRouteSpaceRequest {
+// GetRouteSpaceGridメソッドのリクエストメッセージ。
+message GetRouteSpaceGridRequest {
   // 取得対象のリソース名。
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "uasl-designer/RouteSpace"
+    (google.api.resource_reference).type = "uasl-designer/RouteSpaceGrid"
   ];
   // 取得する情報量を指定するビュー。
-  RouteSpaceView view = 2;
+  RouteSpaceGridView view = 2;
 }
 
-// ListRouteSpacesメソッドのリクエストメッセージ。
-message ListRouteSpacesRequest {
+// ListRouteSpaceGridsメソッドのリクエストメッセージ。
+message ListRouteSpaceGridsRequest {
   // 1ページあたりの最大取得件数。
   int32 page_size = 1;
   // 続きを取得するためのページトークン。
   string page_token = 2;
   // 取得する情報量を指定するビュー。
-  RouteSpaceView view = 3;
+  RouteSpaceGridView view = 3;
 }
 
-// ListRouteSpacesメソッドのレスポンスメッセージ。
-message ListRouteSpacesResponse {
-  // 取得された飛行経路計画可能空間のリスト。
-  repeated RouteSpace route_spaces = 1;
+// ListRouteSpaceGridsメソッドのレスポンスメッセージ。
+message ListRouteSpaceGridsResponse {
+  // 取得された飛行経路計画可能空間の格子のリスト。
+  repeated RouteSpaceGrid route_space_grids = 1;
   // 次のページを取得するためのトークン。
   string next_page_token = 2;
 }
 
-// UpdateRouteSpaceメソッドのリクエストメッセージ。
-message UpdateRouteSpaceRequest {
-  // 更新する飛行経路計画可能空間のリソース。
-  RouteSpace route_space = 1 [(google.api.field_behavior) = REQUIRED];
+// UpdateRouteSpaceGridメソッドのリクエストメッセージ。
+message UpdateRouteSpaceGridRequest {
+  // 更新する飛行経路計画可能空間の格子のリソース。
+  RouteSpaceGrid route_space_grid = 1 [(google.api.field_behavior) = REQUIRED];
   // 更新対象のフィールドを指定するマスク。
   google.protobuf.FieldMask update_mask = 2;
 }
 
-// DeleteRouteSpaceメソッドのリクエストメッセージ。
-message DeleteRouteSpaceRequest {
+// DeleteRouteSpaceGridメソッドのリクエストメッセージ。
+message DeleteRouteSpaceGridRequest {
   // 削除対象のリソース名。
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
-    (google.api.resource_reference).type = "uasl-designer/RouteSpace"
+    (google.api.resource_reference).type = "uasl-designer/RouteSpaceGrid"
   ];
 }
 
@@ -134,8 +134,8 @@ message DeleteRouteSpaceRequest {
 // Custom Method Requests / Responses
 // ==========================================
 
-// SearchRouteSpacesメソッドのリクエストメッセージ。
-message SearchRouteSpacesRequest {
+// SearchRouteSpaceGridsメソッドのリクエストメッセージ。
+message SearchRouteSpaceGridsRequest {
   // 検索対象となる空間の境界ボックス。
   BoundingBox bounding_box = 1 [(google.api.field_behavior) = REQUIRED];
   // 1ページあたりの最大取得件数。
@@ -143,33 +143,33 @@ message SearchRouteSpacesRequest {
   // 続きを取得するためのページトークン。
   string page_token = 3;
   // 取得する情報量を指定するビュー。
-  RouteSpaceView view = 4;
+  RouteSpaceGridView view = 4;
 }
 
-// SearchRouteSpacesメソッドのレスポンスメッセージ。
-message SearchRouteSpacesResponse {
-  // 検索にヒットした飛行経路計画可能空間のリスト。
-  repeated RouteSpace route_spaces = 1;
+// SearchRouteSpaceGridsメソッドのレスポンスメッセージ。
+message SearchRouteSpaceGridsResponse {
+  // 検索にヒットした飛行経路計画可能空間の格子のリスト。
+  repeated RouteSpaceGrid route_space_grids = 1;
   // 次のページを取得するためのトークン。
   string next_page_token = 2;
 }
 
-// EstimateRouteSpaceメソッドのリクエストメッセージ。
-message EstimateRouteSpaceRequest {
-  // 航路の中心線となるウェイポイントのリスト。
+// EstimateRouteSpaceGridメソッドのリクエストメッセージ。
+message EstimateRouteSpaceGridRequest {
+  // 格子の中心線となるウェイポイントのリスト。
   repeated Position3D waypoints = 1;
-  // 空間の定義仕様。
-  RouteSpaceSpecification space_specification = 2;
+  // 格子の定義仕様。
+  RouteSpaceGridSpecification grid_specification = 2;
   // 推定計算に使用する機体カテゴリ。
   VehicleCategory vehicle_category = 3;
   // 安全評価に使用する最大落下範囲のポリゴン。
   repeated Position2D max_fall_range = 4;
 }
 
-// EstimateRouteSpaceメソッドのレスポンスメッセージ。
-message EstimateRouteSpaceResponse {
-  // 計算結果として得られた飛行経路計画可能空間の幾何情報。
-  RouteSpaceGeometry geometry = 1;
+// EstimateRouteSpaceGridメソッドのレスポンスメッセージ。
+message EstimateRouteSpaceGridResponse {
+  // 計算結果として得られた飛行経路計画可能空間の格子の幾何情報。
+  RouteSpaceGridGeometry geometry = 1;
 
   // 最大落下範囲からの逸脱エラーの原因となった経路区間のインデックス群（中心線の始点のインデックス）。
   // 配列が空の場合は、逸脱エラーなしを意味する。
@@ -180,10 +180,10 @@ message EstimateRouteSpaceResponse {
 // Error Details
 // ==========================================
 
-// CreateRouteSpace で航路の登録時に衝突が検出されたことを表すエラーの詳細。
+// CreateRouteSpaceGrid で飛行経路計画可能空間の登録時に衝突が検出されたことを表すエラーの詳細。
 // FAILED_PRECONDITION のエラーの詳細（google.rpc.Status の details）として返す。
 message RouteSpaceCollision {
-  // 衝突が検出されたスロットの位置。
+  // 衝突が検出された飛行経路計画可能空間の、格子の中の位置。
   SlotIndex slot_index = 1;
   // 障害物に衝突する位置（衝突を検出した空間ボクセルの中心）。
   Position3D position = 2;
@@ -192,11 +192,11 @@ message RouteSpaceCollision {
   // 衝突している障害物のリスト。同じオブジェクトは1度だけ含む。
   repeated Obstacle obstacles = 4;
   // 衝突したセクションの、中心線の区間のインデックス（区間の始点の waypoints のインデックス）。
-  // EstimateRouteSpaceResponse.exceeding_fall_range_error_segment_indices と同じ数え方。特定できない場合は値を持たない。
+  // EstimateRouteSpaceGridResponse.exceeding_fall_range_error_segment_indices と同じ数え方。特定できない場合は値を持たない。
   optional int32 segment_index = 5;
 }
 
-// 航路が衝突している障害物。
+// 飛行経路計画可能空間が衝突している障害物。
 message Obstacle {
   // 障害物を持つ空間オブジェクトのID。
   int64 object_id = 1;
@@ -221,7 +221,7 @@ enum ObstacleType {
   OBSTACLE_TYPE_TEMPORARY_BARRIER = 5;
   // 地形。飛行できる最高・最低高度を外れた場合は、ABOVE_MAX_ALTITUDE / BELOW_MIN_ALTITUDE になる。
   OBSTACLE_TYPE_TERRAIN = 6;
-  // 登録済みの航路。
+  // 登録済みの飛行経路計画可能空間（以前は航路と呼んでいたもの）。
   OBSTACLE_TYPE_UASL = 7;
   // 予約済みのルート。
   OBSTACLE_TYPE_ROUTE = 8;

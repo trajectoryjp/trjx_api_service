@@ -45,7 +45,7 @@ service MaxFallRangeService {
   //   ポリゴンが CreateMaxFallRange と同じ条件で誤り。
   // - NOT_FOUND (404): 最大落下範囲がない。
   rpc UpdateMaxFallRange(UpdateMaxFallRangeRequest) returns (MaxFallRange);
-  // 最大落下範囲を削除する。参照している飛行経路計画可能空間からは参照を外し、エラーにはしない。
+  // 最大落下範囲を削除する。参照している飛行経路計画可能空間の格子からは参照を外し、エラーにはしない。
   // エラー:
   // - INVALID_ARGUMENT (400): name の形式が誤り。
   // - NOT_FOUND (404): 最大落下範囲がない。
