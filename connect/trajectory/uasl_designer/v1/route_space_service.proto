@@ -14,28 +14,59 @@ import "trajectory/uasl_designer/v1/route_space.proto";
 // ==========================================
 
 // 飛行経路計画可能空間（RouteSpace）の管理および空間計算を行うサービス。
+//
+// エラーは標準のコードで返す（括弧内は REST で使う場合の HTTP ステータス）。
+// 各 RPC のコメントに書いたもののほか、すべての RPC が次を返しうる。
+// - CANCELED (499) / DEADLINE_EXCEEDED (504): 呼び出し側による取り消し、または時間切れ。
+// - INTERNAL (500): サーバー内部のエラー。原因はクライアントには返さない。
 service RouteSpaceService {
   // --- Standard Methods (AIP-131 ~ AIP-135) ---
 
   // 新しい飛行経路計画可能空間を作成する。
-  // 航路の登録時に障害物などとの衝突が検出された場合は FAILED_PRECONDITION を返し、
-  // エラーの詳細に RouteSpaceCollision を含める。
+  // エラー:
+  // - INVALID_ARGUMENT (400): display_name がない。中心線が 2 点未満、範囲外、AGL、または同じ位置の点が続く。
+  //   格子の定義が誤り。vehicle_category がない。route_space_id の形式が誤り。max_fall_range が存在しない。
+  // - ALREADY_EXISTS (409): 同じ ID の飛行経路計画可能空間がすでにある。
+  // - FAILED_PRECONDITION (400): 航路の登録時に障害物などとの衝突が検出された。
+  //   エラーの詳細に RouteSpaceCollision（最初に衝突したスロットの 1 件）を含める。
+  // - UNAVAILABLE (503): 依存するサービスの呼び出しに失敗した。
   rpc CreateRouteSpace(CreateRouteSpaceRequest) returns (RouteSpace);
   // 指定されたIDの飛行経路計画可能空間を取得する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): name の形式が誤り。
+  // - NOT_FOUND (404): 飛行経路計画可能空間がない。
   rpc GetRouteSpace(GetRouteSpaceRequest) returns (RouteSpace);
   // 飛行経路計画可能空間のリストを取得する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): page_size が負。page_token が不正。
   rpc ListRouteSpaces(ListRouteSpacesRequest) returns (ListRouteSpacesResponse);
   // 飛行経路計画可能空間の情報を更新する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): name の形式が誤り。update_mask に更新できないフィールドがある。
+  //   中心線、格子の定義、vehicle_category を変えようとした（現在は変更できない）。display_name が空。
+  //   max_fall_range が存在しない。
+  // - NOT_FOUND (404): 飛行経路計画可能空間がない。
   rpc UpdateRouteSpace(UpdateRouteSpaceRequest) returns (RouteSpace);
   // 飛行経路計画可能空間を削除する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): name の形式が誤り。
+  // - NOT_FOUND (404): 飛行経路計画可能空間がない。
+  // - UNAVAILABLE (503): 登録した航路の削除に失敗した（すでに削除されている場合はエラーにしない）。
   rpc DeleteRouteSpace(DeleteRouteSpaceRequest) returns (google.protobuf.Empty);
 
   // --- Custom Methods (AIP-136) ---
 
   // 指定された境界ボックス内に含まれる飛行経路計画可能空間を検索する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): bounding_box がない、または最小が最大を超える。page_size、page_token は ListRouteSpaces と同じ。
   rpc SearchRouteSpaces(SearchRouteSpacesRequest) returns (SearchRouteSpacesResponse);
 
   // ウェイポイントと機体設定から、航路軌跡・空間ゲート・落下フットプリントを推定し、安全性を評価する。
+  // 最大落下範囲からの逸脱はエラーにせず、レスポンスの exceeding_fall_range_error_segment_indices で返す。
+  // エラー:
+  // - INVALID_ARGUMENT (400): 中心線、格子の定義、vehicle_category は CreateRouteSpace と同じ。
+  //   max_fall_range が 3 点未満、または範囲外。
+  // - UNAVAILABLE (503): 依存するサービスの呼び出しに失敗した。
   rpc EstimateRouteSpace(EstimateRouteSpaceRequest) returns (EstimateRouteSpaceResponse);
 }
 

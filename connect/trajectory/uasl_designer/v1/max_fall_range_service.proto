@@ -14,23 +14,46 @@ import "trajectory/uasl_designer/v1/max_fall_range.proto";
 // ==========================================
 
 // 最大落下範囲（MaxFallRange）の管理を行うサービス。
+//
+// エラーは標準のコードで返す（括弧内は REST で使う場合の HTTP ステータス）。
+// 各 RPC のコメントに書いたもののほか、すべての RPC が次を返しうる。
+// - CANCELED (499) / DEADLINE_EXCEEDED (504): 呼び出し側による取り消し、または時間切れ。
+// - INTERNAL (500): サーバー内部のエラー。原因はクライアントには返さない。
 service MaxFallRangeService {
   // --- Standard Methods (AIP-131 ~ AIP-135) ---
 
   // 新しい最大落下範囲を作成する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): display_name がない。ポリゴンが 3 点未満、範囲外、または自己交差している。
+  //   max_fall_range_id の形式が誤り。
+  // - ALREADY_EXISTS (409): 同じ ID の最大落下範囲がすでにある。
   rpc CreateMaxFallRange(CreateMaxFallRangeRequest) returns (MaxFallRange);
   // 指定されたIDの最大落下範囲を取得する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): name の形式が誤り。
+  // - NOT_FOUND (404): 最大落下範囲がない。
   rpc GetMaxFallRange(GetMaxFallRangeRequest) returns (MaxFallRange);
   // 最大落下範囲のリストを取得する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): page_size が負。page_token が不正。
   rpc ListMaxFallRanges(ListMaxFallRangesRequest) returns (ListMaxFallRangesResponse);
   // 最大落下範囲の情報を更新する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): name の形式が誤り。update_mask に更新できないフィールドがある。display_name が空。
+  //   ポリゴンが CreateMaxFallRange と同じ条件で誤り。
+  // - NOT_FOUND (404): 最大落下範囲がない。
   rpc UpdateMaxFallRange(UpdateMaxFallRangeRequest) returns (MaxFallRange);
-  // 最大落下範囲を削除する。
+  // 最大落下範囲を削除する。参照している飛行経路計画可能空間からは参照を外し、エラーにはしない。
+  // エラー:
+  // - INVALID_ARGUMENT (400): name の形式が誤り。
+  // - NOT_FOUND (404): 最大落下範囲がない。
   rpc DeleteMaxFallRange(DeleteMaxFallRangeRequest) returns (google.protobuf.Empty);
 
   // --- Custom Methods (AIP-136) ---
 
   // 指定された境界ボックス内に含まれる最大落下範囲を検索する。
+  // エラー:
+  // - INVALID_ARGUMENT (400): bounding_box がない、または最小が最大を超える。page_size、page_token は ListMaxFallRanges と同じ。
   rpc SearchMaxFallRanges(SearchMaxFallRangesRequest) returns (SearchMaxFallRangesResponse);
 }
 
