@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package trajectory.uasl_designer.v1;
+package Trajectory.UaslDesigner.v1;
 
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";

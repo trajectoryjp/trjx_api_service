@@ -11,8 +11,9 @@ connect/
     └── <サービス>/v1/
 ```
 
-* パッケージは `trajectory.<サービス>.v1`（小文字の snake_case）とし、このディレクトリからのパスと一致させる
-* RPC のパスは `/trajectory.<サービス>.v1.<Service>/<Method>` になる。ディレクトリ名の `connect` はパッケージに含まれない
+* パッケージは社内の規則に従い UpperCamelCase の `Trajectory.<サービス>.v1` とする（例: `Trajectory.UaslDesigner.v1`）。ディレクトリは小文字の snake_case の `trajectory/<サービス>/v1/` とする（例: `trajectory/uasl_designer/v1/`）
+* パッケージとディレクトリの書き方が違うため、lint の `PACKAGE_LOWER_SNAKE_CASE` と `PACKAGE_DIRECTORY_MATCH` は除外している
+* RPC のパスは `/Trajectory.<サービス>.v1.<Service>/<Method>` になる。ディレクトリ名の `connect` はパッケージに含まれない
 * API の設計は [AIP](https://google.aip.dev/) を参考にしている。標準メソッド（Get / Create / Update がリソースを返す、Delete が `google.protobuf.Empty` を返す）の形を lint で止めないよう、`RPC_REQUEST_RESPONSE_UNIQUE` と `RPC_RESPONSE_STANDARD_NAME` は除外している
 
 ## go_package などの言語別オプション

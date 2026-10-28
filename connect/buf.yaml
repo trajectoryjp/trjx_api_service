@@ -7,6 +7,10 @@ lint:
     - RPC_REQUEST_RESPONSE_UNIQUE
     # Allow the AIP standard Delete method to return google.protobuf.Empty
     - RPC_RESPONSE_STANDARD_NAME
+    # Package names follow the in-house UpperCamelCase rule (e.g. Trajectory.UaslDesigner.v1),
+    # while directories stay lower_snake_case (e.g. trajectory/uasl_designer/v1)
+    - PACKAGE_LOWER_SNAKE_CASE
+    - PACKAGE_DIRECTORY_MATCH
 breaking:
   use:
     - FILE

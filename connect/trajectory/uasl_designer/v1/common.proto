@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package trajectory.uasl_designer.v1;
+package Trajectory.UaslDesigner.v1;
 
 // 3D空間上の位置情報を表す。
 message Position3D {
