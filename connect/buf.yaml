@@ -2,6 +2,8 @@ version: v2
 lint:
   use:
     - STANDARD
+    # Require comments on every element so that missing documentation is caught by lint
+    - COMMENTS
   except:
     # Allow AIP standard methods (Get/Create/Update) to return the resource itself
     - RPC_REQUEST_RESPONSE_UNIQUE
