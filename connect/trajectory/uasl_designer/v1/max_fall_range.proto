@@ -23,9 +23,9 @@ message MaxFallRange {
   // リソース名。
   string name = 1 [(google.api.field_behavior) = IDENTIFIER];
   // ユーザー向けの表示名。
-  string display_name = 2 [(google.api.field_behavior) = REQUIRED];
-  // 最大落下範囲を構成するポリゴンの点リスト。
-  repeated Position2D polygon = 3;
+  string display_name = 2;
+  // 最大落下範囲を構成するポリゴンの点リスト。異なる点が 3 つ以上要る（始点を末尾に繰り返してもよい）。
+  repeated Position2D polygon = 3 [(google.api.field_behavior) = REQUIRED];
 
   // リソースの作成日時。
   google.protobuf.Timestamp create_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];

@@ -24,11 +24,12 @@ message RouteSpaceGrid {
   // リソース名。
   string name = 1 [(google.api.field_behavior) = IDENTIFIER];
   // ユーザー向けの表示名。
-  string display_name = 2 [(google.api.field_behavior) = REQUIRED];
+  string display_name = 2;
   // 格子の中心線となるウェイポイントのリスト。
-  repeated Position3D waypoints = 3;
+  // 異なる経度・緯度の点が 2 つ以上要る。
+  repeated Position3D waypoints = 3 [(google.api.field_behavior) = REQUIRED];
   // 格子の定義仕様。
-  RouteSpaceGridSpecification grid_specification = 4;
+  RouteSpaceGridSpecification grid_specification = 4 [(google.api.field_behavior) = REQUIRED];
   // 計算結果として得られる格子の幾何情報。
   RouteSpaceGridGeometry geometry = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
 
@@ -40,8 +41,8 @@ message RouteSpaceGrid {
   // 紐づくMaxFallRangeリソースへの参照。
   string max_fall_range = 8 [(google.api.resource_reference).type = "uasl-designer/MaxFallRange"];
 
-  // 格子の推定計算に使用する機体カテゴリ。作成後は変更できない。
-  VehicleCategory vehicle_category = 9 [(google.api.field_behavior) = IMMUTABLE];
+  // 格子の推定計算に使用する機体カテゴリ。
+  VehicleCategory vehicle_category = 9 [(google.api.field_behavior) = REQUIRED];
 }
 
 // ==========================================
@@ -84,7 +85,7 @@ message CustomStackSpace {
 
 // 飛行経路計画可能空間の格子の定義仕様を表す。
 message RouteSpaceGridSpecification {
-  // 格子の定義形式を選択する。
+  // 格子の定義形式を選択する。どちらか一方が必要。
   oneof definition {
     // 均等グリッドによる定義。
     GridUniformSpace grid_uniform = 1;
