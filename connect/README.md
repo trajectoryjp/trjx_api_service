@@ -2,6 +2,18 @@
 
 Connect で API を提供するサーバーの proto を置く buf モジュールです。リポジトリ直下の既存の proto（grpc-gateway で REST を公開するもの）とは別のモジュールとして管理します。
 
+## 必要なもの
+
+* [buf](https://buf.build/docs/installation)（lint・整形・破壊的変更の検出、コードの生成）
+* Go のコードを生成する場合（利用側の `buf generate`）
+  * protoc-gen-go
+  * protoc-gen-connect-go（Connect のサーバー・クライアントのコード）
+
+```sh
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.12
+go install connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.21.0
+```
+
 ## 構成
 
 ```text
