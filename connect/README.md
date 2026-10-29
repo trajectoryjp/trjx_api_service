@@ -57,6 +57,8 @@ plugins:
 
 buf の設定（`connect/buf.yaml`）と依存のロック（`connect/buf.lock`）はこのディレクトリにあり、リポジトリ直下の buf.yaml とは独立しています。コマンドはこのディレクトリで実行します（リポジトリのルートから実行すると、直下の buf.yaml が使われてしまう）。
 
+connect/ の proto は connect/ を基準にした import パスを使うため、`cmd/build.sh` の対象には含めていません。Go のコードは buf で生成します（上の利用側の buf.gen.yaml の例）。
+
 ```bash
 cd connect
 buf format --diff --exit-code
