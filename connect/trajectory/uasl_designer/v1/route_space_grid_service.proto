@@ -38,7 +38,7 @@ service RouteSpaceGridService {
   // 指定された境界ボックス内に含まれる飛行経路計画可能空間の格子を検索する。
   rpc SearchRouteSpaceGrids(SearchRouteSpaceGridsRequest) returns (SearchRouteSpaceGridsResponse);
 
-  // ウェイポイントと機体設定から、航路軌跡・空間ゲート・落下フットプリントを推定し、安全性を評価する。
+  // 中心線と機体設定から、航路軌跡・空間ゲート・落下フットプリントを推定し、安全性を評価する。
   // 最大落下範囲からの逸脱はエラーにせず、レスポンスの exceeding_fall_range_error_segment_indices で返す。
   rpc EstimateRouteSpaceGrid(EstimateRouteSpaceGridRequest) returns (EstimateRouteSpaceGridResponse);
 }
@@ -90,7 +90,7 @@ message UpdateRouteSpaceGridRequest {
   // 更新する飛行経路計画可能空間の格子のリソース。
   RouteSpaceGrid route_space_grid = 1 [(google.api.field_behavior) = REQUIRED];
   // 更新対象のフィールドを指定するマスク。省略時は値が入っているフィールド、"*" は全フィールドを対象にする（AIP-134）。
-  // 更新できるのは display_name と max_fall_range。waypoints・grid_specification・vehicle_category は
+  // 更新できるのは display_name と max_fall_range。center_line・grid_specification・vehicle_category は
   // 現在は変更できず、今の値と違う値を指定すると INVALID_ARGUMENT を返す。
   google.protobuf.FieldMask update_mask = 2;
 }
@@ -130,8 +130,8 @@ message SearchRouteSpaceGridsResponse {
 
 // EstimateRouteSpaceGridメソッドのリクエストメッセージ。
 message EstimateRouteSpaceGridRequest {
-  // 格子の中心線となるウェイポイントのリスト。
-  repeated Position3D waypoints = 1;
+  // 格子の中心線となる点のリスト。
+  repeated Position3D center_line = 1;
   // 格子の定義仕様。
   RouteSpaceGridSpecification grid_specification = 2;
   // 推定計算に使用する機体カテゴリ。
@@ -145,7 +145,7 @@ message EstimateRouteSpaceGridResponse {
   // 計算結果として得られた飛行経路計画可能空間の格子の幾何情報。
   RouteSpaceGridGeometry geometry = 1;
 
-  // 最大落下範囲からの逸脱エラーの原因となった経路区間のインデックス群（中心線の始点のインデックス）。
+  // 最大落下範囲からの逸脱エラーの原因となった中心線の区間のインデックス群（区間の始点の center_line のインデックス）。
   // 配列が空の場合は、逸脱エラーなしを意味する。
   repeated int32 exceeding_fall_range_error_segment_indices = 2;
 }
@@ -165,7 +165,7 @@ message RouteSpaceCollision {
   repeated CrossSection danger_sections = 3;
   // 衝突している障害物のリスト。同じオブジェクトは1度だけ含む。
   repeated Obstacle obstacles = 4;
-  // 衝突したセクションの、中心線の区間のインデックス（区間の始点の waypoints のインデックス）。
+  // 衝突したセクションの、中心線の区間のインデックス（区間の始点の center_line のインデックス）。
   // 特定できない場合は値を持たない。
   optional int32 segment_index = 5;
 }
