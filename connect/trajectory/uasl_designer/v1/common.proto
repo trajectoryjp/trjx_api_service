@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package Trajectory.UaslDesigner.v1;
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1";
+
+// 3D空間上の位置情報を表す。
+message Position3D {
+  // 経度（度単位）。
+  double longitude = 1;
+  // 緯度（度単位）。
+  double latitude = 2;
+  // 高度（メートル単位）。
+  double altitude = 3;
+
+  // 高度の基準となる属性を表す列挙型。
+  enum AltitudeAttr {
+    // 未指定。
+    ALTITUDE_ATTR_UNSPECIFIED = 0;
+    // 対地高度（AGL）を表す。
+    ALTITUDE_ATTR_AGL = 1;
+    // 海抜高度（標高、MSL）を表す。
+    ALTITUDE_ATTR_MSL = 2;
+  }
+  // 高度の属性を指定する。
+  AltitudeAttr altitude_attr = 4;
+}
+
+// 2D空間上の位置情報を表す。
+message Position2D {
+  // 経度（度単位）。
+  double longitude = 1;
+  // 緯度（度単位）。
+  double latitude = 2;
+}
+
+// 地理的な境界ボックス（矩形領域）を表す。
+message BoundingBox {
+  // 最小経度（度単位）。
+  double min_longitude = 1;
+  // 最小緯度（度単位）。
+  double min_latitude = 2;
+  // 最大経度（度単位）。
+  double max_longitude = 3;
+  // 最大緯度（度単位）。
+  double max_latitude = 4;
+}
+
+// 対象となる機体のカテゴリを表す列挙型。
+enum VehicleCategory {
+  // 未指定。
+  VEHICLE_CATEGORY_UNSPECIFIED = 0;
+  // マルチコプター（回転翼機）を表す。
+  VEHICLE_CATEGORY_MULTICOPTER = 1;
+  // VTOL（垂直離着陸機）を表す。
+  VEHICLE_CATEGORY_VTOL = 2;
+}

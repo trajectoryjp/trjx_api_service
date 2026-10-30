@@ -44,12 +44,14 @@ else
     # installing dependency protoc-gen-openapiv2/options/annotations.proto via go cmd
     go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.27.2
     GOOGLEAPIS_DIR=$(prepare_googleapis)
+    # connect/ は別の buf モジュールで、connect/ を基準にした import パスを使うため、対象から外す（buf で生成する）
+    setopt extended_glob
     protoc \
         -I . \
         -I $(go list -f '{{ .Dir }}' -m github.com/grpc-ecosystem/grpc-gateway/v2@v2.27.2) \
         -I "${GOOGLEAPIS_DIR}" \
         --go_out=. --go-grpc_out=. \
-        github.com/trajectoryjp/trjx_api_service/**/*.proto \
+        github.com/trajectoryjp/trjx_api_service/**/*.proto~github.com/trajectoryjp/trjx_api_service/connect/* \
       && echo "build success"
 fi
 

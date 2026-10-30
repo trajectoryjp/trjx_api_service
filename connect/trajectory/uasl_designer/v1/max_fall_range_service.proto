@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package Trajectory.UaslDesigner.v1;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "trajectory/uasl_designer/v1/common.proto";
+import "trajectory/uasl_designer/v1/max_fall_range.proto";
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1";
+
+// ==========================================
+// Service Definition
+// ==========================================
+
+// 最大落下範囲（MaxFallRange）の管理を行うサービス。
+service MaxFallRangeService {
+  // --- Standard Methods (AIP-131 ~ AIP-135) ---
+
+  // 新しい最大落下範囲を作成する。
+  rpc CreateMaxFallRange(CreateMaxFallRangeRequest) returns (MaxFallRange);
+  // 指定されたIDの最大落下範囲を取得する。
+  rpc GetMaxFallRange(GetMaxFallRangeRequest) returns (MaxFallRange);
+  // 最大落下範囲のリストを取得する。
+  rpc ListMaxFallRanges(ListMaxFallRangesRequest) returns (ListMaxFallRangesResponse);
+  // 最大落下範囲の情報を更新する。
+  rpc UpdateMaxFallRange(UpdateMaxFallRangeRequest) returns (MaxFallRange);
+  // 最大落下範囲を削除する。参照している飛行経路計画可能空間の格子からは参照を外し、エラーにはしない。
+  rpc DeleteMaxFallRange(DeleteMaxFallRangeRequest) returns (google.protobuf.Empty);
+
+  // --- Custom Methods (AIP-136) ---
+
+  // 指定された境界ボックス内に含まれる最大落下範囲を検索する。
+  rpc SearchMaxFallRanges(SearchMaxFallRangesRequest) returns (SearchMaxFallRangesResponse);
+}
+
+// ==========================================
+// Standard Method Requests
+// ==========================================
+
+// CreateMaxFallRangeメソッドのリクエストメッセージ。
+message CreateMaxFallRangeRequest {
+  // 作成する最大落下範囲のリソース。
+  MaxFallRange max_fall_range = 1 [(google.api.field_behavior) = REQUIRED];
+  // クライアント側で指定するリソースID（オプション）。
+  // 省略した場合はサーバーが採番する。指定する場合は、英小文字・数字・ハイフンの 63 文字以内（AIP-122）。
+  string max_fall_range_id = 2;
+}
+
+// GetMaxFallRangeメソッドのリクエストメッセージ。
+message GetMaxFallRangeRequest {
+  // 取得対象のリソース名（maxFallRanges/{max_fall_range_id}）。
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "uasl-designer/MaxFallRange"
+  ];
+  // 取得する情報量を指定するビュー。
+  MaxFallRangeView view = 2;
+}
+
+// ListMaxFallRangesメソッドのリクエストメッセージ。
+message ListMaxFallRangesRequest {
+  // 1ページあたりの最大取得件数。負の値は INVALID_ARGUMENT。0 は 50 件、1000 を超える値は 1000 件として扱う。
+  int32 page_size = 1;
+  // 続きを取得するためのページトークン。前回の応答の next_page_token を指定する（ほかの値は INVALID_ARGUMENT）。
+  string page_token = 2;
+  // 取得する情報量を指定するビュー。
+  MaxFallRangeView view = 3;
+}
+
+// ListMaxFallRangesメソッドのレスポンスメッセージ。
+message ListMaxFallRangesResponse {
+  // 取得された最大落下範囲のリスト。
+  repeated MaxFallRange max_fall_ranges = 1;
+  // 次のページを取得するためのトークン。
+  string next_page_token = 2;
+}
+
+// UpdateMaxFallRangeメソッドのリクエストメッセージ。
+message UpdateMaxFallRangeRequest {
+  // 更新する最大落下範囲のリソース。
+  MaxFallRange max_fall_range = 1 [(google.api.field_behavior) = REQUIRED];
+  // 更新対象のフィールドを指定するマスク。省略時は値が入っているフィールド、"*" は全フィールドを対象にする（AIP-134）。
+  // 更新できるのは display_name と polygon。
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+// DeleteMaxFallRangeメソッドのリクエストメッセージ。
+message DeleteMaxFallRangeRequest {
+  // 削除対象のリソース名（maxFallRanges/{max_fall_range_id}）。
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "uasl-designer/MaxFallRange"
+  ];
+}
+
+// ==========================================
+// Custom Method Requests / Responses
+// ==========================================
+
+// SearchMaxFallRangesメソッドのリクエストメッセージ。
+message SearchMaxFallRangesRequest {
+  // 検索対象となる空間の境界ボックス。
+  BoundingBox bounding_box = 1 [(google.api.field_behavior) = REQUIRED];
+  // 1ページあたりの最大取得件数。負の値は INVALID_ARGUMENT。0 は 50 件、1000 を超える値は 1000 件として扱う。
+  int32 page_size = 2;
+  // 続きを取得するためのページトークン。前回の応答の next_page_token を指定する（ほかの値は INVALID_ARGUMENT）。
+  string page_token = 3;
+  // 取得する情報量を指定するビュー。
+  MaxFallRangeView view = 4;
+}
+
+// SearchMaxFallRangesメソッドのレスポンスメッセージ。
+message SearchMaxFallRangesResponse {
+  // 検索にヒットした最大落下範囲のリスト。
+  repeated MaxFallRange max_fall_ranges = 1;
+  // 次のページを取得するためのトークン。
+  string next_page_token = 2;
+}

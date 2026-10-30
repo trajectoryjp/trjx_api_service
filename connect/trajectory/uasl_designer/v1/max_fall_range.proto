@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package Trajectory.UaslDesigner.v1;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/timestamp.proto";
+import "trajectory/uasl_designer/v1/common.proto";
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1";
+
+// ==========================================
+// Resource: MaxFallRange (AIP-122)
+// ==========================================
+
+// 機体が落下する可能性のある最大範囲（MaxFallRange）を表すリソース。
+message MaxFallRange {
+  option (google.api.resource) = {
+    type: "uasl-designer/MaxFallRange"
+    pattern: "maxFallRanges/{max_fall_range_id}"
+  };
+
+  // リソース名。
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+  // ユーザー向けの表示名。
+  string display_name = 2;
+  // 最大落下範囲を構成するポリゴンの点リスト。異なる点が 3 つ以上要る（始点を末尾に繰り返してもよい）。
+  repeated Position2D polygon = 3 [(google.api.field_behavior) = REQUIRED];
+
+  // リソースの作成日時。
+  google.protobuf.Timestamp create_time = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // リソースの最終更新日時。
+  google.protobuf.Timestamp update_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// MaxFallRangeリソースの取得時に含める情報量（ビュー）を指定する列挙型（AIP-157準拠）。
+enum MaxFallRangeView {
+  // 未指定。デフォルトでは MAX_FALL_RANGE_VIEW_BASIC が適用される。
+  MAX_FALL_RANGE_VIEW_UNSPECIFIED = 0;
+
+  // 基本的な情報のみを含めるビュー。
+  // 一覧表示・選択リスト向け。大容量データである `polygon` フィールドは除外される。
+  MAX_FALL_RANGE_VIEW_BASIC = 1;
+
+  // 全ての情報を含めるフルビュー。
+  // 描画・詳細表示向け。ポリゴンデータである `polygon` を含むすべてのフィールドが返却される。
+  MAX_FALL_RANGE_VIEW_FULL = 2;
+}
