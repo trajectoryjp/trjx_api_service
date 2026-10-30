@@ -130,7 +130,7 @@ message SearchRouteSpaceGridsResponse {
 
 // EstimateRouteSpaceGridメソッドのリクエストメッセージ。
 message EstimateRouteSpaceGridRequest {
-  // 格子の中心線となる点のリスト。
+  // 格子の中心線となる点のリスト。高度の扱いは RouteSpaceGrid.center_line と同じ。
   repeated Position3D center_line = 1;
   // 格子の定義仕様。
   RouteSpaceGridSpecification grid_specification = 2;
@@ -159,7 +159,7 @@ message EstimateRouteSpaceGridResponse {
 message RouteSpaceCollision {
   // 衝突が検出された飛行経路計画可能空間の、格子の中の位置。
   SlotIndex slot_index = 1;
-  // 障害物に衝突する位置（衝突を検出した空間ボクセルの中心）。
+  // 障害物に衝突する位置（衝突を検出した空間ボクセルの中心。高度は MSL）。
   Position3D position = 2;
   // 衝突したセクションの開始断面と終了断面。
   repeated CrossSection danger_sections = 3;

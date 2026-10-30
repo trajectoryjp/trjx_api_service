@@ -25,8 +25,10 @@ message RouteSpaceGrid {
   string name = 1 [(google.api.field_behavior) = IDENTIFIER];
   // ユーザー向けの表示名。
   string display_name = 2;
-  // 格子の中心線となる点のリスト。
+  // 格子の中心線となる点のリスト。点と点の間は、MSL の高度で直線に結ぶ。
   // 異なる経度・緯度の点が 2 つ以上要る。
+  // 高度の基準は点ごとに指定でき、未指定の点は MSL とみなす。AGL の点は、その地点の地表の標高を足して MSL に直して扱う。
+  // 地表の標高が分からない地点に AGL の点がある場合は、INVALID_ARGUMENT を返す。
   repeated Position3D center_line = 3 [(google.api.field_behavior) = REQUIRED];
   // 格子の定義仕様。
   RouteSpaceGridSpecification grid_specification = 4 [(google.api.field_behavior) = REQUIRED];
@@ -134,6 +136,7 @@ message Footprint2D {
 }
 
 // 計算された飛行経路計画可能空間の格子の幾何情報（3Dモデルやフットプリントなど）を表す。
+// 位置の高度は、中心線の高度の基準によらず MSL で返す。
 message RouteSpaceGridGeometry {
   // 運動学的に計算された経路。
   repeated Position3D kinematic_path = 1;
