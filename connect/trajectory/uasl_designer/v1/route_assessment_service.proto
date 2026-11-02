@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package Trajectory.UaslDesigner.v1;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "trajectory/uasl_designer/v1/common.proto";
+import "trajectory/uasl_designer/v1/route_space_grid.proto";
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/uasl_designer/v1;uasl_designerv1";
+
+// ==========================================
+// Service Definition
+// ==========================================
+
+// 飛行経路計画可能空間の格子（RouteSpaceGrid）のスロットを使って、経路を作るための計算を行うサービス。
+// どの RPC もリソースを作らない。
+service RouteAssessmentService {
+  // 通る順の区切り（leg）から、各 leg の中心を通る WP 列を返す。
+  // leg の中心は、スロットのセクションの断面の中心を進行方向の順に結んだ線である。
+  // 前の leg の出口と次の leg の入口の中心が join_distance 以内なら WP を 1 つ（両者の中点）にまとめ、離れていれば直線で結ぶ。
+  // 続けて指定する leg は隣り合っていなくてよく、飛ばしたスロットやセクションは通らない。
+  // 機体の旋回は考えない。旋回を考えた飛行軌跡は、経路の評価で機体の型式から求める。
+  rpc GenerateWaypoints(GenerateWaypointsRequest) returns (GenerateWaypointsResponse);
+}
+
+// ==========================================
+// Custom Method Requests / Responses
+// ==========================================
+
+// GenerateWaypointsメソッドのリクエストメッセージ。
+message GenerateWaypointsRequest {
+  // 通る順の leg。1 つ以上要る（空なら INVALID_ARGUMENT）。
+  repeated RouteLeg legs = 1 [(google.api.field_behavior) = REQUIRED];
+  // 前の leg の出口と次の leg の入口の中心を 1 つの WP にまとめる距離（メートル、3 次元）。
+  // 0 は 1 メートルとして扱う。負の値は INVALID_ARGUMENT。
+  double join_distance = 2;
+}
+
+// GenerateWaypointsメソッドのレスポンスメッセージ。
+message GenerateWaypointsResponse {
+  // 通る順の WP。高度は断面の中心の高度で、MSL で返す（altitude_attr は ALTITUDE_ATTR_MSL）。
+  repeated Position3D waypoints = 1;
+}
+
+// ==========================================
+// Sub-messages
+// ==========================================
+
+// 経路が通る順の 1 区切り（leg）。1 つのスロットか、同じ格子の隣り合うスロットを束ねた長方形。
+// 束ねた leg は、並んだスロットを 1 本の太い空間として、その中心を通る。
+// 既定ではスロットの全セクションを通り、セクションの範囲を指定するとその範囲のセクションだけを通る（途中で離脱する、途中から乗り入れる経路）。
+// 格子から出て同じスロットの先に戻る経路は、同じスロットを範囲を変えて複数の leg に指定する。同じスロットを複数の leg に指定してよい。
+message RouteLeg {
+  // スロットを持つ飛行経路計画可能空間の格子のリソース名（routeSpaceGrids/{route_space_grid_id}）。
+  // 存在しない格子、または呼び出し元が使えない格子は NOT_FOUND。
+  string route_space_grid = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "uasl-designer/RouteSpaceGrid"
+  ];
+  // 束ねるスロットの格子の中の位置。1 つ以上要る。
+  // 束ねた断面が長方形になるよう、列と行が連続する範囲のスロットを重複なくすべて並べる。
+  // 空、重複、欠け（L 字などの多角形になる指定）は INVALID_ARGUMENT。格子にない位置、登録されていないスロットは NOT_FOUND。
+  repeated SlotIndex slot_indices = 2 [(google.api.field_behavior) = REQUIRED];
+  // スロットの RouteSpace.uasl_sections の並び（進行方向の順）と逆の順に通るとき true。
+  bool reversed = 3;
+  // 通る最初のセクションの、スロットの RouteSpace.uasl_sections での添字（0 始まり）。
+  // reversed に関わらず uasl_sections の並びで数え、last_section_index とあわせて両端を含む範囲を表す。
+  // 省略するとスロットの最初のセクション。途中から乗り入れる（reversed なら途中で離脱する）ときに指定する。
+  // 束ねた leg では束ねた全スロットに同じに掛かる（1 つの格子のスロットはセクションの数と位置がそろっている）。
+  // 負、または last_section_index より大きい値は INVALID_ARGUMENT。スロットのセクションの数以上は NOT_FOUND。
+  optional int32 first_section_index = 4;
+  // 通る最後のセクションの、スロットの RouteSpace.uasl_sections での添字（0 始まり）。数え方は first_section_index と同じ。
+  // 省略するとスロットの最後のセクション。途中で離脱する（reversed なら途中から乗り入れる）ときに指定する。
+  // 負の値は INVALID_ARGUMENT。スロットのセクションの数以上は NOT_FOUND。
+  optional int32 last_section_index = 5;
+}
