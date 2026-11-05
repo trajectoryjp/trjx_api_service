@@ -1,0 +1,20 @@
+version: v2
+lint:
+  use:
+    - STANDARD
+    # Require comments on every element so that missing documentation is caught by lint
+    - COMMENTS
+  except:
+    # Allow AIP standard methods (Get/Create/Update) to return the resource itself
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    # Allow the AIP standard Delete method to return google.protobuf.Empty
+    - RPC_RESPONSE_STANDARD_NAME
+    # Package names follow the in-house UpperCamelCase rule (e.g. Trajectory.UaslDesigner.v1),
+    # while directories stay lower_snake_case (e.g. trajectory/uasl_designer/v1)
+    - PACKAGE_LOWER_SNAKE_CASE
+    - PACKAGE_DIRECTORY_MATCH
+breaking:
+  use:
+    - FILE
+deps:
+  - buf.build/googleapis/googleapis
