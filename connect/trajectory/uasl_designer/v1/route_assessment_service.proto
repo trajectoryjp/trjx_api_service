@@ -67,7 +67,7 @@ message RouteLeg {
   // 通る最初のセクションの、スロットの RouteSpace.uasl_sections での添字（0 始まり）。
   // reversed に関わらず uasl_sections の並びで数え、last_section_index とあわせて両端を含む範囲を表す。
   // 省略するとスロットの最初のセクション。途中から乗り入れる（reversed なら途中で離脱する）ときに指定する。
-  // 束ねた leg では束ねた全スロットに同じに掛かる（1 つの格子のスロットはセクションの数と位置がそろっている）。
+  // 束ねた leg では束ねた全スロットに同じに掛かる（1 つの格子のスロットはセクションの区切り方が同じで、どのスロットも同じ数のセクションに分かれ、同じ添字のセクションは中心線の同じ区間にある）。
   // 負、または last_section_index より大きい値は INVALID_ARGUMENT。スロットのセクションの数以上は OUT_OF_RANGE。
   optional int32 first_section_index = 4;
   // 通る最後のセクションの、スロットの RouteSpace.uasl_sections での添字（0 始まり）。数え方は first_section_index と同じ。
