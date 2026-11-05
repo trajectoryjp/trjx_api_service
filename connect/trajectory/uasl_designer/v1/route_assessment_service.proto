@@ -60,7 +60,7 @@ message RouteLeg {
   ];
   // 束ねるスロットの格子の中の位置。1 つ以上要る。
   // 束ねた断面が長方形になるよう、列と行が連続する範囲のスロットを重複なくすべて並べる。
-  // 空、重複、欠け（L 字などの多角形になる指定）は INVALID_ARGUMENT。格子にない位置、登録されていないスロットは NOT_FOUND。
+  // 空、重複、欠け（L 字などの多角形になる指定）は INVALID_ARGUMENT。格子にない位置は OUT_OF_RANGE。
   repeated SlotIndex slot_indices = 2 [(google.api.field_behavior) = REQUIRED];
   // スロットの RouteSpace.uasl_sections の並び（進行方向の順）と逆の順に通るとき true。
   bool reversed = 3;
@@ -68,10 +68,10 @@ message RouteLeg {
   // reversed に関わらず uasl_sections の並びで数え、last_section_index とあわせて両端を含む範囲を表す。
   // 省略するとスロットの最初のセクション。途中から乗り入れる（reversed なら途中で離脱する）ときに指定する。
   // 束ねた leg では束ねた全スロットに同じに掛かる（1 つの格子のスロットはセクションの数と位置がそろっている）。
-  // 負、または last_section_index より大きい値は INVALID_ARGUMENT。スロットのセクションの数以上は NOT_FOUND。
+  // 負、または last_section_index より大きい値は INVALID_ARGUMENT。スロットのセクションの数以上は OUT_OF_RANGE。
   optional int32 first_section_index = 4;
   // 通る最後のセクションの、スロットの RouteSpace.uasl_sections での添字（0 始まり）。数え方は first_section_index と同じ。
   // 省略するとスロットの最後のセクション。途中で離脱する（reversed なら途中から乗り入れる）ときに指定する。
-  // 負の値は INVALID_ARGUMENT。スロットのセクションの数以上は NOT_FOUND。
+  // 負の値は INVALID_ARGUMENT。スロットのセクションの数以上は OUT_OF_RANGE。
   optional int32 last_section_index = 5;
 }
