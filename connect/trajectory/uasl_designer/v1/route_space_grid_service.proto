@@ -22,6 +22,8 @@ service RouteSpaceGridService {
   // 新しい飛行経路計画可能空間の格子を作成し、格子の中の飛行経路計画可能空間を登録する。
   // 飛行経路計画可能空間の登録時に障害物などとの衝突が検出された場合は、FAILED_PRECONDITION を返し、
   // エラーの詳細に RouteSpaceCollision（最初に衝突した飛行経路計画可能空間の 1 件）を含める。
+  // 落下フットプリントが、紐づける MaxFallRange の範囲からはみ出す場合は、INVALID_ARGUMENT を返し、
+  // エラーの詳細に EstimateRouteSpaceGridResponse（exceeding_fall_range_error_segment_indices だけを入れたもの）を含める。
   rpc CreateRouteSpaceGrid(CreateRouteSpaceGridRequest) returns (RouteSpaceGrid);
   // 指定されたIDの飛行経路計画可能空間の格子を取得する。
   rpc GetRouteSpaceGrid(GetRouteSpaceGridRequest) returns (RouteSpaceGrid);
@@ -92,6 +94,8 @@ message UpdateRouteSpaceGridRequest {
   // 更新対象のフィールドを指定するマスク。省略時は値が入っているフィールド、"*" は全フィールドを対象にする（AIP-134）。
   // 更新できるのは display_name と max_fall_range。center_line・grid_specification・vehicle_category は
   // 現在は変更できず、今の値と違う値を指定すると INVALID_ARGUMENT を返す。
+  // max_fall_range を空にすると INVALID_ARGUMENT を返す。付け替え先の範囲から落下フットプリントがはみ出す場合は、
+  // CreateRouteSpaceGrid と同じく INVALID_ARGUMENT を返し、エラーの詳細に EstimateRouteSpaceGridResponse を含める。
   google.protobuf.FieldMask update_mask = 2;
 }
 

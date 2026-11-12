@@ -41,6 +41,8 @@ message RouteSpaceGrid {
   google.protobuf.Timestamp update_time = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // 紐づくMaxFallRangeリソースへの参照。
+  // 作成では必須で、省略すると INVALID_ARGUMENT を返す。
+  // 更新で別の MaxFallRange に付け替えられるが、外す（空にする）ことはできない（INVALID_ARGUMENT）。
   string max_fall_range = 8 [(google.api.resource_reference).type = "uasl-designer/MaxFallRange"];
 
   // 格子の推定計算に使用する機体カテゴリ。
@@ -144,7 +146,7 @@ message RouteSpaceGridGeometry {
   // 格子を構成する飛行経路計画可能空間ごとの幾何情報リスト。
   repeated RouteSpace route_spaces = 2;
 
-  // セクションごとの2D平面上の落下フットプリントリスト。
+  // 中心線の区間ごとの 2D 平面上の落下フットプリントリスト（i 番目が center_line[i] から center_line[i+1] までの区間）。
   repeated Footprint2D fall_footprint_2ds = 3;
 }
 
