@@ -27,7 +27,7 @@ service MaxFallRangeService {
   rpc ListMaxFallRanges(ListMaxFallRangesRequest) returns (ListMaxFallRangesResponse);
   // 最大落下範囲の情報を更新する。
   rpc UpdateMaxFallRange(UpdateMaxFallRangeRequest) returns (MaxFallRange);
-  // 最大落下範囲を削除する。参照している飛行経路計画可能空間の格子がある間は削除できず、FAILED_PRECONDITION を返す。
+  // 最大落下範囲を削除する。参照している RouteSpaceGrid がある間は削除できず、FAILED_PRECONDITION を返す。
   rpc DeleteMaxFallRange(DeleteMaxFallRangeRequest) returns (google.protobuf.Empty);
 
   // --- Custom Methods (AIP-136) ---
@@ -84,7 +84,7 @@ message UpdateMaxFallRangeRequest {
   MaxFallRange max_fall_range = 1 [(google.api.field_behavior) = REQUIRED];
   // 更新対象のフィールドを指定するマスク。省略時は値が入っているフィールド、"*" は全フィールドを対象にする（AIP-134）。
   // 更新できるのは display_name と polygon。
-  // polygon は、参照している飛行経路計画可能空間の格子がある間は変更できず、FAILED_PRECONDITION を返す。
+  // polygon は、参照している RouteSpaceGrid がある間は変更できず、FAILED_PRECONDITION を返す。
   google.protobuf.FieldMask update_mask = 2;
 }
 
