@@ -20,6 +20,7 @@ go install connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.21.0
 connect/
 └── trajectory/
     ├── uasl_designer/v1/   # UASL Designer
+    ├── spatial_manager/v1/ # Spatial Manager
     └── <サービス>/v1/
 ```
 

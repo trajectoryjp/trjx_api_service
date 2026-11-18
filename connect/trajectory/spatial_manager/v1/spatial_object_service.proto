@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package Trajectory.SpatialManager.v1;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "trajectory/spatial_manager/v1/spatial_object.proto";
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/spatial_manager/v1;spatial_managerv1";
+
+// ==========================================
+// Service Definition
+// ==========================================
+
+// SpatialObject を作成し、保持するサービス。
+// - 公開（SPATIAL_OBJECT_VISIBILITY_PUBLIC）の SpatialObject を作成できるのは、この API を提供する組織だけ。
+// - 更新・削除・ReplaceVoxelValues は、所有する組織だけができる。
+// - SpatialObjectService 以外で登録された SpatialObject も、GetSpatialObject・BatchGetSpatialObjects で取得できる。
+//   その source は空のことがある。
+// - エラーは次の 3 つ。
+//   - INVALID_ARGUMENT: リクエストが仕様から外れるとき。何も変更しない。
+//   - NOT_FOUND: 対象の SpatialObject が無いとき。ほかの組織の非公開の SpatialObject もこれにする。
+//   - PERMISSION_DENIED: 権限が無いとき。公開の SpatialObject を、この API を提供する組織以外が作成しようとしたとき、
+//     ほかの組織の公開の SpatialObject を変えようとしたとき。
+service SpatialObjectService {
+  // --- Standard Methods (AIP-131 ~ AIP-135) ---
+
+  // VoxelValue を持たない SpatialObject を作成する。
+  rpc CreateSpatialObject(CreateSpatialObjectRequest) returns (SpatialObject);
+  // SpatialObject の属性を返す（VoxelValue は含まない）。
+  rpc GetSpatialObject(GetSpatialObjectRequest) returns (SpatialObject) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // 呼び出し元の組織が所有する SpatialObject を 1 ページ返す。filter で source を絞れる。
+  rpc ListSpatialObjects(ListSpatialObjectsRequest) returns (ListSpatialObjectsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // active と display_name を更新する。
+  rpc UpdateSpatialObject(UpdateSpatialObjectRequest) returns (SpatialObject);
+  // SpatialObject を VoxelValue ごと削除する。
+  rpc DeleteSpatialObject(DeleteSpatialObjectRequest) returns (google.protobuf.Empty);
+
+  // --- Custom Methods (AIP-136) ---
+
+  // 複数の SpatialObject の属性を、names の順に返す。
+  // 1 つでも無ければ、何も返さない。
+  rpc BatchGetSpatialObjects(BatchGetSpatialObjectsRequest) returns (BatchGetSpatialObjectsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // VoxelValue をすべて置き換える。最初のメッセージで SpatialObject を、続くメッセージで VoxelValue を送る。
+  // VoxelValue が 0 個なら、すべて削除する。置き換えの途中の見え方は約束しない。
+  rpc ReplaceVoxelValues(stream ReplaceVoxelValuesRequest) returns (ReplaceVoxelValuesResponse);
+  // VoxelValue を空間 ID の Z-order（Morton order）の順に 1 ページ返す。
+  rpc ListVoxelValues(ListVoxelValuesRequest) returns (ListVoxelValuesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+// ==========================================
+// Standard Method Requests
+// ==========================================
+
+// CreateSpatialObject のリクエスト。
+message CreateSpatialObjectRequest {
+  // 作成する SpatialObject。name は無視し、サーバーが採番する。
+  SpatialObject spatial_object = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// GetSpatialObject のリクエスト。
+message GetSpatialObjectRequest {
+  // 取得する SpatialObject のリソース名。
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "spatial-manager/SpatialObject"
+  ];
+}
+
+// ListSpatialObjects のリクエスト。
+message ListSpatialObjectsRequest {
+  // 1ページあたりの最大取得件数。負の値は INVALID_ARGUMENT。0 は 50 件、1000 を超える値は 1000 件として扱う。
+  // 返す件数が page_size より少ないページや空のページもある。
+  int32 page_size = 1;
+  // 続きを取得するためのページトークン。前回の応答の next_page_token を指定する（ほかの値は INVALID_ARGUMENT）。
+  string page_token = 2;
+  // 絞り込みの条件。使えるのは source の一致だけ（例: source = "abc"）。省くとすべて。
+  string filter = 3;
+}
+
+// ListSpatialObjects のレスポンス。
+message ListSpatialObjectsResponse {
+  // SpatialObject。
+  repeated SpatialObject spatial_objects = 1;
+  // 次のページのトークン。最後のページなら空。
+  string next_page_token = 2;
+}
+
+// UpdateSpatialObject のリクエスト。
+message UpdateSpatialObjectRequest {
+  // 更新する SpatialObject。name で対象を指定する。
+  SpatialObject spatial_object = 1 [(google.api.field_behavior) = REQUIRED];
+  // 更新対象のフィールドを指定するマスク。省略時は値が入っているフィールド、"*" は全フィールドを対象にする（AIP-134）。
+  // 更新できるのは active と display_name。
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+// DeleteSpatialObject のリクエスト。
+message DeleteSpatialObjectRequest {
+  // 削除する SpatialObject のリソース名。
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "spatial-manager/SpatialObject"
+  ];
+}
+
+// ==========================================
+// Custom Method Requests / Responses
+// ==========================================
+
+// BatchGetSpatialObjects のリクエスト。
+message BatchGetSpatialObjectsRequest {
+  // 取得する SpatialObject のリソース名（上限の個数はサーバーが決める）。
+  repeated string names = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "spatial-manager/SpatialObject"
+  ];
+}
+
+// BatchGetSpatialObjects のレスポンス。
+message BatchGetSpatialObjectsResponse {
+  // SpatialObject（names の順）。
+  repeated SpatialObject spatial_objects = 1;
+}
+
+// ReplaceVoxelValues のリクエスト（ストリームの 1 メッセージ）。
+message ReplaceVoxelValuesRequest {
+  // 1 メッセージに入れるもの。
+  oneof part {
+    // 最初のメッセージだけ: VoxelValue を置き換える SpatialObject のリソース名。
+    string parent = 1 [(google.api.resource_reference).type = "spatial-manager/SpatialObject"];
+    // 2 つ目以降のメッセージ: VoxelValue。大きさの上限はサーバーが決める。
+    VoxelValueBatch voxel_values = 2;
+  }
+}
+
+// ReplaceVoxelValues の 1 メッセージに入れる VoxelValue の配列。
+message VoxelValueBatch {
+  // VoxelValue。
+  repeated VoxelValue voxel_values = 1;
+}
+
+// ReplaceVoxelValues のレスポンス。
+message ReplaceVoxelValuesResponse {
+  // 置き換えた後の VoxelValue の数。
+  int64 voxel_value_count = 1;
+}
+
+// ListVoxelValues のリクエスト。
+message ListVoxelValuesRequest {
+  // VoxelValue を取得する SpatialObject のリソース名。
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference).type = "spatial-manager/SpatialObject"
+  ];
+  // 取得する範囲。省くと SpatialObject の全体。
+  Area area = 2;
+  // 1ページあたりの最大取得件数。負の値は INVALID_ARGUMENT。0 は 1000 件、10000 を超える値は 10000 件として扱う。
+  // 返す件数が page_size より少ないページや空のページもある。
+  int32 page_size = 3;
+  // 続きを取得するためのページトークン。前回の応答の next_page_token を指定する（ほかの値は INVALID_ARGUMENT）。
+  string page_token = 4;
+}
+
+// ListVoxelValues のレスポンス。
+message ListVoxelValuesResponse {
+  // VoxelValue。
+  repeated VoxelValue voxel_values = 1;
+  // 次のページのトークン。最後のページなら空。
+  string next_page_token = 2;
+}

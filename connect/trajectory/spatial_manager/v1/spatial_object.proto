@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package Trajectory.SpatialManager.v1;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/spatial_manager/v1;spatial_managerv1";
+
+// ==========================================
+// Resource: SpatialObject
+// ==========================================
+
+// 同じ種類の VoxelValue の集まり。
+// 同じ SpatialObject の中で VoxelValue が重なってもよい。重なった所は、値の大きい方として扱う（バリアは和集合）。
+message SpatialObject {
+  option (google.api.resource) = {
+    type: "spatial-manager/SpatialObject"
+    pattern: "spatialObjects/{spatial_object_id}"
+  };
+
+  // リソース名（spatialObjects/{spatial_object_id}）。
+  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+  // 種類。作成後は変えられない。
+  SpatialObjectKind kind = 2 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+  // 有効かどうか。作成で省いたら true（有効）とする。
+  optional bool active = 3;
+  // 呼び出し元が付けるデータソースの識別子。サーバーは中身を解釈しない。
+  string source = 4 [(google.api.field_behavior) = IMMUTABLE];
+  // 表示名。
+  string display_name = 5;
+  // 公開範囲。作成後は変えられない。
+  SpatialObjectVisibility visibility = 6 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.field_behavior) = IMMUTABLE
+  ];
+
+  // リソースの作成日時。
+  google.protobuf.Timestamp create_time = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // リソースの最終更新日時。ReplaceVoxelValues で VoxelValue を置き換えたときも進む。
+  google.protobuf.Timestamp update_time = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+// SpatialObject の公開範囲。
+enum SpatialObjectVisibility {
+  // 未指定。使えない。
+  SPATIAL_OBJECT_VISIBILITY_UNSPECIFIED = 0;
+  // すべての組織から使える。
+  // 作成できるのは、この API を提供する組織だけ。
+  SPATIAL_OBJECT_VISIBILITY_PUBLIC = 1;
+  // 所有する組織からだけ使える。
+  SPATIAL_OBJECT_VISIBILITY_PRIVATE = 2;
+}
+
+// SpatialObject の種類。
+enum SpatialObjectKind {
+  // 未指定。使えない。
+  SPATIAL_OBJECT_KIND_UNSPECIFIED = 0;
+  // 通過できない空間。3 次元の空間 ID（z/f/x/y）。値は持たない。
+  SPATIAL_OBJECT_KIND_BARRIER = 1;
+  // リスクのある空間。3 次元の空間 ID（z/f/x/y）と値。値はリスクの大きさ。
+  SPATIAL_OBJECT_KIND_AIR_RISK = 2;
+  // 上空を飛ぶときのリスクがある地表。2 次元の空間 ID（z/x/y）と値。値はリスクの大きさ。すべての高度に適用する。
+  SPATIAL_OBJECT_KIND_GROUND_RISK = 3;
+}
+
+// ==========================================
+// Sub-messages
+// ==========================================
+
+// 1 つの空間 ID とその値。
+message VoxelValue {
+  // 空間 ID（バリア・エアーリスクは z/f/x/y、グランドリスクは z/x/y）。使えるズームレベルはサーバーが決める。外れると INVALID_ARGUMENT。同じ SpatialObject の中で混ぜてよい。
+  string spatial_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // リスクの値（0 より大きい）。換算しない。バリアは 0 とする。
+  double value = 2;
+}
+
+// 緯度・経度（WGS84）と高度（平均海面からのメートル）の範囲。
+message Area {
+  // 西端の経度（度）。
+  double min_longitude = 1;
+  // 南端の緯度（度）。
+  double min_latitude = 2;
+  // 東端の経度（度）。
+  double max_longitude = 3;
+  // 北端の緯度（度）。
+  double max_latitude = 4;
+  // 下端の高度（メートル）。省くと下限なし。グランドリスクでは使わない。
+  optional double min_altitude_m = 5;
+  // 上端の高度（メートル）。省くと上限なし。グランドリスクでは使わない。
+  optional double max_altitude_m = 6;
+}
