@@ -27,6 +27,9 @@ message RouteSpaceGrid {
   string display_name = 2;
   // RouteSpaceGrid の中心線となる点のリスト。点と点の間は、MSL の高度で直線に結ぶ。
   // 異なる経度・緯度の点が 2 つ以上要る。
+  // 中心線は水平に進むものとし、鉛直や急な勾配の区間は扱わない。
+  // 経度・緯度が同じで高度か高度の基準が違う点が続く場合と、区間の勾配が上限を超える場合は、INVALID_ARGUMENT を返す。
+  // AGL の点を含む区間の勾配は、MSL に直した高度で測る。
   // 高度の基準は点ごとに指定でき、未指定の点は MSL とみなす。AGL の点は、その地点の地表の標高を足して MSL に直して扱う。
   // 地表の標高が分からない地点に AGL の点がある場合は、INVALID_ARGUMENT を返す。
   repeated Position3D center_line = 3 [(google.api.field_behavior) = REQUIRED];
@@ -131,7 +134,7 @@ message RouteSpace {
   repeated UaslSection uasl_sections = 3;
 }
 
-// 中心線の 1 区間について、機体が落下する可能性のある範囲（地表の 2D ポリゴン）を表す。
+// 中心線の 1 区間について、その区間のすべての RouteSpace から機体が落下する可能性のある範囲（地表の 2D ポリゴン）を表す。
 message Footprint2D {
   // 落下範囲を構成するポリゴンの点リスト。
   repeated Position2D fall_footprint_2d = 1;
@@ -147,6 +150,8 @@ message RouteSpaceGridGeometry {
   repeated RouteSpace route_spaces = 2;
 
   // 中心線の区間ごとの 2D 平面上の落下フットプリントリスト（i 番目が center_line[i] から center_line[i+1] までの区間）。
+  // その区間のすべての RouteSpace（スロット）のどこから落ちても覆う範囲とする（スロットの横幅と、上の段の高さを含む）。
+  // MaxFallRange からのはみ出しは、この範囲で判定する。
   repeated Footprint2D fall_footprint_2ds = 3;
 }
 
