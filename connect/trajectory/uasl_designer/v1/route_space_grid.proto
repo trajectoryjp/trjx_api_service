@@ -27,9 +27,11 @@ message RouteSpaceGrid {
   string display_name = 2;
   // RouteSpaceGrid の中心線となる点のリスト。点と点の間は、MSL の高度で直線に結ぶ。
   // 異なる経度・緯度の点が 2 つ以上要る。
+  // 経度・緯度・高度・高度の基準が同じ点が続く場合は、1 つにまとめる。
   // 中心線は水平に進むものとし、鉛直や急な勾配の区間は扱わない。
   // 経度・緯度が同じで高度か高度の基準が違う点が続く場合と、区間の勾配が上限を超える場合は、INVALID_ARGUMENT を返す。
   // AGL の点を含む区間の勾配は、MSL に直した高度で測る。
+  // 同じ向きに曲がる角に挟まれた区間が短く、開始断面と終了断面の前後が逆転する場合も、INVALID_ARGUMENT を返す。
   // 高度の基準は点ごとに指定でき、未指定の点は MSL とみなす。AGL の点は、その地点の地表の標高を足して MSL に直して扱う。
   // 地表の標高が分からない地点に AGL の点がある場合は、INVALID_ARGUMENT を返す。
   repeated Position3D center_line = 3 [(google.api.field_behavior) = REQUIRED];
@@ -70,9 +72,9 @@ message GridUniformSpace {
 
 // RouteSpaceGrid の中の RouteSpace の位置を表す。
 message SlotIndex {
-  // 列のインデックス。
+  // 列のインデックス。0 は、中心線の進む向きに見て左の端の列。
   int32 column_index = 1;
-  // 行のインデックス。
+  // 行のインデックス。0 は下の段。
   int32 row_index = 2;
 }
 
@@ -145,6 +147,7 @@ message Footprint2D {
 // 位置の高度は、中心線の高度の基準によらず MSL で返す。
 message RouteSpaceGridGeometry {
   // 飛行軌跡（機体の旋回を考えた経路）。
+  // 現在は常に空。
   repeated Position3D kinematic_path = 1;
 
   // RouteSpaceGrid を構成する RouteSpace ごとの geometry のリスト。

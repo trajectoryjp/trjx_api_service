@@ -22,6 +22,7 @@ service RouteSpaceGridService {
   // 新しい RouteSpaceGrid を作成し、その中の RouteSpace を登録する。
   // RouteSpace の登録時に障害物などとの衝突が検出された場合は、FAILED_PRECONDITION を返し、
   // エラーの詳細に RouteSpaceCollision（最初に衝突した RouteSpace の 1 件）を含める。
+  // 同じ RouteSpaceGrid の中で UaslSection どうしが重なる場合も、同じく FAILED_PRECONDITION と RouteSpaceCollision を返す。
   // 落下範囲が、紐づける MaxFallRange の範囲からはみ出す場合は、INVALID_ARGUMENT を返し、
   // エラーの詳細に EstimateRouteSpaceGridResponse（exceeding_fall_range_error_segment_indices だけを入れたもの）を含める。
   rpc CreateRouteSpaceGrid(CreateRouteSpaceGridRequest) returns (RouteSpaceGrid);
@@ -134,7 +135,7 @@ message SearchRouteSpaceGridsResponse {
 
 // EstimateRouteSpaceGridメソッドのリクエストメッセージ。
 message EstimateRouteSpaceGridRequest {
-  // RouteSpaceGrid の中心線となる点のリスト。高度の扱いは RouteSpaceGrid.center_line と同じ。
+  // RouteSpaceGrid の中心線となる点のリスト。扱いは RouteSpaceGrid.center_line と同じ。
   repeated Position3D center_line = 1;
   // RouteSpaceGrid の定義仕様。
   RouteSpaceGridSpecification grid_specification = 2;
