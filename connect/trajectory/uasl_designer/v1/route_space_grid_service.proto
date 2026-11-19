@@ -15,7 +15,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory
 // Service Definition
 // ==========================================
 
-// RouteSpaceGrid の管理および空間計算を行うサービス。
+// 航路画定を行うサービス。中心線と MaxFallRange から RouteSpaceGrid を推定し、登録・検索する。
 service RouteSpaceGridService {
   // --- Standard Methods (AIP-131 ~ AIP-135) ---
 

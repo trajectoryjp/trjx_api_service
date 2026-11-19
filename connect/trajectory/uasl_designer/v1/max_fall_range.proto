@@ -13,7 +13,8 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory
 // Resource: MaxFallRange (AIP-122)
 // ==========================================
 
-// 機体が落下する可能性のある最大範囲（MaxFallRange）を表すリソース。
+// 最大落下範囲を表すリソース。
+// RouteSpaceGrid の落下範囲は、この範囲に収まる必要がある。
 message MaxFallRange {
   option (google.api.resource) = {
     type: "uasl-designer/MaxFallRange"

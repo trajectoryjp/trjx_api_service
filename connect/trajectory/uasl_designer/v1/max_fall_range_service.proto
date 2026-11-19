@@ -15,7 +15,7 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory
 // Service Definition
 // ==========================================
 
-// 最大落下範囲（MaxFallRange）の管理を行うサービス。
+// MaxFallRange を登録・検索するサービス。
 service MaxFallRangeService {
   // --- Standard Methods (AIP-131 ~ AIP-135) ---
 

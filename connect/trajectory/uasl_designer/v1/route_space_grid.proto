@@ -13,8 +13,8 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory
 // Resource: RouteSpaceGrid (AIP-122)
 // ==========================================
 
-// RouteSpaceGrid を表すリソース。
-// 中心線と RouteSpaceGridSpecification から、RouteSpace をグリッド状に並べたもの。
+// 中心線に沿って RouteSpace を行と列に並べたもの。
+// 各 RouteSpace は、落下範囲が MaxFallRange に収まることを確かめて登録する。
 message RouteSpaceGrid {
   option (google.api.resource) = {
     type: "uasl-designer/RouteSpaceGrid"
@@ -56,7 +56,7 @@ message RouteSpaceGrid {
 // Sub-messages & Views
 // ==========================================
 
-// グリッド状に均等分割された RouteSpaceGrid の定義を表す。
+// すべての RouteSpace を同じ幅と高さで、列と行に並べる。
 message GridUniformSpace {
   // RouteSpace の幅（メートル）。
   double slot_width = 1;
@@ -76,7 +76,7 @@ message SlotIndex {
   int32 row_index = 2;
 }
 
-// カスタム構成のスタックによる RouteSpaceGrid の定義を表す。
+// 使う RouteSpace だけを指定して積む。
 message CustomStackSpace {
   // RouteSpace の幅（メートル）。
   double slot_width = 1;
@@ -90,13 +90,13 @@ message CustomStackSpace {
   repeated SlotIndex active_slots = 5;
 }
 
-// RouteSpaceGrid の定義仕様を表す。
+// RouteSpace の並べ方。
 message RouteSpaceGridSpecification {
-  // RouteSpaceGrid の定義形式を選択する。どちらか一方が必要。
+  // 並べ方の種類。
   oneof definition {
-    // 均等グリッドによる定義。
+    // 同じ幅と高さで並べる。
     GridUniformSpace grid_uniform = 1;
-    // カスタムスタックによる定義。
+    // 使う RouteSpace だけを指定して積む。
     CustomStackSpace custom_stack = 2;
   }
 }
@@ -107,9 +107,9 @@ message WireframeEdge {
   repeated Position3D path = 1;
 }
 
-// セクション（区間）ごとの空間情報。
+// RouteSpace を、中心線の 1 区間の開始断面と終了断面で区切った立体。
 message UaslSection {
-  // 航路セクションID。
+  // セクションの ID。
   string uasl_section_id = 1;
 
   // 区間の開始断面の点群。
@@ -121,10 +121,10 @@ message UaslSection {
   repeated WireframeEdge space_edges = 4;
 }
 
-// RouteSpaceGrid の中の RouteSpace 1 つの geometry を表す。
+// 飛行経路計画可能空間 1 つの geometry を表す。
+// セクションを進行方向の順に並べたもの。
 message RouteSpace {
   // 登録した RouteSpace の ID。
-  // RouteSpace を「航路」と呼んでいた頃の名前を、登録先のサービスに合わせて残している。
   string assigned_uasl_id = 1;
 
   // RouteSpaceGrid の中の位置（列・行インデックス）。
@@ -134,13 +134,14 @@ message RouteSpace {
   repeated UaslSection uasl_sections = 3;
 }
 
-// 中心線の 1 区間について、その区間のすべての RouteSpace から機体が落下する可能性のある範囲（地表の 2D ポリゴン）を表す。
+// 中心線の 1 区間の落下範囲。
+// その区間のすべての RouteSpace から機体が落下しうる地表の範囲を、2D のポリゴンで表す。
 message Footprint2D {
   // 落下範囲を構成するポリゴンの点リスト。
   repeated Position2D fall_footprint_2d = 1;
 }
 
-// 計算された RouteSpaceGrid の geometry（立体や落下範囲など）を表す。
+// RouteSpaceGrid の計算結果。飛行軌跡、RouteSpace の立体、区間ごとの落下範囲を持つ。
 // 位置の高度は、中心線の高度の基準によらず MSL で返す。
 message RouteSpaceGridGeometry {
   // 飛行軌跡（機体の旋回を考えた経路）。
