@@ -13,8 +13,8 @@ option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory
 // Resource: RouteSpaceGrid (AIP-122)
 // ==========================================
 
-// 飛行経路計画可能空間の格子（RouteSpaceGrid）を表すリソース。
-// 中心線と格子の定義から、飛行経路計画可能空間（RouteSpace）を格子状に並べたもの。
+// 中心線に沿って RouteSpace を行と列に並べたもの。
+// 各 RouteSpace は、落下範囲が MaxFallRange に収まることを確かめて登録する。
 message RouteSpaceGrid {
   option (google.api.resource) = {
     type: "uasl-designer/RouteSpaceGrid"
@@ -25,14 +25,19 @@ message RouteSpaceGrid {
   string name = 1 [(google.api.field_behavior) = IDENTIFIER];
   // ユーザー向けの表示名。
   string display_name = 2;
-  // 格子の中心線となる点のリスト。点と点の間は、MSL の高度で直線に結ぶ。
+  // RouteSpaceGrid の中心線となる点のリスト。点と点の間は、MSL の高度で直線に結ぶ。
   // 異なる経度・緯度の点が 2 つ以上要る。
+  // 経度・緯度・高度・高度の基準が同じ点が続く場合は、1 つにまとめる。
+  // 中心線は水平に進むものとし、鉛直や急な勾配の区間は扱わない。
+  // 経度・緯度が同じで高度か高度の基準が違う点が続く場合と、区間の勾配が上限を超える場合は、INVALID_ARGUMENT を返す。
+  // AGL の点を含む区間の勾配は、MSL に直した高度で測る。
+  // 同じ向きに曲がる角に挟まれた区間が短く、開始断面と終了断面の前後が逆転する場合も、INVALID_ARGUMENT を返す。
   // 高度の基準は点ごとに指定でき、未指定の点は MSL とみなす。AGL の点は、その地点の地表の標高を足して MSL に直して扱う。
   // 地表の標高が分からない地点に AGL の点がある場合は、INVALID_ARGUMENT を返す。
   repeated Position3D center_line = 3 [(google.api.field_behavior) = REQUIRED];
-  // 格子の定義仕様。
+  // RouteSpaceGrid の定義仕様。
   RouteSpaceGridSpecification grid_specification = 4 [(google.api.field_behavior) = REQUIRED];
-  // 計算結果として得られる格子の幾何情報。
+  // 計算結果として得られる RouteSpaceGrid の geometry。
   RouteSpaceGridGeometry geometry = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // リソースの作成日時。
@@ -41,9 +46,11 @@ message RouteSpaceGrid {
   google.protobuf.Timestamp update_time = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // 紐づくMaxFallRangeリソースへの参照。
+  // 作成では必須で、省略すると INVALID_ARGUMENT を返す。
+  // 更新で別の MaxFallRange に付け替えられるが、外す（空にする）ことはできない（INVALID_ARGUMENT）。
   string max_fall_range = 8 [(google.api.resource_reference).type = "uasl-designer/MaxFallRange"];
 
-  // 格子の推定計算に使用する機体カテゴリ。
+  // RouteSpaceGrid の推定計算に使用する機体カテゴリ。
   VehicleCategory vehicle_category = 9 [(google.api.field_behavior) = REQUIRED];
 }
 
@@ -51,11 +58,11 @@ message RouteSpaceGrid {
 // Sub-messages & Views
 // ==========================================
 
-// グリッド状に均等分割された格子の定義を表す。
+// すべての RouteSpace を同じ幅と高さで、列と行に並べる。
 message GridUniformSpace {
-  // スロット（飛行経路計画可能空間）の幅（メートル）。
+  // RouteSpace の幅（メートル）。
   double slot_width = 1;
-  // スロット（飛行経路計画可能空間）の高さ（メートル）。
+  // RouteSpace の高さ（メートル）。
   double slot_height = 2;
   // 列の数。
   int32 columns = 3;
@@ -63,35 +70,35 @@ message GridUniformSpace {
   int32 rows = 4;
 }
 
-// 格子の中のスロット（飛行経路計画可能空間）の位置を表す。
+// RouteSpaceGrid の中の RouteSpace の位置を表す。
 message SlotIndex {
-  // 列のインデックス。
+  // 列のインデックス。0 は、中心線の進む向きに見て左の端の列。
   int32 column_index = 1;
-  // 行のインデックス。
+  // 行のインデックス。0 は下の段。
   int32 row_index = 2;
 }
 
-// カスタム構成のスタックによる格子の定義を表す。
+// 使う RouteSpace だけを指定して積む。
 message CustomStackSpace {
-  // スロット（飛行経路計画可能空間）の幅（メートル）。
+  // RouteSpace の幅（メートル）。
   double slot_width = 1;
-  // スロット（飛行経路計画可能空間）の高さ（メートル）。
+  // RouteSpace の高さ（メートル）。
   double slot_height = 2;
   // 最大列数。
   int32 max_columns = 3;
   // 最大行数。
   int32 max_rows = 4;
-  // 有効なスロットのインデックスリスト。
+  // 有効な RouteSpace のインデックスリスト。
   repeated SlotIndex active_slots = 5;
 }
 
-// 飛行経路計画可能空間の格子の定義仕様を表す。
+// RouteSpace の並べ方。
 message RouteSpaceGridSpecification {
-  // 格子の定義形式を選択する。どちらか一方が必要。
+  // 並べ方の種類。
   oneof definition {
-    // 均等グリッドによる定義。
+    // 同じ幅と高さで並べる。
     GridUniformSpace grid_uniform = 1;
-    // カスタムスタックによる定義。
+    // 使う RouteSpace だけを指定して積む。
     CustomStackSpace custom_stack = 2;
   }
 }
@@ -102,9 +109,9 @@ message WireframeEdge {
   repeated Position3D path = 1;
 }
 
-// セクション（区間）ごとの空間情報。
+// RouteSpace を、中心線の 1 区間の開始断面と終了断面で区切った立体。
 message UaslSection {
-  // 航路セクションID。
+  // セクションの ID。
   string uasl_section_id = 1;
 
   // 区間の開始断面の点群。
@@ -112,39 +119,43 @@ message UaslSection {
   // 区間の終了断面の点群。
   repeated Position3D arrival_section_points = 3;
 
-  // このセクションを構成する3Dチューブの枠線（ワイヤーフレーム）。
+  // このセクションの立体の枠線（ワイヤーフレーム）。
   repeated WireframeEdge space_edges = 4;
 }
 
-// 飛行経路計画可能空間（格子の中のスロット 1 つ）の幾何情報を表す。
+// 飛行経路計画可能空間 1 つの geometry を表す。
+// セクションを進行方向の順に並べたもの。
 message RouteSpace {
-  // 登録した飛行経路計画可能空間の ID（策定済み航路 ID）。
-  // 飛行経路計画可能空間を「航路」と呼んでいた頃の名前を、登録先のサービスに合わせて残している。
+  // 登録した RouteSpace の ID。
   string assigned_uasl_id = 1;
 
-  // 格子の中の位置（列・行インデックス）。
+  // RouteSpaceGrid の中の位置（列・行インデックス）。
   SlotIndex slot_index = 2;
 
-  // この飛行経路計画可能空間を構成するセクション（区間）ごとの幾何情報のリスト。
+  // この RouteSpace を構成するセクション（区間）ごとの geometry のリスト。
   repeated UaslSection uasl_sections = 3;
 }
 
-// 中心線の 1 区間について、機体が落下する可能性のある範囲（地表の 2D ポリゴン）を表す。
+// 中心線の 1 区間の落下範囲。
+// その区間のすべての RouteSpace から機体が落下しうる地表の範囲を、2D のポリゴンで表す。
 message Footprint2D {
   // 落下範囲を構成するポリゴンの点リスト。
   repeated Position2D fall_footprint_2d = 1;
 }
 
-// 計算された飛行経路計画可能空間の格子の幾何情報（3Dモデルやフットプリントなど）を表す。
+// RouteSpaceGrid の計算結果。飛行軌跡、RouteSpace の立体、区間ごとの落下範囲を持つ。
 // 位置の高度は、中心線の高度の基準によらず MSL で返す。
 message RouteSpaceGridGeometry {
-  // 運動学的に計算された経路。
+  // 飛行軌跡（機体の旋回を考えた経路）。
+  // 現在は常に空。
   repeated Position3D kinematic_path = 1;
 
-  // 格子を構成する飛行経路計画可能空間ごとの幾何情報リスト。
+  // RouteSpaceGrid を構成する RouteSpace ごとの geometry のリスト。
   repeated RouteSpace route_spaces = 2;
 
-  // セクションごとの2D平面上の落下フットプリントリスト。
+  // 中心線の区間ごとの 2D 平面上の落下範囲のリスト（i 番目が center_line[i] から center_line[i+1] までの区間）。
+  // その区間のすべての RouteSpace のどこから落ちても覆う範囲とする（RouteSpace の横幅と、上の段の高さを含む）。
+  // MaxFallRange からのはみ出しは、この範囲で判定する。
   repeated Footprint2D fall_footprint_2ds = 3;
 }
 
@@ -162,7 +173,7 @@ enum RouteSpaceGridView {
   ROUTE_SPACE_GRID_VIEW_FULL = 2;
 }
 
-// 飛行経路計画可能空間の断面を表す。
+// RouteSpace の断面を表す。
 message CrossSection {
   // 断面を構成する点群。
   repeated Position3D points = 1;
