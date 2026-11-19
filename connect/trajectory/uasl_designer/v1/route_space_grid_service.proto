@@ -22,7 +22,7 @@ service RouteSpaceGridService {
   // 新しい RouteSpaceGrid を作成し、その中の RouteSpace を登録する。
   // RouteSpace の登録時に障害物などとの衝突が検出された場合は、FAILED_PRECONDITION を返し、
   // エラーの詳細に RouteSpaceCollision（最初に衝突した RouteSpace の 1 件）を含める。
-  // 落下フットプリントが、紐づける MaxFallRange の範囲からはみ出す場合は、INVALID_ARGUMENT を返し、
+  // 落下範囲が、紐づける MaxFallRange の範囲からはみ出す場合は、INVALID_ARGUMENT を返し、
   // エラーの詳細に EstimateRouteSpaceGridResponse（exceeding_fall_range_error_segment_indices だけを入れたもの）を含める。
   rpc CreateRouteSpaceGrid(CreateRouteSpaceGridRequest) returns (RouteSpaceGrid);
   // 指定されたIDの RouteSpaceGrid を取得する。
@@ -40,7 +40,7 @@ service RouteSpaceGridService {
   // 指定された境界ボックス内に含まれる RouteSpaceGrid を検索する。
   rpc SearchRouteSpaceGrids(SearchRouteSpaceGridsRequest) returns (SearchRouteSpaceGridsResponse);
 
-  // 中心線と機体設定から、航路軌跡・空間ゲート・落下フットプリントを推定し、安全性を評価する。
+  // 中心線と機体設定から、飛行軌跡・RouteSpace の断面・落下範囲を推定し、安全性を評価する。
   // 最大落下範囲からの逸脱はエラーにせず、レスポンスの exceeding_fall_range_error_segment_indices で返す。
   rpc EstimateRouteSpaceGrid(EstimateRouteSpaceGridRequest) returns (EstimateRouteSpaceGridResponse);
 }
@@ -94,7 +94,7 @@ message UpdateRouteSpaceGridRequest {
   // 更新対象のフィールドを指定するマスク。省略時は値が入っているフィールド、"*" は全フィールドを対象にする（AIP-134）。
   // 更新できるのは display_name と max_fall_range。center_line・grid_specification・vehicle_category は
   // 現在は変更できず、今の値と違う値を指定すると INVALID_ARGUMENT を返す。
-  // max_fall_range を空にすると INVALID_ARGUMENT を返す。付け替え先の範囲から落下フットプリントがはみ出す場合は、
+  // max_fall_range を空にすると INVALID_ARGUMENT を返す。付け替え先の範囲から落下範囲がはみ出す場合は、
   // CreateRouteSpaceGrid と同じく INVALID_ARGUMENT を返し、エラーの詳細に EstimateRouteSpaceGridResponse を含める。
   google.protobuf.FieldMask update_mask = 2;
 }

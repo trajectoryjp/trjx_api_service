@@ -117,7 +117,7 @@ message UaslSection {
   // 区間の終了断面の点群。
   repeated Position3D arrival_section_points = 3;
 
-  // このセクションを構成する3Dチューブの枠線（ワイヤーフレーム）。
+  // このセクションの立体の枠線（ワイヤーフレーム）。
   repeated WireframeEdge space_edges = 4;
 }
 
@@ -140,16 +140,16 @@ message Footprint2D {
   repeated Position2D fall_footprint_2d = 1;
 }
 
-// 計算された RouteSpaceGrid の geometry（3Dモデルやフットプリントなど）を表す。
+// 計算された RouteSpaceGrid の geometry（立体や落下範囲など）を表す。
 // 位置の高度は、中心線の高度の基準によらず MSL で返す。
 message RouteSpaceGridGeometry {
-  // 運動学的に計算された経路。
+  // 飛行軌跡（機体の旋回を考えた経路）。
   repeated Position3D kinematic_path = 1;
 
   // RouteSpaceGrid を構成する RouteSpace ごとの geometry のリスト。
   repeated RouteSpace route_spaces = 2;
 
-  // 中心線の区間ごとの 2D 平面上の落下フットプリントリスト（i 番目が center_line[i] から center_line[i+1] までの区間）。
+  // 中心線の区間ごとの 2D 平面上の落下範囲のリスト（i 番目が center_line[i] から center_line[i+1] までの区間）。
   // その区間のすべての RouteSpace（スロット）のどこから落ちても覆う範囲とする（スロットの横幅と、上の段の高さを含む）。
   // MaxFallRange からのはみ出しは、この範囲で判定する。
   repeated Footprint2D fall_footprint_2ds = 3;
