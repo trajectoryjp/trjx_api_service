@@ -40,8 +40,8 @@ service RouteSpaceGridService {
   // 指定された境界ボックス内に含まれる RouteSpaceGrid を検索する。
   rpc SearchRouteSpaceGrids(SearchRouteSpaceGridsRequest) returns (SearchRouteSpaceGridsResponse);
 
-  // 中心線と機体設定から、飛行軌跡・RouteSpace の断面・落下範囲を推定し、安全性を評価する。
-  // 最大落下範囲からの逸脱はエラーにせず、レスポンスの exceeding_fall_range_error_segment_indices で返す。
+  // 中心線と機体設定から、飛行軌跡・RouteSpace の断面・落下範囲を推定し、最大落下範囲に収まるかを評価する。
+  // 最大落下範囲からのはみ出しはエラーにせず、レスポンスの exceeding_fall_range_error_segment_indices で返す。
   rpc EstimateRouteSpaceGrid(EstimateRouteSpaceGridRequest) returns (EstimateRouteSpaceGridResponse);
 }
 
@@ -149,8 +149,8 @@ message EstimateRouteSpaceGridResponse {
   // 計算結果として得られた RouteSpaceGrid の geometry。
   RouteSpaceGridGeometry geometry = 1;
 
-  // 最大落下範囲からの逸脱エラーの原因となった中心線の区間のインデックス群（区間の始点の center_line のインデックス）。
-  // 配列が空の場合は、逸脱エラーなしを意味する。
+  // 最大落下範囲からのはみ出しの原因となった中心線の区間のインデックス群（区間の始点の center_line のインデックス）。
+  // 配列が空の場合は、はみ出しなしを意味する。
   repeated int32 exceeding_fall_range_error_segment_indices = 2;
 }
 

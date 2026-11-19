@@ -58,9 +58,9 @@ message RouteSpaceGrid {
 
 // グリッド状に均等分割された RouteSpaceGrid の定義を表す。
 message GridUniformSpace {
-  // スロット（RouteSpace）の幅（メートル）。
+  // RouteSpace の幅（メートル）。
   double slot_width = 1;
-  // スロット（RouteSpace）の高さ（メートル）。
+  // RouteSpace の高さ（メートル）。
   double slot_height = 2;
   // 列の数。
   int32 columns = 3;
@@ -68,7 +68,7 @@ message GridUniformSpace {
   int32 rows = 4;
 }
 
-// RouteSpaceGrid の中のスロット（RouteSpace）の位置を表す。
+// RouteSpaceGrid の中の RouteSpace の位置を表す。
 message SlotIndex {
   // 列のインデックス。
   int32 column_index = 1;
@@ -78,15 +78,15 @@ message SlotIndex {
 
 // カスタム構成のスタックによる RouteSpaceGrid の定義を表す。
 message CustomStackSpace {
-  // スロット（RouteSpace）の幅（メートル）。
+  // RouteSpace の幅（メートル）。
   double slot_width = 1;
-  // スロット（RouteSpace）の高さ（メートル）。
+  // RouteSpace の高さ（メートル）。
   double slot_height = 2;
   // 最大列数。
   int32 max_columns = 3;
   // 最大行数。
   int32 max_rows = 4;
-  // 有効なスロットのインデックスリスト。
+  // 有効な RouteSpace のインデックスリスト。
   repeated SlotIndex active_slots = 5;
 }
 
@@ -121,9 +121,9 @@ message UaslSection {
   repeated WireframeEdge space_edges = 4;
 }
 
-// RouteSpace（RouteSpaceGrid の中のスロット 1 つ）の geometry を表す。
+// RouteSpaceGrid の中の RouteSpace 1 つの geometry を表す。
 message RouteSpace {
-  // 登録した RouteSpace の ID（策定済み航路 ID）。
+  // 登録した RouteSpace の ID。
   // RouteSpace を「航路」と呼んでいた頃の名前を、登録先のサービスに合わせて残している。
   string assigned_uasl_id = 1;
 
@@ -150,7 +150,7 @@ message RouteSpaceGridGeometry {
   repeated RouteSpace route_spaces = 2;
 
   // 中心線の区間ごとの 2D 平面上の落下範囲のリスト（i 番目が center_line[i] から center_line[i+1] までの区間）。
-  // その区間のすべての RouteSpace（スロット）のどこから落ちても覆う範囲とする（スロットの横幅と、上の段の高さを含む）。
+  // その区間のすべての RouteSpace のどこから落ちても覆う範囲とする（RouteSpace の横幅と、上の段の高さを含む）。
   // MaxFallRange からのはみ出しは、この範囲で判定する。
   repeated Footprint2D fall_footprint_2ds = 3;
 }
