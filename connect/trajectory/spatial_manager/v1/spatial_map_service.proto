@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package Trajectory.SpatialManager.v1;
+
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "trajectory/spatial_manager/v1/spatial_object.proto";
+
+option go_package = "github.com/trajectoryjp/trjx_api_service/connect/trajectory/spatial_manager/v1;spatial_managerv1";
+
+// ==========================================
+// Service Definition
+// ==========================================
+
+// 範囲や空間 ID を指定して、バリア・リスクの値を取得するサービス。
+// - SpatialObjectService で作成したものに限らず、すべてのデータソースの値を返す。
+// - 返すのは、公開のものと呼び出し元の組織のもののうち、有効なものだけとする。
+// - リクエストが仕様から外れるときは INVALID_ARGUMENT とする。
+service SpatialMapService {
+  // 空間 ID ごとに、値を持つ SpatialObject とその値を 1 ページ返す。
+  // リクエストより細かいズームレベルの値は、リクエストのズームレベルの空間 ID ごとに、SpatialObject ごとの最大を返す。
+  // 最大・最小・平均が要るときは、SummarizeSpatialIdValues を使う。
+  rpc SearchSpatialIdValues(SearchSpatialIdValuesRequest) returns (SearchSpatialIdValuesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // リクエストのズームレベルの空間 ID ごとに、それより細かい値を集計して 1 ページ返す。
+  // それより粗い値は、リクエストのズームレベルの空間 ID に分割し、値はそのまま使う。
+  // 集計に含めるのは公開の SpatialObject だけで、非公開の SpatialObject は含めない（今は扱わない）。
+  rpc SummarizeSpatialIdValues(SummarizeSpatialIdValuesRequest) returns (SummarizeSpatialIdValuesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  // 指定した空間 ID ごとに、値を持つ SpatialObject とその値を返す。
+  // 指定した空間 ID より細かい VoxelValue を持つ SpatialObject は、その空間 ID に含まれる VoxelValue の値の最大を返す。
+  rpc LookupSpatialIdValues(LookupSpatialIdValuesRequest) returns (LookupSpatialIdValuesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+// ==========================================
+// Custom Method Requests / Responses
+// ==========================================
+
+// SearchSpatialIdValues のリクエスト。
+message SearchSpatialIdValuesRequest {
+  // 取得する種類。
+  SpatialObjectKind kind = 1 [(google.api.field_behavior) = REQUIRED];
+  // 返す空間 ID のズームレベル。使えるズームレベルはサーバーが決める。外れると INVALID_ARGUMENT。
+  int32 zoom_level = 2 [(google.api.field_behavior) = REQUIRED];
+  // 取得する範囲。1 回に指定できる範囲の広さの上限はサーバーが決める。超えると INVALID_ARGUMENT。
+  Area area = 3 [(google.api.field_behavior) = REQUIRED];
+  // 1ページあたりの最大取得件数。負の値は INVALID_ARGUMENT。0 は 50 件、1000 を超える値は 1000 件として扱う。
+  // 返す件数が page_size より少ないページや空のページもある。
+  int32 page_size = 4;
+  // 続きを取得するためのページトークン。前回の応答の next_page_token を指定する（ほかの値は INVALID_ARGUMENT）。
+  string page_token = 5;
+}
+
+// 1 つの空間 ID と、そこに値を持つ SpatialObject ごとの値。
+message SpatialIdValues {
+  // 空間 ID。リクエストより粗いズームレベルの値は、粗い空間 ID のまま返す。
+  string spatial_id = 1;
+  // SpatialObject ごとの値。
+  repeated ObjectValue values = 2;
+}
+
+// 1 つの SpatialObject の値。
+message ObjectValue {
+  // SpatialObject のリソース名。
+  string spatial_object = 1 [(google.api.resource_reference).type = "spatial-manager/SpatialObject"];
+  // 値。バリアは 0。
+  double value = 2;
+}
+
+// SearchSpatialIdValues のレスポンス。
+message SearchSpatialIdValuesResponse {
+  // 空間 ID ごとの値。
+  repeated SpatialIdValues spatial_id_values = 1;
+  // 次のページのトークン。最後のページなら空。
+  string next_page_token = 2;
+}
+
+// SummarizeSpatialIdValues のリクエスト。
+message SummarizeSpatialIdValuesRequest {
+  // 取得する種類。
+  SpatialObjectKind kind = 1 [(google.api.field_behavior) = REQUIRED];
+  // 集計する空間 ID のズームレベル。使えるズームレベルはサーバーが決める。外れると INVALID_ARGUMENT。
+  int32 zoom_level = 2 [(google.api.field_behavior) = REQUIRED];
+  // 取得する範囲。1 回に指定できる範囲の広さの上限はサーバーが決める。超えると INVALID_ARGUMENT。
+  Area area = 3 [(google.api.field_behavior) = REQUIRED];
+  // 1ページあたりの最大取得件数。負の値は INVALID_ARGUMENT。0 は 50 件、1000 を超える値は 1000 件として扱う。
+  // 返す件数が page_size より少ないページや空のページもある。
+  int32 page_size = 4;
+  // 続きを取得するためのページトークン。前回の応答の next_page_token を指定する（ほかの値は INVALID_ARGUMENT）。
+  string page_token = 5;
+}
+
+// 1 つの空間 ID の集計値。どの SpatialObject の値かは含めない。
+message SpatialIdSummary {
+  // リクエストのズームレベルの空間 ID。
+  string spatial_id = 1;
+  // 最大値。バリアは 0。
+  double max_value = 2;
+  // 最小値。バリアは 0。
+  double min_value = 3;
+  // 平均値。値を持つ VoxelValue だけを、リクエストの空間 ID と重なる面積（グランドリスク）または体積（バリア・エアーリスク）で重み付けして平均する。値の無い所は含めない。バリアは 0。
+  double mean_value = 4;
+}
+
+// SummarizeSpatialIdValues のレスポンス。
+message SummarizeSpatialIdValuesResponse {
+  // 空間 ID ごとの集計値。値の無い空間 ID は含めない。
+  repeated SpatialIdSummary spatial_id_summaries = 1;
+  // 次のページのトークン。最後のページなら空。
+  string next_page_token = 2;
+}
+
+// LookupSpatialIdValues のリクエスト。
+message LookupSpatialIdValuesRequest {
+  // 取得する種類。
+  SpatialObjectKind kind = 1 [(google.api.field_behavior) = REQUIRED];
+  // 値を取得する空間 ID（上限の個数はサーバーが決める）。ズームレベルは混在してよい。
+  repeated string spatial_ids = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// LookupSpatialIdValues のレスポンス。
+message LookupSpatialIdValuesResponse {
+  // 空間 ID ごとの値。値の無い空間 ID は含めない。
+  repeated SpatialIdValues spatial_id_values = 1;
+}
